@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import type { CSSProperties, FormEvent } from 'react';
 import { useState } from 'react';
+import HeroVideo from '@/components/site/hero-video';
 import { SocialIcon } from '@/components/site/social-icon';
 import { useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -171,17 +172,21 @@ export default function Home({
                 />
             </Head>
 
-            {/* HERO SECTION MATCHING MOCKUP.JPG */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-pearl via-white to-pearl/50 py-12 lg:py-20">
+            {/* Editorial split hero inspired by the supplied clinic mockup. */}
+            <section className="relative overflow-hidden bg-gradient-to-br from-pearl via-white to-soft-aqua/30 py-10 sm:py-12 lg:py-16">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-32 top-0 hidden h-full w-[56%] rounded-l-[50%] bg-ice/70 lg:block"
+                />
                 <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12">
-                    <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+                    <div className="relative grid items-center gap-10 lg:grid-cols-12 lg:gap-8">
                         {/* Hero Left Content */}
-                        <div className="lg:col-span-7">
+                        <div className="lg:col-span-6">
                             <p className="eyebrow">
                                 REVEAL YOUR CONFIDENCE
                             </p>
 
-                            <h1 className="mt-4 font-display font-medium text-ocean text-[46px] sm:text-[64px] lg:text-[76px] leading-[0.98] tracking-tight">
+                            <h1 className="mt-4 font-display font-medium text-ocean text-[46px] sm:text-[58px] lg:text-[64px] leading-[1.04] tracking-tight">
                                 Advanced Care.<br />
                                 <span className="italic text-royal">Radiant You.</span>
                                 <span className="inline-block text-aqua ml-2 text-[0.6em] -translate-y-4">✦</span>
@@ -216,7 +221,7 @@ export default function Home({
                             </div>
 
                             {/* Trust Badges */}
-                            <div className="mt-12 pt-8 border-t border-ice">
+                            <div className="mt-10 border-t border-aqua/30 pt-7">
                                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
                                     {[
                                         [Award, 'FDA Approved Technology'],
@@ -227,7 +232,7 @@ export default function Home({
                                         const I = Icon as typeof Award;
                                         return (
                                             <div key={idx} className="flex flex-col items-start gap-2">
-                                                <div className="flex size-9 items-center justify-center rounded-full bg-ice text-royal">
+                                                <div className="flex size-9 items-center justify-center rounded-full bg-soft-aqua/55 text-ocean">
                                                     <I className="size-4" />
                                                 </div>
                                                 <span className="text-xs font-semibold text-ocean leading-tight">
@@ -240,17 +245,16 @@ export default function Home({
                             </div>
                         </div>
 
-                        {/* Hero Right Image Frame */}
-                        <div className="lg:col-span-5 flex justify-center">
-                            <div className="relative w-full max-w-md">
-                                <div className="relative overflow-hidden rounded-t-[14rem] rounded-b-3xl border-4 border-white bg-ice shadow-2xl shadow-ocean/15">
-                                    <img
-                                        src={media('hero-treatment.jpg')}
-                                        alt="Gluta RepubliQ advanced laser treatment"
-                                        className="h-[28rem] sm:h-[34rem] w-full rounded-t-[13.5rem] rounded-b-2xl object-cover object-top"
+                        {/* Hero Right Video Frame */}
+                        <div className="flex justify-center lg:col-span-6 lg:justify-end">
+                            <div className="relative w-full max-w-xl">
+                                <div className="relative h-[25rem] overflow-hidden rounded-t-[11rem] rounded-b-3xl border-4 border-white bg-ice shadow-2xl shadow-ocean/15 sm:h-[31rem] lg:h-[36rem] lg:rounded-tl-[10rem] lg:rounded-tr-[2rem]">
+                                    <HeroVideo
+                                        inset={false}
+                                        className="absolute inset-0"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-ocean/40 via-transparent to-transparent" />
-                                    <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-white/95 p-4 backdrop-blur shadow-lg border border-ice">
+                                    <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-lg backdrop-blur sm:bottom-6 sm:left-6 sm:right-6">
                                         <p className="text-[11px] font-bold uppercase tracking-wider text-royal">
                                             Signature Care
                                         </p>
@@ -391,13 +395,17 @@ export default function Home({
             </section>
 
             {/* ABOUT GLUTA REPUBLIQ ("Where Science Meets Aesthetics") MATCHING MOCKUP.JPG */}
-            <section className="py-20 lg:py-28 bg-white border-y border-ice overflow-hidden">
+            <section className="relative isolate overflow-hidden border-y border-aqua/25 bg-gradient-to-br from-soft-aqua/65 via-[#edf7f5] to-white py-20 lg:py-28">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-24 -top-28 size-96 rounded-full bg-aqua/15 blur-3xl"
+                />
                 <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12">
-                    <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+                    <div className="relative grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
                         {/* Left Arch Photo */}
                         <div className="lg:col-span-5 flex justify-center">
                             <div className="relative w-full max-w-md">
-                                <div className="overflow-hidden rounded-t-[14rem] rounded-b-3xl border-4 border-white shadow-2xl shadow-ocean/10 bg-ice">
+                                <div className="overflow-hidden rounded-t-[14rem] rounded-b-3xl border-[6px] border-white bg-aqua/20 shadow-2xl shadow-aqua/25">
                                     <img
                                         src={media('about-clinic.jpg')}
                                         alt="Gluta RepubliQ clinic interior"
@@ -410,7 +418,7 @@ export default function Home({
 
                         {/* Right Content */}
                         <div className="lg:col-span-7">
-                            <p className="eyebrow">ABOUT GLUTA REPUBLIQ</p>
+                            <p className="eyebrow text-royal">ABOUT GLUTA REPUBLIQ</p>
                             <h2 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl text-ocean font-medium leading-[1.05]">
                                 Where Science Meets<br />
                                 <span className="italic text-royal">Aesthetics</span>
@@ -428,7 +436,7 @@ export default function Home({
                                     'Luxurious, Private & Hygienic Environment',
                                 ].map((bullet, i) => (
                                     <li key={i} className="flex items-center gap-3">
-                                        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ice text-royal">
+                                        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-aqua/25 text-ocean">
                                             <Check className="size-3.5 stroke-[2.5]" />
                                         </div>
                                         <span className="font-sans text-sm sm:text-base font-medium text-charcoal">
@@ -440,12 +448,12 @@ export default function Home({
 
                             {/* Oval Stamp Badge matching mockup */}
                             <div className="mt-10 flex items-center gap-6">
-                                <div className="inline-flex flex-col items-center justify-center rounded-full border border-royal/30 bg-pearl px-8 py-4 text-center shadow-sm">
-                                    <span className="text-aqua text-xs">✦</span>
+                                <div className="inline-flex flex-col items-center justify-center rounded-full border border-aqua/50 bg-white/80 px-8 py-4 text-center shadow-sm shadow-aqua/10">
+                                    <span className="text-royal text-xs">✦</span>
                                     <span className="font-display text-sm font-semibold text-ocean">Your Skin</span>
                                     <span className="font-display text-sm font-semibold text-royal">Our Expertise</span>
                                     <span className="font-display text-sm font-semibold text-ocean">Your Confidence</span>
-                                    <span className="text-aqua text-xs">✦</span>
+                                    <span className="text-royal text-xs">✦</span>
                                 </div>
 
                                 <Link
