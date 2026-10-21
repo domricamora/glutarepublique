@@ -1,11 +1,11 @@
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { Menu, Phone, X, MapPin, Mail } from 'lucide-react';
+import { Menu, Phone, X } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
+import { ChatWidget } from '@/components/site/chat-widget';
 import { SOCIAL_LABELS, SocialIcon } from '@/components/site/social-icon';
 import Wordmark from '@/components/site/wordmark';
 import { cn } from '@/lib/utils';
-import { ChatWidget } from '@/components/site/chat-widget';
 import {
     about,
     beforeAfter,
@@ -25,16 +25,24 @@ const nav = [
     { label: 'Home', href: home().url },
     { label: 'About Us', href: about().url },
     { label: 'Treatments', href: treatments.index().url },
-    { label: 'Our Doctors', href: `${home().url}#doctors` },
-    { label: 'Results', href: beforeAfter().url },
+    { label: 'Before & After', href: beforeAfter().url },
+    { label: 'Promotions', href: promotions().url },
     { label: 'Blog', href: blog.index().url },
     { label: 'Contact', href: contact().url },
 ];
+
+// Shown when no social links are configured for the organisation.
+const DEFAULT_SOCIALS: Record<string, string> = {
+    facebook: 'https://www.facebook.com/GlutaRepubliQSomoAVistaMall',
+    instagram: 'https://www.instagram.com/glutarepubliq',
+    tiktok: 'https://www.tiktok.com/@glutarepubliq',
+};
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
     const { clinic, flash } = usePage<{ flash?: { success?: string | null } }>()
         .props;
     const [open, setOpen] = useState(false);
+    const tel = `tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`;
 
     useEffect(() => {
         document.body.style.overflow = open ? 'hidden' : '';
@@ -50,59 +58,42 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 Skip to content
             </a>
 
-            {/* Announcement topbar */}
-            <div className="bg-ocean px-4 py-2 text-center text-xs tracking-wider text-pearl font-medium">
-                <span className="text-aqua font-semibold">Gluta RepubliQ Aesthetics:</span> Cebu Galleria II · San Pedro · Sta. Rosa · Bacoor · Licensed Medical Care
-            </div>
-
-            {/* Header matching mockup */}
-            <header className="sticky top-0 z-40 border-b border-ice bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
-                <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-4 sm:px-8 lg:px-12">
+            <header className="sticky top-0 z-40 border-b border-ice bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+                <div className="gutter flex h-[4.5rem] items-center justify-between gap-6">
                     <Link
                         href={home().url}
-                        className="press min-w-0"
+                        className="min-w-0"
                         aria-label={`${clinic.name} home`}
                     >
                         <Wordmark />
                     </Link>
 
-                    {/* Navigation matching mockup.jpg */}
                     <nav
                         aria-label="Main"
-                        className="hidden items-center gap-7 text-[13px] font-semibold tracking-[0.08em] uppercase text-charcoal/80 xl:flex"
+                        className="hidden items-center gap-7 xl:flex"
                     >
                         {nav.map((item) => (
                             <Link
                                 key={item.label}
                                 href={item.href}
-                                className="transition-colors duration-150 hover:text-royal hover:underline underline-offset-8"
+                                className="nav-link text-charcoal/80 hover:text-royal"
                             >
                                 {item.label}
                             </Link>
                         ))}
                     </nav>
 
-                    {/* Right side CTA matching mockup.jpg */}
-                    <div className="flex items-center gap-3">
-                        <a
-                            href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}
-                            className="press hidden sm:inline-flex items-center gap-2 rounded-full bg-ocean px-5 py-2.5 text-xs font-bold tracking-wider text-white shadow-sm transition hover:bg-royal"
-                        >
-                            <Phone className="size-3.5 fill-current" />
-                            <span>{clinic.contact.phone}</span>
-                        </a>
-
+                    <div className="flex items-center gap-2">
                         <Link
                             href={book().url}
-                            className="press btn btn-royal hidden md:inline-flex text-xs"
+                            className="btn btn-solid hidden md:inline-flex"
                         >
-                            Book Now
+                            Book consultation
                         </Link>
-
                         <button
                             type="button"
                             onClick={() => setOpen(!open)}
-                            className="press -mr-2 p-2 xl:hidden text-ocean"
+                            className="press -mr-2 p-2 text-ocean xl:hidden"
                             aria-expanded={open}
                             aria-controls="mobile-nav"
                             aria-label={open ? 'Close menu' : 'Open menu'}
@@ -117,22 +108,21 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 </div>
             </header>
 
-            {/* Mobile Nav */}
             <nav
                 id="mobile-nav"
                 aria-label="Mobile"
                 className={cn(
-                    'fixed inset-x-0 top-20 bottom-0 z-30 overflow-y-auto bg-white px-6 pt-6 pb-24 xl:hidden shadow-xl',
+                    'fixed inset-x-0 top-[4.5rem] bottom-0 z-30 overflow-y-auto bg-white px-6 pt-4 pb-28 xl:hidden',
                     open ? 'block' : 'hidden',
                 )}
             >
-                <ul className="divide-y divide-ice border-y border-ice">
+                <ul className="divide-y divide-ice border-b border-ice">
                     {nav.map((item) => (
                         <li key={item.label}>
                             <Link
                                 href={item.href}
                                 onClick={() => setOpen(false)}
-                                className="flex py-4 font-display text-2xl text-ocean hover:text-royal"
+                                className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal"
                             >
                                 {item.label}
                             </Link>
@@ -140,29 +130,31 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     ))}
                     <li>
                         <Link
-                            href={login().url}
+                            href={membership().url}
                             onClick={() => setOpen(false)}
-                            className="flex py-4 font-sans text-lg text-charcoal/70"
+                            className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal"
                         >
-                            Staff Portal Login
+                            Membership
                         </Link>
                     </li>
                 </ul>
-
-                <div className="mt-8 flex flex-col gap-3">
-                    <a
-                        href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}
-                        className="press flex h-12 items-center justify-center gap-2 rounded-full bg-ocean font-bold text-white shadow"
-                    >
-                        <Phone className="size-4" />
-                        <span>Call {clinic.contact.phone}</span>
-                    </a>
+                <div className="mt-8 grid gap-3">
                     <Link
                         href={book().url}
                         onClick={() => setOpen(false)}
-                        className="press btn btn-royal h-12"
+                        className="btn btn-solid h-12"
                     >
-                        Book Consultation
+                        Book consultation
+                    </Link>
+                    <a href={tel} className="btn btn-outline h-12">
+                        <Phone className="size-4" />
+                        Call {clinic.contact.phone}
+                    </a>
+                    <Link
+                        href={login().url}
+                        className="pt-2 text-center text-sm text-charcoal/60"
+                    >
+                        Staff login
                     </Link>
                 </div>
             </nav>
@@ -172,21 +164,21 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <SiteFooter />
             <ChatWidget />
 
-            {/* Mobile Sticky Booking Bar */}
+            {/* Phones keep booking one tap away. */}
             <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ice bg-white/95 p-3 backdrop-blur sm:hidden">
                 <div className="flex gap-2">
                     <a
-                        href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}
-                        className="press flex size-12 shrink-0 items-center justify-center rounded-full bg-ice text-ocean"
+                        href={tel}
+                        className="press grid size-12 shrink-0 place-items-center border border-ice text-ocean"
                         aria-label="Call clinic"
                     >
                         <Phone className="size-5" />
                     </a>
                     <Link
                         href={book().url}
-                        className="press flex-1 btn btn-royal h-12"
+                        className="btn btn-solid h-12 flex-1"
                     >
-                        Book Appointment
+                        Book consultation
                     </Link>
                 </div>
             </div>
@@ -194,7 +186,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             {flash?.success && (
                 <div
                     role="status"
-                    className="fixed right-4 bottom-20 z-50 max-w-sm rounded-lg bg-ocean px-5 py-4 text-sm text-white shadow-xl sm:bottom-6"
+                    className="fixed right-4 bottom-20 z-50 max-w-sm bg-ocean px-5 py-4 text-sm text-white shadow-xl sm:bottom-6"
                 >
                     {flash.success}
                 </div>
@@ -246,7 +238,10 @@ function LocalBusinessSchema() {
             { '@type': 'MedicalProcedure', name: 'Glutathione IV Drips' },
             { '@type': 'MedicalProcedure', name: 'Laser Skin Rejuvenation' },
             { '@type': 'MedicalProcedure', name: 'HydraGlow Facial' },
-            { '@type': 'MedicalProcedure', name: 'Acne & Pigmentation Treatment' },
+            {
+                '@type': 'MedicalProcedure',
+                name: 'Acne & Pigmentation Treatment',
+            },
         ],
     };
 
@@ -260,147 +255,189 @@ function LocalBusinessSchema() {
 
 function SiteFooter() {
     const { clinic, socials } = usePage().props;
+    const links =
+        socials && Object.keys(socials).length > 0 ? socials : DEFAULT_SOCIALS;
+
+    const columns: [string, [string, string][]][] = [
+        [
+            'Treatments',
+            [
+                ['All treatments', treatments.index().url],
+                ['Before & after', beforeAfter().url],
+                ['Promotions', promotions().url],
+                ['Membership', membership().url],
+            ],
+        ],
+        [
+            'Clinic',
+            [
+                ['About us', about().url],
+                ['Our doctors', `${home().url}#doctors`],
+                ['Blog', blog.index().url],
+                ['Contact', contact().url],
+                ['Staff login', login().url],
+            ],
+        ],
+    ];
 
     return (
-        <footer className="on-dark bg-ocean text-white pb-24 sm:pb-0">
-            <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 lg:px-12 lg:py-20">
-                <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
-                    {/* Brand column matching mockup */}
-                    <div className="lg:col-span-4">
-                        <Wordmark
-                            variant="light"
-                            markClassName="size-16"
-                            nameClassName="text-[2rem] text-white"
-                        />
-                        <p className="mt-5 max-w-sm text-sm leading-relaxed text-ice/85">
-                            Advanced Aesthetic Care. Radiant You. Licensed medical-grade glutathione therapies, laser rejuvenation, and personalized dermatology.
-                        </p>
+        <footer className="on-dark bg-ocean pb-24 text-white sm:pb-0">
+            <div className="gutter grid gap-12 py-16 lg:grid-cols-12 lg:py-20">
+                <div className="lg:col-span-4">
+                    <Wordmark
+                        variant="light"
+                        markClassName="size-20"
+                        nameClassName="text-[1.9rem] text-white"
+                    />
+                    <p className="mt-6 max-w-xs text-sm leading-relaxed text-ice/80">
+                        {clinic.contact.address}
+                        <br />
+                        <a
+                            href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}
+                            className="hover:text-aqua"
+                        >
+                            {clinic.contact.phone}
+                        </a>
+                        <br />
+                        <a
+                            href={`mailto:${clinic.contact.email}`}
+                            className="hover:text-aqua"
+                        >
+                            {clinic.contact.email}
+                        </a>
+                    </p>
+                    <div className="mt-6 flex gap-2">
+                        {Object.entries(links).map(([platform, href]) => (
+                            <a
+                                key={platform}
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={SOCIAL_LABELS[platform] ?? platform}
+                                className="grid size-9 place-items-center border border-white/20 text-pearl transition-colors hover:border-aqua hover:bg-aqua hover:text-ocean"
+                            >
+                                <SocialIcon
+                                    platform={platform}
+                                    className="size-4"
+                                />
+                            </a>
+                        ))}
+                    </div>
+                </div>
 
-                        <div className="mt-6 flex items-center gap-3">
-                            {socials && Object.keys(socials).length > 0 ? (
-                                Object.entries(socials).map(([platform, href]) => (
-                                    <a
-                                        key={platform}
+                {columns.map(([title, items]) => (
+                    <div key={title} className="lg:col-span-2">
+                        <h3 className="font-sans text-sm font-medium text-white">
+                            {title}
+                        </h3>
+                        <ul className="mt-4 space-y-2.5 text-sm text-ice/75">
+                            {items.map(([label, href]) => (
+                                <li key={label}>
+                                    <Link
                                         href={href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={SOCIAL_LABELS[platform] ?? platform}
-                                        className="flex size-9 items-center justify-center rounded-full border border-white/20 text-pearl transition hover:border-aqua hover:bg-aqua hover:text-ocean"
+                                        className="transition-colors hover:text-aqua"
                                     >
-                                        <SocialIcon platform={platform} className="size-4" />
-                                    </a>
-                                ))
-                            ) : (
-                                <>
-                                    <a
-                                        href="https://www.facebook.com/GlutaRepubliQ"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex size-9 items-center justify-center rounded-full border border-white/20 text-pearl transition hover:border-aqua hover:bg-aqua hover:text-ocean"
-                                    >
-                                        <SocialIcon platform="facebook" className="size-4" />
-                                    </a>
-                                    <a
-                                        href="https://www.instagram.com/glutarepubliq"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex size-9 items-center justify-center rounded-full border border-white/20 text-pearl transition hover:border-aqua hover:bg-aqua hover:text-ocean"
-                                    >
-                                        <SocialIcon platform="instagram" className="size-4" />
-                                    </a>
-                                    <a
-                                        href="https://www.tiktok.com/@glutarepubliq"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex size-9 items-center justify-center rounded-full border border-white/20 text-pearl transition hover:border-aqua hover:bg-aqua hover:text-ocean"
-                                    >
-                                        <SocialIcon platform="tiktok" className="size-4" />
-                                    </a>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Quick links */}
-                    <div className="lg:col-span-2">
-                        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.14em] text-aqua">
-                            Quick Links
-                        </h3>
-                        <ul className="mt-4 space-y-2.5 text-sm text-pearl/80">
-                            <li><Link href={about().url} className="hover:text-aqua transition">About Us</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Treatments</Link></li>
-                            <li><Link href={`${home().url}#doctors`} className="hover:text-aqua transition">Our Doctors</Link></li>
-                            <li><Link href={beforeAfter().url} className="hover:text-aqua transition">Results</Link></li>
-                            <li><Link href={blog.index().url} className="hover:text-aqua transition">Blog</Link></li>
-                            <li><Link href={contact().url} className="hover:text-aqua transition">Contact Us</Link></li>
+                                        {label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
+                ))}
 
-                    {/* Treatments column matching mockup */}
-                    <div className="lg:col-span-3">
-                        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.14em] text-aqua">
-                            Treatments
-                        </h3>
-                        <ul className="mt-4 space-y-2.5 text-sm text-pearl/80">
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Laser Skin Rejuvenation</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Pigmentation Treatment</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Acne & Scar Treatment</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Anti-Aging Solutions</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">Glutathione Therapy</Link></li>
-                            <li><Link href={treatments.index().url} className="hover:text-aqua transition">HydraGlow Facial</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Contact Us column matching mockup */}
-                    <div className="lg:col-span-3">
-                        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.14em] text-aqua">
-                            Contact Us
-                        </h3>
-                        <ul className="mt-4 space-y-3 text-sm text-pearl/80">
-                            <li className="flex items-center gap-2.5">
-                                <Phone className="size-4 text-aqua shrink-0" />
-                                <a href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`} className="hover:text-aqua transition">
-                                    {clinic.contact.phone}
-                                </a>
-                            </li>
-                            <li className="flex items-center gap-2.5">
-                                <Mail className="size-4 text-aqua shrink-0" />
-                                <a href={`mailto:${clinic.contact.email}`} className="hover:text-aqua transition">
-                                    {clinic.contact.email}
-                                </a>
-                            </li>
-                            <li className="flex items-start gap-2.5">
-                                <MapPin className="size-4 text-aqua shrink-0 mt-0.5" />
-                                <span>{clinic.contact.address}</span>
-                            </li>
-                        </ul>
-                    </div>
+                <div className="lg:col-span-4">
+                    <h3 className="font-sans text-sm font-medium text-white">
+                        Newsletter
+                    </h3>
+                    <p className="mt-4 text-sm text-ice/75">
+                        Offers and skincare notes, about once a month.
+                    </p>
+                    <Newsletter />
                 </div>
             </div>
 
-            {/* Copyright bottom bar matching mockup */}
             <div className="border-t border-white/10">
-                <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 text-xs text-pearl/60 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
-                    <p>© {new Date().getFullYear()} {clinic.name}. All Rights Reserved.</p>
+                <div className="gutter flex flex-col gap-4 py-6 text-xs text-ice/60 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        © {new Date().getFullYear()} {clinic.name}. All rights
+                        reserved.
+                    </p>
                     <ul className="flex flex-wrap gap-5">
                         <li>
-                            <Link href={legal('privacy-policy').url} className="hover:text-aqua transition">
-                                Privacy Policy
+                            <Link
+                                href={legal('privacy-policy').url}
+                                className="hover:text-aqua"
+                            >
+                                Privacy policy
                             </Link>
                         </li>
                         <li>
-                            <Link href={legal('terms').url} className="hover:text-aqua transition">
-                                Terms & Conditions
+                            <Link
+                                href={legal('terms').url}
+                                className="hover:text-aqua"
+                            >
+                                Terms
                             </Link>
                         </li>
                         <li>
-                            <Link href={legal('data-privacy-notice').url} className="hover:text-aqua transition">
-                                Data Privacy Notice
+                            <Link
+                                href={legal('data-privacy-notice').url}
+                                className="hover:text-aqua"
+                            >
+                                Data privacy notice
                             </Link>
                         </li>
                     </ul>
                 </div>
             </div>
         </footer>
+    );
+}
+
+function Newsletter() {
+    const form = useForm({
+        form: 'newsletter',
+        email: '',
+        privacy_consent: true,
+    });
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        form.post(leads.store().url, {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
+    };
+
+    return (
+        <form onSubmit={submit} className="mt-4">
+            <div className="flex">
+                <label htmlFor="newsletter-email" className="sr-only">
+                    Email
+                </label>
+                <input
+                    id="newsletter-email"
+                    type="email"
+                    required
+                    placeholder="Email address"
+                    autoComplete="email"
+                    value={form.data.email}
+                    onChange={(e) => form.setData('email', e.target.value)}
+                    className="h-11 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-sm text-white placeholder:text-ice/60 focus:border-aqua focus:outline-none"
+                />
+                <button
+                    type="submit"
+                    disabled={form.processing}
+                    className="press h-11 shrink-0 bg-aqua px-5 text-sm font-medium text-ocean transition-colors hover:bg-white disabled:opacity-60"
+                >
+                    Subscribe
+                </button>
+            </div>
+            {form.errors.email && (
+                <p className="mt-2 text-xs text-soft-aqua">
+                    {form.errors.email}
+                </p>
+            )}
+        </form>
     );
 }

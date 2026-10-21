@@ -22,10 +22,11 @@ export default function TreatmentsIndex({
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
                     <h1 className="max-w-3xl text-5xl leading-[1.05] sm:text-7xl">
-                        Treatments, <em className="text-champagne">priced plainly.</em>
+                        Treatments,{' '}
+                        <em className="text-champagne">priced plainly.</em>
                     </h1>
                     <p className="mt-6 max-w-xl text-lg text-lilac">
                         Every price below is the starting price for one session.
@@ -59,7 +60,7 @@ export default function TreatmentsIndex({
                             : 'scroll-mt-20 bg-white'
                     }
                 >
-                    <div className="grid gap-10 gutter py-16 lg:grid-cols-12 lg:py-20">
+                    <div className="gutter grid gap-10 py-16 lg:grid-cols-12 lg:py-20">
                         <div className="lg:col-span-4">
                             <h2 data-reveal className="text-3xl sm:text-4xl">
                                 {c.name}

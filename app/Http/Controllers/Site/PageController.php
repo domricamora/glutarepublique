@@ -33,6 +33,7 @@ class PageController extends Controller
             'testimonials' => Testimonial::where('is_published', true)->latest('id')->get(['id', 'author_name', 'author_meta', 'quote', 'rating']),
             'specialists' => $this->specialists(),
             'faqs' => Faq::orderBy('sort')->get(['id', 'question', 'answer']),
+            'offers' => Promotion::where('is_active', true)->orderBy('sort')->limit(2)->get(['id', 'title', 'slug', 'summary', 'badge']),
         ]);
     }
 

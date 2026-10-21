@@ -1,6 +1,25 @@
 # SESSION_STATE.md — HAND-OFF, START HERE
 
-Updated 2026-10-06 (rebranded to Gluta RepubliQ Aesthetics and deployed to glutarepubliq.recursive-frog.com).
+Updated 2026-10-21 (marketing site redesigned from the owner's mockups 1 and 2).
+
+## Latest handoff (2026-10-21)
+
+- **Marketing redesign:** layout and type follow `~/Downloads/glutarepubliq/mockups/mockup1.jpg` (centered serif hero, staggered photo strip with the hero film in the middle, About photo grid, specialist portrait cards, two offer cards) and `mockup2.jpg` (numbered signature-treatment cards with one price figure, large "RADIANT YOU" band over a blurred portrait, results split-view with three fact tiles, two-up clinic finder + enquiry cards, dark footer with newsletter). The logo palette is unchanged (ocean/royal/aqua). Square corners kept (owner rule) even though the mockups are rounded.
+- **Type:** Noto Serif Display (light 300, italic for accents) for h1-h3 + Geist body, loaded in `resources/views/app.blade.php`. Admin headings stay sans via `[data-shell='admin']`. `.btn` is square, sentence case.
+- **Home data:** `PageController::home` now also passes `offers` (first two active promotions). Specialist portraits on the home page are still hard-coded because staff rows have no photos.
+- **Bacoor branch** moved to SOMO A Vista Mall (owner's Facebook page `facebook.com/GlutaRepubliQSomoAVistaMall`): seeder + data migration `2026_10_21_100000`. Footer social fallback points to that page.
+- **Fixed:** chat widget used root-relative `/chat/...` fetches (404 under the local sub-folder); now Wayfinder `routes/chat`.
+- QA: home, about, treatments, contact, book at 1440/768/390, no overflow, no console errors. Tests: same 236 pass / 6 fail / 1 error as before (pre-existing, listed below).
+
+## Previous handoff (2026-10-07)
+
+
+- Production at `https://glutarepubliq.recursive-frog.com` was returning HTTP 403 because the app source was missing from the remote site directory. The guarded deploy script uploaded the source/assets, ran migrations and seeders, cleared/rebuilt config and route caches, and completed successfully. `/`, `/about`, `/treatments`, and `/contact` all returned HTTP 200 afterward.
+- The remote `.env` had an invalid unquoted `APP_NAME` (`\ Gluta RepubliQ Aesthetics\`); it was corrected to `APP_NAME="Gluta RepubliQ Aesthetics"`. The owner updated the database password; `php artisan db:show` then connected successfully. Never copy the password into this handoff.
+- A pre-deploy database dump was created at `~/backups/predeploy-glutarepubliq-20261007-<time>.sql`; deploy also made its normal backups.
+- Deployment's focused `ExampleTest` checks passed (2 tests). A full local `php artisan test` run reported 236 passed, 6 failures, and 1 error (243 tests total), involving booking concurrency, clinic setup, inventory/site-page seeded expectations, and an employee lookup in `PeopleTest`. These were not fixed in this session; investigate before treating the full suite as green.
+- Current demo login emails are `admin@glutarepubliq.com`, `owner@glutarepubliq.com`, and `reception@glutarepubliq.com`; the shared demo password is `ThEsEcReT1126`. The live login is `/login`.
+- Local worktree was already dirty before this handoff update: `scripts/deploy.ps1` modified and `ctx-test.ps1`, `deploy.err`, `deploy.log`, `deploy.pid` untracked. Preserve and inspect before cleanup; do not assume these are disposable.
 
 ## Where things are
 
@@ -29,7 +48,7 @@ Updated 2026-10-06 (rebranded to Gluta RepubliQ Aesthetics and deployed to gluta
 ## This session (2026-09-29)
 
 - **Chat widget, visual pass:** expanded panel is `rounded-2xl` + `shadow-2xl` with `overflow-hidden` so the plum header is clipped by the radius instead of meeting it square. Collapsed state is a 56px `rounded-full` icon-only button; the word "Chat" moved to `aria-label` rather than being dropped. **Square corners everywhere else is the owner rule (`app.css`) — the floating widget is a deliberate exception**, because it sits on top of the page rather than being part of it. Noted in code and commit.
-- **Avatars + emoji (chat):** `components/chat-avatar.tsx` and `components/chat-emoji.tsx`, shared by the visitor widget and the desk inbox. Avatars fall back photo → initials → generic person, and that third case is the *normal* one for the first messages of a chat. Emoji are a fixed set of 64 (not a picker library) and insert **at the caret**, not the end of the box.
+- **Avatars + emoji (chat):** `components/chat-avatar.tsx` and `components/chat-emoji.tsx`, shared by the visitor widget and the desk inbox. Avatars fall back photo → initials → generic person, and that third case is the _normal_ one for the first messages of a chat. Emoji are a fixed set of 64 (not a picker library) and insert **at the caret**, not the end of the box.
 - **Emoji storage is pinned by test:** `max:2000` counts characters and the column is `utf8mb4`, so an emoji costs 1 of the budget not 4 bytes. The round-trip test reads back off the database rather than trusting the response, so a mangled byte fails in the suite rather than in a browser.
 - **Live chat (no Refresh):** `admin.chat.poll` (`/admin/chat-feed`) and `admin.chat.messages` back `resources/js/hooks/use-poll.ts`, which pauses on a hidden tab, catches up on return, and never overlaps requests. Inbox rows gained avatars and a **"who spoke last" label** (`You:` vs the visitor's first name) — a preview reading "Yes, before 5pm" is ambiguous without it. Sidebar Chat item carries a gold count badge via `NavItem.badge`. Auto-scroll only follows a **visitor** message **and** only when the reader is already at the bottom.
 - **Feed permission:** the new endpoints sit behind `can:leads.view`, same as the inbox. They are a second way to read the same conversations, so gating one and not the other would leak them. Test asserts 403 for both.
@@ -41,8 +60,8 @@ Updated 2026-10-06 (rebranded to Gluta RepubliQ Aesthetics and deployed to gluta
 
 ## Live
 
-| Site | URL | Folder | Database | DB user |
-|---|---|---|---|---|
+| Site           | URL                                      | Folder                                           | Database                 | DB user                  |
+| -------------- | ---------------------------------------- | ------------------------------------------------ | ------------------------ | ------------------------ |
 | Gluta RepubliQ | https://glutarepubliq.recursive-frog.com | `~/public_html/glutarepubliq.recursive-frog.com` | `htrjymuo_glutarepubliq` | `htrjymuo_glutarepubliq` |
 
 - The site runs on the cPanel account `htrjymuo@ck.deskpulse.click:9022`, PHP `/opt/alt/php83/usr/bin/php` (CLI) with ea-php83 for the web. This site keeps its own `.env` (never overwrite).

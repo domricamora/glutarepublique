@@ -164,7 +164,7 @@ export default function TreatmentShow({
             </section>
 
             {related.length > 0 && (
-                <section className="bg-mist gutter py-16 lg:py-20">
+                <section className="gutter bg-mist py-16 lg:py-20">
                     <h2 className="text-3xl sm:text-4xl">Often paired with</h2>
                     <div className="mt-10 grid gap-8 sm:grid-cols-3">
                         {related.map((r) => (

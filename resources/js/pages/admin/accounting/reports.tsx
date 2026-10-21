@@ -142,7 +142,9 @@ export default function AccountingReports(props: Props) {
                                             {line.name}
                                         </td>
                                         <td className="px-4 py-3 text-right tabular-nums">
-                                            {line.debit > 0 ? money(line.debit) : ''}
+                                            {line.debit > 0
+                                                ? money(line.debit)
+                                                : ''}
                                         </td>
                                         <td className="px-4 py-3 text-right tabular-nums">
                                             {line.credit > 0

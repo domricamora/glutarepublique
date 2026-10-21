@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatAvatar } from '@/components/chat-avatar';
 import { ChatEmoji } from '@/components/chat-emoji';
+import chatRoutes from '@/routes/chat';
 
 type Message = { from: string; body: string; at: string };
 
@@ -57,7 +58,7 @@ export function ChatWidget() {
     const { csrf } = usePage<{ csrf: string }>().props;
 
     useEffect(() => {
-        fetch('/chat/status')
+        fetch(chatRoutes.status().url)
             .then((r) => (r.ok ? r.json() : null))
             .then((data) => {
                 if (!data?.enabled) return;
@@ -68,7 +69,9 @@ export function ChatWidget() {
     }, []);
 
     const pull = useCallback(async () => {
-        const response = await fetch(`/chat/${token()}`).catch(() => null);
+        const response = await fetch(chatRoutes.show(token()).url).catch(
+            () => null,
+        );
         if (!response?.ok) return;
         const data = await response.json();
         setMessages(data.messages ?? []);
@@ -106,7 +109,7 @@ export function ChatWidget() {
         setSending(true);
         setBody('');
 
-        const response = await fetch(`/chat/${token()}`, {
+        const response = await fetch(chatRoutes.store(token()).url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

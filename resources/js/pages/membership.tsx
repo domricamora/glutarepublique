@@ -45,25 +45,20 @@ export default function Membership({ tiers, branches, faqs }: Props) {
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        Membership
-                    </p>
+                    <p className="eyebrow">Membership</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         Skin that stays on track,{' '}
                         <em className="text-champagne">month by month.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
                         A membership turns treatment into a rhythm: a monthly
-                        allowance, member pricing and priority appointment times.
-                        Cancel any month, at any branch, without a fee.
+                        allowance, member pricing and priority appointment
+                        times. Cancel any month, at any branch, without a fee.
                     </p>
                     <div className="mt-10 flex flex-wrap gap-3">
-                        <Link
-                            href={book().url}
-                            className="press btn btn-solid"
-                        >
+                        <Link href={book().url} className="press btn btn-solid">
                             Book a visit first <ArrowRight className="size-4" />
                         </Link>
                         <Link
@@ -72,11 +67,11 @@ export default function Membership({ tiers, branches, faqs }: Props) {
                         >
                             Ask about joining
                         </Link>
-                </div>
-                <p className="mt-6 text-sm text-lilac">
-                    GCash, Maya, bank transfer and cards accepted. No joining
-                    fee, no lock in.
-                </p>
+                    </div>
+                    <p className="mt-6 text-sm text-lilac">
+                        GCash, Maya, bank transfer and cards accepted. No
+                        joining fee, no lock in.
+                    </p>
                 </div>
             </section>
 
@@ -173,7 +168,7 @@ export default function Membership({ tiers, branches, faqs }: Props) {
                 </p>
             </section>
 
-            <section className="bg-mist gutter py-20 lg:py-28">
+            <section className="gutter bg-mist py-20 lg:py-28">
                 <div className="grid gap-12 lg:grid-cols-12">
                     <div className="lg:col-span-4">
                         <h2 data-reveal className="text-3xl sm:text-4xl">
@@ -244,7 +239,7 @@ export default function Membership({ tiers, branches, faqs }: Props) {
                 </div>
             </section>
 
-            <section className="gutter pb-20 ">
+            <section className="gutter pb-20">
                 <div className="flex flex-wrap items-end justify-between gap-6 border-t border-border pt-10">
                     <h2 className="max-w-xl text-3xl sm:text-4xl">
                         Start with a consultation, then decide.

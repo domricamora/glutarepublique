@@ -2,7 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-const CLIPS = ['hero-5308682', 'hero-5308683', 'hero-12322630'];
+const CLIPS = ['hero-7581441', 'hero-5308682', 'hero-5308683', 'hero-12322630'];
 
 /**
  * Short muted clips that crossfade in turn, filling whatever box they are put
@@ -48,7 +48,10 @@ export default function HeroVideo({
     return (
         <div
             aria-hidden="true"
-            className={cn(inset ? 'absolute inset-0 -z-20' : 'h-full w-full', className)}
+            className={cn(
+                inset ? 'absolute inset-0 -z-20' : 'h-full w-full',
+                className,
+            )}
         >
             {still ? (
                 <img

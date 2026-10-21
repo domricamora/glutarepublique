@@ -40,7 +40,7 @@ but is:
 "@
 }
 
-$Ssh = @('-F', 'none', '-p', $Port)
+$Ssh = @('-F', 'none', '-p', $Port, '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', '-o', 'StrictHostKeyChecking=accept-new')
 if ($IdentityFile) { $Ssh += @('-i', $IdentityFile) }
 
 function Invoke-Remote([string]$Command) {

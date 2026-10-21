@@ -26,25 +26,23 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        Before and after
-                    </p>
+                    <p className="eyebrow">Before and after</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         What changes, and{' '}
                         <em className="text-champagne">what to expect.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
                         Drag the handle to compare. The images here are licensed
-                        stock photographs, not patient results, and your clinician
-                        will show you relevant cases in person during your
-                        consultation.
+                        stock photographs, not patient results, and your
+                        clinician will show you relevant cases in person during
+                        your consultation.
                     </p>
                 </div>
             </section>
 
-            <section className="gutter py-14 ">
+            <section className="gutter py-14">
                 <div className="grid gap-6 border-y border-border py-6 sm:grid-cols-3">
                     <p className="text-sm text-muted-foreground">
                         Every comparison is labelled illustrative.
@@ -58,7 +56,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                 </div>
             </section>
 
-            <section className="gutter pb-16 ">
+            <section className="gutter pb-16">
                 <div className="grid gap-12 lg:grid-cols-2">
                     {cases.map((item, i) => (
                         <article
@@ -93,7 +91,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                 </div>
             </section>
 
-            <section className="bg-mist gutter py-20 lg:py-24">
+            <section className="gutter bg-mist py-20 lg:py-24">
                 <div className="grid gap-12 lg:grid-cols-12">
                     <div className="lg:col-span-5">
                         <h2 data-reveal className="text-3xl sm:text-4xl">
@@ -130,7 +128,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                 </div>
             </section>
 
-            <section className="gutter py-16 ">
+            <section className="gutter py-16">
                 <div className="flex flex-wrap items-end justify-between gap-6 border-t border-border pt-10">
                     <h2 className="max-w-xl text-3xl sm:text-4xl">
                         Ask to see relevant cases at your consultation.

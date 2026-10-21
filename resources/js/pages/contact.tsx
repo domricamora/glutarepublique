@@ -44,11 +44,9 @@ export default function Contact({ branches, treatments }: Props) {
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        Contact
-                    </p>
+                    <p className="eyebrow">Contact</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         Talk to us before you{' '}
                         <em className="text-champagne">decide anything.</em>
@@ -71,11 +69,11 @@ export default function Contact({ branches, treatments }: Props) {
                         >
                             {clinic.contact.email}
                         </a>
-                </div>
+                    </div>
                 </div>
             </section>
 
-            <section className="grid gap-12 gutter py-16 lg:grid-cols-12 lg:py-20">
+            <section className="gutter grid gap-12 py-16 lg:grid-cols-12 lg:py-20">
                 <div className="lg:col-span-5">
                     <h2 data-reveal className="text-3xl sm:text-4xl">
                         Send us a message

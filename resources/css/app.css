@@ -8,24 +8,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    --font-brand:
+        'Century Gothic', 'Avenir Next', 'Gill Sans', 'Segoe UI', sans-serif;
     --font-sans:
-        'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Cormorant Garamond', Georgia, serif;
-    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-display: 'Noto Serif Display', 'Times New Roman', Georgia, serif;
+    --font-serif: 'Noto Serif Display', 'Times New Roman', Georgia, serif;
 
     /*
      * Official Gluta RepubliQ Color Palette
      */
-    --color-ocean: #123b5d;             /* Deep Ocean Navy */
-    --color-royal: #2d668f;             /* Royal Clinical Blue */
-    --color-aqua: #6ab5b1;              /* Gluta Aqua */
-    --color-soft-aqua: #a7d8d2;         /* Soft Aqua */
-    --color-ice: #dcecf4;               /* Ice Blue */
-    --color-pure-white: #ffffff;        /* Pure White */
-    --color-pearl: #f7fafa;             /* Pearl White */
-    --color-champagne: #d8c5a4;         /* Champagne Mist */
-    --color-charcoal: #26343b;          /* Deep Charcoal */
+    --color-ocean: #123b5d; /* Deep Ocean Navy */
+    --color-royal: #2d668f; /* Royal Clinical Blue */
+    --color-aqua: #6ab5b1; /* Gluta Aqua */
+    --color-soft-aqua: #a7d8d2; /* Soft Aqua */
+    --color-ice: #dcecf4; /* Ice Blue */
+    --color-pure-white: #ffffff; /* Pure White */
+    --color-pearl: #f7fafa; /* Pearl White */
+    --color-champagne: #d8c5a4; /* Champagne Mist */
+    --color-charcoal: #26343b; /* Deep Charcoal */
 
     /* Semantic Mappings & System Compatibility */
     --color-plum: var(--color-ocean);
@@ -181,26 +183,33 @@
 
     h1 {
         font-family: var(--font-display);
-        font-size: clamp(48px, 6vw, 76px);
-        font-weight: 500;
-        line-height: 1.0;
+        font-size: clamp(44px, 6vw, 84px);
+        font-weight: 300;
+        line-height: 1.02;
         letter-spacing: -0.02em;
     }
 
     h2 {
         font-family: var(--font-display);
-        font-size: clamp(36px, 4.5vw, 56px);
-        font-weight: 500;
-        line-height: 1.05;
+        font-size: clamp(34px, 4.2vw, 56px);
+        font-weight: 300;
+        line-height: 1.06;
         letter-spacing: -0.015em;
     }
 
     h3 {
         font-family: var(--font-display);
-        font-size: clamp(24px, 3vw, 38px);
-        font-weight: 500;
+        font-size: clamp(22px, 2.4vw, 30px);
+        font-weight: 400;
         line-height: 1.15;
+        letter-spacing: -0.01em;
     }
+}
+
+[data-shell='admin'] h1,
+[data-shell='admin'] h2,
+[data-shell='admin'] h3 {
+    font-family: var(--font-sans);
 }
 
 /* Public site selections */
@@ -226,6 +235,7 @@
 }
 
 .site {
+    --radius: 0;
     scrollbar-color: var(--color-royal) var(--color-ice);
     accent-color: var(--color-royal);
 }
@@ -258,9 +268,9 @@
     font-family: var(--font-sans);
     font-size: 0.75rem;
     line-height: 1;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-royal);
 }
 
@@ -284,9 +294,7 @@
     .nav-link {
         font-family: var(--font-sans);
         font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-weight: 450;
         transition: color 150ms ease-out;
     }
 
@@ -295,15 +303,15 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        padding: 0.75rem 1.75rem;
+        padding: 0.8rem 1.6rem;
         font-family: var(--font-sans);
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
         line-height: 1.25rem;
         text-align: center;
-        text-transform: uppercase;
-        border-radius: 9999px;
+        white-space: nowrap;
+        border-radius: 0;
         transition:
             transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
             background-color 160ms ease-out,
@@ -375,11 +383,7 @@
     inset-inline: 0;
     top: 0;
     height: 2px;
-    background: linear-gradient(
-        90deg,
-        var(--color-royal),
-        var(--color-aqua)
-    );
+    background: linear-gradient(90deg, var(--color-royal), var(--color-aqua));
 }
 
 @media (prefers-reduced-motion: no-preference) {

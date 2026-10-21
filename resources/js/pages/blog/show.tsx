@@ -31,9 +31,7 @@ export default function BlogShow({ post, related }: Props) {
 
             <article>
                 <header className="on-dark gutter bg-plum pt-16 pb-12 text-white lg:pt-24">
-                    <p className="eyebrow">
-                        {post.category}
-                    </p>
+                    <p className="eyebrow">{post.category}</p>
                     <h1 className="mt-4 max-w-4xl text-4xl leading-[1.1] sm:text-6xl">
                         {post.title}
                     </h1>
@@ -51,7 +49,7 @@ export default function BlogShow({ post, related }: Props) {
                     />
                 )}
 
-                <div className="grid gap-12 gutter py-16 lg:grid-cols-12">
+                <div className="gutter grid gap-12 py-16 lg:grid-cols-12">
                     <div className="flex flex-col gap-6 lg:col-span-8">
                         <p className="text-lg">{post.excerpt}</p>
                         {post.paragraphs.map((paragraph) => (
@@ -107,9 +105,8 @@ export default function BlogShow({ post, related }: Props) {
                             </h2>
                             <p className="mt-3 text-lg">{post.author_name}</p>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Practitioner at Gluta RepubliQ Aesthetics.
-                                A fictional profile in this
-                                demonstration clinic.
+                                Practitioner at Gluta RepubliQ Aesthetics. A
+                                fictional profile in this demonstration clinic.
                             </p>
                             <Link
                                 href={book().url}
@@ -124,7 +121,7 @@ export default function BlogShow({ post, related }: Props) {
             </article>
 
             {related.length > 0 && (
-                <section className="bg-mist gutter py-16 ">
+                <section className="gutter bg-mist py-16">
                     <div className="flex items-baseline justify-between gap-4">
                         <h2 className="text-3xl">More from the journal</h2>
                         <Link
@@ -149,9 +146,7 @@ export default function BlogShow({ post, related }: Props) {
                                         className="aspect-[4/3] w-full object-cover"
                                     />
                                 )}
-                                <p className="mt-4 eyebrow">
-                                    {item.category}
-                                </p>
+                                <p className="eyebrow mt-4">{item.category}</p>
                                 <h3 className="mt-2 text-xl">
                                     <Link
                                         href={blogRoutes.show(item.slug).url}

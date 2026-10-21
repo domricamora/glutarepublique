@@ -44,27 +44,25 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        Journal
-                    </p>
+                    <p className="eyebrow">Journal</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         Notes from the{' '}
                         <em className="text-champagne">treatment room.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
                         Guidance written by our practitioners: what a treatment
-                        involves, how to care for your skin afterwards, and when a
-                        result is worth judging. General information only, not a
-                        diagnosis.
+                        involves, how to care for your skin afterwards, and when
+                        a result is worth judging. General information only, not
+                        a diagnosis.
                     </p>
                 </div>
             </section>
 
             <nav
                 aria-label="Topics"
-                className="flex gap-2 overflow-x-auto border-b border-border gutter py-4"
+                className="gutter flex gap-2 overflow-x-auto border-b border-border py-4"
             >
                 <Link
                     href={blogRoutes.index().url}
@@ -101,7 +99,7 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
             </nav>
 
             {first && (
-                <section className="gutter py-14 ">
+                <section className="gutter py-14">
                     <article
                         data-reveal
                         className="grid gap-8 border-b border-border pb-14 lg:grid-cols-2 lg:items-center"
@@ -121,9 +119,7 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
                             </Link>
                         )}
                         <div>
-                            <p className="eyebrow">
-                                {first.category}
-                            </p>
+                            <p className="eyebrow">{first.category}</p>
                             <h2 className="mt-3 text-3xl sm:text-4xl">
                                 <Link
                                     href={blogRoutes.show(first.slug).url}
@@ -145,7 +141,7 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
                 </section>
             )}
 
-            <section className="gutter pb-16 ">
+            <section className="gutter pb-16">
                 {rest.length ? (
                     <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                         {rest.map((post, i) => (
@@ -168,9 +164,7 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
                                         />
                                     </Link>
                                 )}
-                                <p className="mt-4 eyebrow">
-                                    {post.category}
-                                </p>
+                                <p className="eyebrow mt-4">{post.category}</p>
                                 <h2 className="mt-2 text-2xl">
                                     <Link
                                         href={blogRoutes.show(post.slug).url}
@@ -234,7 +228,7 @@ export default function BlogIndex({ posts, filter, categories }: Props) {
                 </nav>
             )}
 
-            <section className="bg-mist gutter py-16 ">
+            <section className="gutter bg-mist py-16">
                 <div className="flex flex-wrap items-end justify-between gap-6">
                     <h2 className="max-w-xl text-3xl sm:text-4xl">
                         Reading is free. The consultation is where it starts.

@@ -31,19 +31,18 @@ export default function Promotions({ promotions, tiers }: Props) {
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        Promotions
-                    </p>
+                    <p className="eyebrow">Promotions</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
-                        Offers, <em className="text-champagne">written plainly.</em>
+                        Offers,{' '}
+                        <em className="text-champagne">written plainly.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
-                        Each offer below says what is included, what it costs and
-                        when it ends. No countdown timers, no conditions buried in
-                        small print, and every treatment still begins with an
-                        assessment.
+                        Each offer below says what is included, what it costs
+                        and when it ends. No countdown timers, no conditions
+                        buried in small print, and every treatment still begins
+                        with an assessment.
                     </p>
                 </div>
             </section>
@@ -144,7 +143,7 @@ export default function Promotions({ promotions, tiers }: Props) {
             </section>
 
             {tiers.length > 0 && (
-                <section className="on-dark bg-plum-deep gutter py-20 text-white lg:py-24">
+                <section className="on-dark gutter bg-plum-deep py-20 text-white lg:py-24">
                     <div className="grid gap-12 lg:grid-cols-12">
                         <div className="lg:col-span-5">
                             <h2 data-reveal className="text-3xl sm:text-4xl">
@@ -184,7 +183,7 @@ export default function Promotions({ promotions, tiers }: Props) {
                 </section>
             )}
 
-            <section className="gutter py-16 ">
+            <section className="gutter py-16">
                 <div className="flex flex-wrap items-end justify-between gap-6 border-t border-border pt-8">
                     <p className="max-w-2xl text-xs text-muted-foreground">
                         Offers cannot be combined with each other or with member

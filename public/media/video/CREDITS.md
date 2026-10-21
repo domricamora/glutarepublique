@@ -2,8 +2,10 @@
 
 Free stock footage from Pexels (https://www.pexels.com), used under the
 Pexels License. Clips are trimmed to 8 seconds, scaled to 1280x720, audio
-removed and re-encoded for the web. Every clip features an Asian model.
+removed and re-encoded for the web.
 
+- hero-7581441.mp4: cottonbro studio, https://www.pexels.com/video/a-doctor-pressing-the-eyebrow-of-her-patient-7581441/
+  (practitioner performing a treatment in a modern clinic)
 - hero-5308682.mp4: Anna Tarazevich, https://www.pexels.com/video/5308682/
   (towel-wrap skincare, eyes closed)
 - hero-5308683.mp4: Anna Tarazevich, https://www.pexels.com/video/5308683/

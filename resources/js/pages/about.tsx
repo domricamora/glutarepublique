@@ -60,27 +60,24 @@ export default function About({
                 />
             </Head>
 
-            <section className="on-dark bg-plum gutter pt-16 pb-14 text-white lg:pt-24">
+            <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">
-                        About
-                    </p>
+                    <p className="eyebrow">About</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         A clinic built around the{' '}
-                        <em className="text-champagne">assessment</em>, not the upsell.
+                        <em className="text-champagne">assessment</em>, not the
+                        upsell.
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
                         {clinic.name} is a physician-led aesthetic and wellness
-                        clinic. {clinic.tagline} We plan treatment around your skin,
-                        your history and your calendar, and we say plainly when a
-                        treatment is not for you.
+                        clinic. {clinic.tagline} We plan treatment around your
+                        skin, your history and your calendar, and we say plainly
+                        when a treatment is not for you.
                     </p>
                     <div className="mt-10 flex flex-wrap gap-3">
-                        <Link
-                            href={book().url}
-                            className="press btn btn-solid"
-                        >
-                            Book a consultation <ArrowRight className="size-4" />
+                        <Link href={book().url} className="press btn btn-solid">
+                            Book a consultation{' '}
+                            <ArrowRight className="size-4" />
                         </Link>
                         <Link
                             href={treatmentRoutes.index().url}
@@ -88,7 +85,7 @@ export default function About({
                         >
                             Treatments and prices
                         </Link>
-                </div>
+                    </div>
                 </div>
             </section>
 
@@ -99,7 +96,10 @@ export default function About({
             <section className="border-b border-border bg-white">
                 <div className="mx-auto grid max-w-7xl gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
                     {figures.map(([value, label]) => (
-                        <div key={label} className="bg-white px-4 py-10 sm:px-8">
+                        <div
+                            key={label}
+                            className="bg-white px-4 py-10 sm:px-8"
+                        >
                             <p className="font-display text-4xl">{value}</p>
                             <p className="mt-2 text-sm text-muted-foreground">
                                 {label}
@@ -108,7 +108,7 @@ export default function About({
                     ))}
                 </div>
             </section>
-            <section className="grid items-center gap-12 gutter py-20 lg:grid-cols-12 lg:py-28">
+            <section className="gutter grid items-center gap-12 py-20 lg:grid-cols-12 lg:py-28">
                 <div className="lg:col-span-6">
                     <h2 data-reveal className="text-3xl sm:text-4xl">
                         How we work
@@ -117,10 +117,9 @@ export default function About({
                         data-reveal
                         className="mt-5 max-w-lg text-muted-foreground"
                     >
-                        The clinic opened in Cebu City with one treatment
-                        room and a simple rule: assess first, then treat. That
-                        rule still decides how a visit runs today, in every
-                        branch.
+                        The clinic opened in Cebu City with one treatment room
+                        and a simple rule: assess first, then treat. That rule
+                        still decides how a visit runs today, in every branch.
                     </p>
                     <ul className="mt-10 grid gap-8 sm:grid-cols-2">
                         {principles.map(([title, body], i) => (
@@ -157,7 +156,7 @@ export default function About({
                 </div>
             </section>
 
-            <section className="bg-mist gutter py-20 lg:py-28">
+            <section className="gutter bg-mist py-20 lg:py-28">
                 <h2 data-reveal className="text-3xl sm:text-4xl">
                     Who looks after you
                 </h2>
@@ -255,7 +254,7 @@ export default function About({
             </section>
 
             {testimonials.length > 0 && (
-                <section className="on-dark bg-plum gutter py-20 text-white lg:py-28">
+                <section className="on-dark gutter bg-plum py-20 text-white lg:py-28">
                     <h2 data-reveal className="text-3xl sm:text-4xl">
                         In their words
                     </h2>
@@ -284,7 +283,7 @@ export default function About({
                 </section>
             )}
 
-            <section className="bg-mist gutter py-20 lg:py-28">
+            <section className="gutter bg-mist py-20 lg:py-28">
                 <div className="grid gap-12 lg:grid-cols-12">
                     <div className="lg:col-span-4">
                         <h2 data-reveal className="text-3xl sm:text-4xl">
@@ -308,7 +307,7 @@ export default function About({
                 </div>
             </section>
 
-            <section className="gutter py-20 ">
+            <section className="gutter py-20">
                 <div className="flex flex-wrap items-end justify-between gap-6 border-t border-border pt-10">
                     <h2 className="max-w-xl text-3xl sm:text-4xl">
                         Come in for an assessment and leave with a plan.

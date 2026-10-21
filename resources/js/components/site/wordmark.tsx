@@ -24,13 +24,24 @@ export default function Wordmark({
             ? clinic.name.startsWith(clinic.short_name)
                 ? {
                       main: clinic.short_name,
-                      sub: clinic.name.slice(clinic.short_name.length).trim() || 'AESTHETICS',
+                      sub:
+                          clinic.name.slice(clinic.short_name.length).trim() ||
+                          'AESTHETICS',
                   }
                 : { main: clinic.short_name || clinic.name, sub: 'AESTHETICS' }
-            : { main: name ?? clinic.short_name, sub: descriptor ?? 'AESTHETICS' };
+            : {
+                  main: name ?? clinic.short_name,
+                  sub: descriptor ?? 'AESTHETICS',
+              };
 
-    const logoSrc = variant === 'light' ? 'media/brand/logo-light.webp' : (clinic.logo || 'media/brand/logo.webp');
-    const logoFallback = variant === 'light' ? 'media/brand/logo-light.png' : (clinic.logo_fallback || 'media/brand/logo.png');
+    const logoSrc =
+        variant === 'light'
+            ? 'media/brand/logo-light.webp'
+            : clinic.logo || 'media/brand/logo.webp';
+    const logoFallback =
+        variant === 'light'
+            ? 'media/brand/logo-light.png'
+            : clinic.logo_fallback || 'media/brand/logo.png';
 
     const mark = (
         <picture className={cn('block shrink-0', markClassName ?? 'size-11')}>
@@ -60,7 +71,7 @@ export default function Wordmark({
             <span className="flex min-w-0 flex-col">
                 <span
                     className={cn(
-                        'font-display text-[1.45rem] font-semibold tracking-tight leading-none',
+                        'font-brand text-[1.45rem] leading-none font-semibold tracking-tight',
                         variant === 'light' ? 'text-white' : 'text-ocean',
                         nameClassName,
                     )}
