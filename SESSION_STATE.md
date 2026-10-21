@@ -1,6 +1,21 @@
 # SESSION_STATE.md — HAND-OFF, START HERE
 
-Updated 2026-10-21 (marketing site redesigned from the owner's mockups 1 and 2).
+Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner palette, hero glitter; all deployed, live at https://glutarepubliq.recursive-frog.com, last commit on `main` pushed).
+
+### Next steps (start here)
+
+1. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
+2. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
+3. Pre-existing test failures (6 + 1 error, seed counts, booking concurrency, PeopleTest) are untouched; fix before calling the suite green.
+4. Then the older backlog below (settings/auth screens on the stock layout, untouched plan.md sections).
+
+### Gotchas
+
+- Build locally with `MSYS_NO_PATHCONV=1 ASSET_URL=/glutarepubliq/public npm run build`; deploy with `pwsh -File scripts/deploy.ps1 -IdentityFile ~/.ssh/ck_deskpulse` (it builds for the live URL itself).
+- Live CSP blocks Google Fonts: fonts must stay self-hosted (fontsource imports in app.css).
+- Format with `npx vp check --fix` (project uses vite-plus, not eslint/prettier directly).
+- Browser QA: `playwright-core` in the session scratchpad + `%LOCALAPPDATA%/ms-playwright/chromium-1234/chrome-win64/chrome.exe`; run node with `MSYS_NO_PATHCONV=1` so `/` paths are not mangled.
+- Untracked `ctx-test.ps1`, `deploy.err/.log/.pid` predate this work; left alone, never committed.
 
 ## Latest handoff (2026-10-21)
 
