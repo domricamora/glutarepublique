@@ -81,7 +81,9 @@ export default function Wordmark({
                 <span
                     className={cn(
                         'mt-1 font-sans text-[0.625rem] font-bold tracking-[0.22em] uppercase',
-                        variant === 'light' ? 'text-soft-aqua' : 'text-royal',
+                        variant === 'light'
+                            ? 'text-soft-aqua'
+                            : 'text-royal-ink',
                     )}
                 >
                     {split.sub}

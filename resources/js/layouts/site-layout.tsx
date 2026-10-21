@@ -76,7 +76,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                             <Link
                                 key={item.label}
                                 href={item.href}
-                                className="nav-link text-charcoal/80 hover:text-royal"
+                                className="nav-link text-charcoal/80 hover:text-royal-ink"
                             >
                                 {item.label}
                             </Link>
@@ -122,7 +122,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                             <Link
                                 href={item.href}
                                 onClick={() => setOpen(false)}
-                                className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal"
+                                className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal-ink"
                             >
                                 {item.label}
                             </Link>
@@ -132,7 +132,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                         <Link
                             href={membership().url}
                             onClick={() => setOpen(false)}
-                            className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal"
+                            className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal-ink"
                         >
                             Membership
                         </Link>
@@ -289,19 +289,19 @@ function SiteFooter() {
                         markClassName="size-20"
                         nameClassName="text-[1.9rem] text-white"
                     />
-                    <p className="mt-6 max-w-xs text-sm leading-relaxed text-ice/80">
+                    <p className="mt-6 max-w-xs text-sm leading-relaxed text-ice/90">
                         {clinic.contact.address}
                         <br />
                         <a
                             href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}
-                            className="hover:text-aqua"
+                            className="hover:text-white"
                         >
                             {clinic.contact.phone}
                         </a>
                         <br />
                         <a
                             href={`mailto:${clinic.contact.email}`}
-                            className="hover:text-aqua"
+                            className="hover:text-white"
                         >
                             {clinic.contact.email}
                         </a>
@@ -330,12 +330,12 @@ function SiteFooter() {
                         <h3 className="font-sans text-sm font-medium text-white">
                             {title}
                         </h3>
-                        <ul className="mt-4 space-y-2.5 text-sm text-ice/75">
+                        <ul className="mt-4 space-y-2.5 text-sm text-ice/90">
                             {items.map(([label, href]) => (
                                 <li key={label}>
                                     <Link
                                         href={href}
-                                        className="transition-colors hover:text-aqua"
+                                        className="transition-colors hover:text-white"
                                     >
                                         {label}
                                     </Link>
@@ -349,7 +349,7 @@ function SiteFooter() {
                     <h3 className="font-sans text-sm font-medium text-white">
                         Newsletter
                     </h3>
-                    <p className="mt-4 text-sm text-ice/75">
+                    <p className="mt-4 text-sm text-ice/90">
                         Offers and skincare notes, about once a month.
                     </p>
                     <Newsletter />
@@ -357,7 +357,7 @@ function SiteFooter() {
             </div>
 
             <div className="border-t border-white/10">
-                <div className="gutter flex flex-col gap-4 py-6 text-xs text-ice/60 sm:flex-row sm:items-center sm:justify-between">
+                <div className="gutter flex flex-col gap-4 py-6 text-xs text-ice/90 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         © {new Date().getFullYear()} {clinic.name}. All rights
                         reserved.
@@ -366,7 +366,7 @@ function SiteFooter() {
                         <li>
                             <Link
                                 href={legal('privacy-policy').url}
-                                className="hover:text-aqua"
+                                className="hover:text-white"
                             >
                                 Privacy policy
                             </Link>
@@ -374,7 +374,7 @@ function SiteFooter() {
                         <li>
                             <Link
                                 href={legal('terms').url}
-                                className="hover:text-aqua"
+                                className="hover:text-white"
                             >
                                 Terms
                             </Link>
@@ -382,7 +382,7 @@ function SiteFooter() {
                         <li>
                             <Link
                                 href={legal('data-privacy-notice').url}
-                                className="hover:text-aqua"
+                                className="hover:text-white"
                             >
                                 Data privacy notice
                             </Link>
@@ -423,12 +423,12 @@ function Newsletter() {
                     autoComplete="email"
                     value={form.data.email}
                     onChange={(e) => form.setData('email', e.target.value)}
-                    className="h-11 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-sm text-white placeholder:text-ice/60 focus:border-aqua focus:outline-none"
+                    className="h-11 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-sm text-white placeholder:text-ice/90 focus:border-aqua focus:outline-none"
                 />
                 <button
                     type="submit"
                     disabled={form.processing}
-                    className="press h-11 shrink-0 bg-aqua px-5 text-sm font-medium text-ocean transition-colors hover:bg-white disabled:opacity-60"
+                    className="press h-11 shrink-0 bg-aqua px-5 text-sm font-medium text-charcoal transition-colors hover:bg-white disabled:opacity-60"
                 >
                     Subscribe
                 </button>

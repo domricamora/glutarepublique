@@ -39,8 +39,8 @@ One system from the first website visit to the treatment, payment and follow-up 
 ## Brand Commitments
 
 - Name: Gluta RepubliQ Aesthetics. Tagline: "Hindi mahal ang magpaganda. Mag-Gluta RepubliQ ka na."
-- Palette: Deep Ocean Navy #123B5D, Royal Clinical Blue #2D668F, Gluta Aqua #6AB5B1, Soft Aqua #A7D8D2, Ice Blue #DCECF4, Pearl White #F7FAFA, Champagne Mist #D8C5A4, Deep Charcoal #26343B.
-- Owner rules: uppercase Manrope nav (13-14px, 0.08em tracking), Cormorant Garamond display headings, pill buttons, light theme for the public site, motion under 300 ms ease-out and reduced-motion safe, no em-dashes in UI copy.
+- Palette (owner, 2026-10-21): Powder Blue #9AC0D7, Tropical Teal #6AB5B1, Air Force Blue #5A95B8, Blue Slate #406480, White. Roles and contrast notes live in the `@theme` block of `resources/css/app.css` (Blue Slate for text and actions; Air Force Blue only for large text, borders and focus; #3D7599 for small accent text; Teal fills always carry dark ink text).
+- Owner rules: Noto Serif Display (light) headings with Geist body, self-hosted; sentence-case nav; square buttons and corners; light theme for the public site; motion under 300 ms ease-out and reduced-motion safe (the hero lens drift is the one ambient loop); no em-dashes in UI copy.
 - Media: real royalty-free photos stored in the repo and credited. Never placeholder art.
 
 ## Evidence on Hand

@@ -24,30 +24,41 @@
         'Noto Serif Display Variable', 'Times New Roman', Georgia, serif;
 
     /*
-     * Official Gluta RepubliQ Color Palette
+     * Owner palette (2026-10-21): Powder Blue #9AC0D7, Tropical Teal
+     * #6AB5B1, Air Force Blue #5A95B8, Blue Slate #406480, White. Token names
+     * are kept so every page follows; the roles are set by contrast:
+     *   ocean      Blue Slate, text, headings, solid buttons, dark surfaces (6.3:1 on white)
+     *   royal      Air Force Blue, large accents, borders, focus (3.3:1, large/UI only)
+     *   royal-ink  Air Force Blue darkened for small accent text and buttons (5.0:1)
+     *   aqua       Tropical Teal, fills and highlights, always with ink text on it
+     *   powder     Powder Blue, accent on dark surfaces and tinted panels
+     *   ice/pearl  Powder Blue tints for surfaces and hairlines
+     *   charcoal   deep slate ink for body copy (13:1)
      */
-    --color-ocean: #123b5d; /* Deep Ocean Navy */
-    --color-royal: #2d668f; /* Royal Clinical Blue */
-    --color-aqua: #6ab5b1; /* Gluta Aqua */
-    --color-soft-aqua: #a7d8d2; /* Soft Aqua */
-    --color-ice: #dcecf4; /* Ice Blue */
-    --color-pure-white: #ffffff; /* Pure White */
-    --color-pearl: #f7fafa; /* Pearl White */
-    --color-champagne: #d8c5a4; /* Champagne Mist */
-    --color-charcoal: #26343b; /* Deep Charcoal */
+    --color-ocean: #406480;
+    --color-royal: #5a95b8;
+    --color-royal-ink: #3d7599;
+    --color-aqua: #6ab5b1;
+    --color-powder: #9ac0d7;
+    --color-soft-aqua: #cde7e5;
+    --color-ice: #e3edf4;
+    --color-pure-white: #ffffff;
+    --color-pearl: #f5f9fb;
+    --color-champagne: var(--color-powder);
+    --color-charcoal: #22323f;
 
     /* Semantic Mappings & System Compatibility */
     --color-plum: var(--color-ocean);
-    --color-plum-deep: #0a2238;
+    --color-plum-deep: #2f4b61;
     --color-rose: var(--color-aqua);
-    --color-rose-deep: var(--color-royal);
-    --color-rose-ink: var(--color-royal);
+    --color-rose-deep: var(--color-royal-ink);
+    --color-rose-ink: var(--color-royal-ink);
     --color-blush: var(--color-ice);
     --color-soft-rose: var(--color-pearl);
     --color-ivory: var(--color-pure-white);
     --color-text: var(--color-charcoal);
 
-    --color-violet: var(--color-royal);
+    --color-violet: var(--color-royal-ink);
     --color-gold: var(--color-champagne);
     --color-gold-deep: var(--color-ocean);
     --color-lilac: var(--color-soft-aqua);
@@ -105,72 +116,72 @@
 :root,
 .theme-light {
     --background: #ffffff;
-    --foreground: #26343b;
+    --foreground: #22323f;
     --card: #ffffff;
-    --card-foreground: #26343b;
+    --card-foreground: #22323f;
     --popover: #ffffff;
-    --popover-foreground: #26343b;
-    --primary: #2d668f;
+    --popover-foreground: #22323f;
+    --primary: #406480;
     --primary-foreground: #ffffff;
-    --secondary: #dcecf4;
-    --secondary-foreground: #123b5d;
-    --muted: #f7fafa;
-    --muted-foreground: #526671;
+    --secondary: #e3edf4;
+    --secondary-foreground: #406480;
+    --muted: #f5f9fb;
+    --muted-foreground: #526878;
     --accent: #6ab5b1;
-    --accent-foreground: #123b5d;
+    --accent-foreground: #22323f;
     --destructive: #b42318;
     --destructive-foreground: #ffffff;
-    --border: #dcecf4;
-    --input: #cadde7;
-    --ring: #2d668f;
-    --chart-1: #2d668f;
+    --border: #e3edf4;
+    --input: #c4d8e5;
+    --ring: #5a95b8;
+    --chart-1: #406480;
     --chart-2: #6ab5b1;
-    --chart-3: #123b5d;
-    --chart-4: #d8c5a4;
-    --chart-5: #a7d8d2;
+    --chart-3: #5a95b8;
+    --chart-4: #9ac0d7;
+    --chart-5: #cde7e5;
     --radius: 0.75rem;
-    --sidebar: #123b5d;
-    --sidebar-foreground: #f7fafa;
+    --sidebar: #2f4b61;
+    --sidebar-foreground: #f5f9fb;
     --sidebar-primary: #6ab5b1;
-    --sidebar-primary-foreground: #123b5d;
-    --sidebar-accent: #19466d;
+    --sidebar-primary-foreground: #22323f;
+    --sidebar-accent: #406480;
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #1e517d;
+    --sidebar-border: #4a6e8a;
     --sidebar-ring: #6ab5b1;
 }
 
 .dark {
-    --background: #0d273e;
-    --foreground: #f7fafa;
-    --card: #123b5d;
-    --card-foreground: #f7fafa;
-    --popover: #123b5d;
-    --popover-foreground: #f7fafa;
+    --background: #1b2a36;
+    --foreground: #f5f9fb;
+    --card: #2f4b61;
+    --card-foreground: #f5f9fb;
+    --popover: #2f4b61;
+    --popover-foreground: #f5f9fb;
     --primary: #6ab5b1;
-    --primary-foreground: #0d273e;
-    --secondary: #19466d;
-    --secondary-foreground: #f7fafa;
-    --muted: #123b5d;
-    --muted-foreground: #a7d8d2;
-    --accent: #2d668f;
-    --accent-foreground: #f7fafa;
+    --primary-foreground: #1b2a36;
+    --secondary: #3a5a73;
+    --secondary-foreground: #f5f9fb;
+    --muted: #2f4b61;
+    --muted-foreground: #cde7e5;
+    --accent: #5a95b8;
+    --accent-foreground: #f5f9fb;
     --destructive: #f04438;
-    --destructive-foreground: #0d273e;
-    --border: #1e517d;
-    --input: #235d8e;
+    --destructive-foreground: #1b2a36;
+    --border: #4a6e8a;
+    --input: #4a6e8a;
     --ring: #6ab5b1;
     --chart-1: #6ab5b1;
-    --chart-2: #2d668f;
-    --chart-3: #d8c5a4;
-    --chart-4: #a7d8d2;
-    --chart-5: #dcecf4;
-    --sidebar: #0a1f32;
-    --sidebar-foreground: #f7fafa;
+    --chart-2: #5a95b8;
+    --chart-3: #9ac0d7;
+    --chart-4: #cde7e5;
+    --chart-5: #e3edf4;
+    --sidebar: #16232d;
+    --sidebar-foreground: #f5f9fb;
     --sidebar-primary: #6ab5b1;
-    --sidebar-primary-foreground: #0a1f32;
-    --sidebar-accent: #123b5d;
+    --sidebar-primary-foreground: #16232d;
+    --sidebar-accent: #2f4b61;
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #1e517d;
+    --sidebar-border: #4a6e8a;
     --sidebar-ring: #6ab5b1;
 }
 
@@ -185,7 +196,7 @@
         font-size: 17px;
         font-weight: 400;
         line-height: 1.7;
-        color: #26343b;
+        color: #22323f;
     }
 
     h1 {
@@ -222,7 +233,7 @@
 /* Public site selections */
 .site ::selection {
     background: var(--color-aqua);
-    color: var(--color-ocean);
+    color: var(--color-charcoal);
 }
 
 .gutter {
@@ -260,10 +271,10 @@
 .card-stock {
     background: #ffffff;
     box-shadow:
-        inset 0 0 0 1px rgb(18 59 93 / 0.08),
+        inset 0 0 0 1px rgb(64 100 128 / 0.08),
         inset 0 0 0 6px #ffffff,
-        inset 0 0 0 7px rgb(18 59 93 / 0.05),
-        0 24px 48px -24px rgb(18 59 93 / 0.3);
+        inset 0 0 0 7px rgb(64 100 128 / 0.05),
+        0 24px 48px -24px rgb(64 100 128 / 0.3);
 }
 
 .numerals {
@@ -278,7 +289,7 @@
     letter-spacing: 0.22em;
     text-transform: uppercase;
     font-weight: 500;
-    color: var(--color-royal);
+    color: var(--color-royal-ink);
 }
 
 .on-dark .eyebrow,
@@ -340,7 +351,7 @@
     }
 
     .btn-royal {
-        background: var(--color-royal);
+        background: var(--color-royal-ink);
         color: #ffffff;
     }
 
@@ -350,7 +361,7 @@
 
     .on-dark .btn-solid {
         background: var(--color-aqua);
-        color: var(--color-ocean);
+        color: var(--color-charcoal);
     }
 
     .on-dark .btn-solid:hover {
@@ -360,11 +371,12 @@
 
     .btn-outline {
         border: 1px solid var(--color-royal);
-        color: var(--color-royal);
+        color: var(--color-ocean);
     }
 
     .btn-outline:hover {
-        background: var(--color-royal);
+        background: var(--color-ocean);
+        border-color: var(--color-ocean);
         color: #ffffff;
     }
 
@@ -431,4 +443,68 @@
 
 .press:active {
     transform: scale(0.97);
+}
+
+/*
+ * Home hero: the photo sits blurred behind the page, and a square "lens"
+ * shows the same photo sharp. The lens and the sharp copy inside it move in
+ * opposite directions by the same amount, so the sharp image stays
+ * registered with the blurred one underneath. Sizes are container units of
+ * the hero, which lets the inner copy be exactly as large as the section.
+ * The lens centre (--lx, --ly) is set by useSkinLens in pages/home.tsx; the
+ * --ax/--ay fallback parks it over the face before the script runs.
+ */
+.lens-hero {
+    container-type: size;
+    --ax: 54cqw;
+    --ay: 40cqh;
+}
+
+@container (max-width: 48rem) {
+    .skin-lens {
+        --ax: 50cqw;
+        --ay: 26cqh;
+    }
+}
+
+.lens-hero-blur {
+    transform: scale(1.06);
+    filter: blur(22px) saturate(1.05);
+}
+
+.lens-hero-title {
+    text-shadow: 0 2px 40px rgb(34 50 63 / 0.35);
+}
+
+.skin-lens {
+    --s: clamp(10rem, 27cqw, 25rem);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--s);
+    height: var(--s);
+    overflow: hidden;
+    outline: 1px solid rgb(255 255 255 / 0.75);
+    box-shadow: 0 30px 60px -30px rgb(34 50 63 / 0.45);
+    transform: translate(
+        calc(var(--lx, var(--ax)) - var(--s) / 2),
+        calc(var(--ly, var(--ay)) - var(--s) / 2)
+    );
+    will-change: transform;
+}
+
+.skin-lens > img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100cqw;
+    height: 100cqh;
+    max-width: none;
+    object-fit: cover;
+    transform: translate(
+            calc(var(--s) / 2 - var(--lx, var(--ax))),
+            calc(var(--s) / 2 - var(--ly, var(--ay)))
+        )
+        scale(1.06);
+    will-change: transform;
 }

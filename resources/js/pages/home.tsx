@@ -1,12 +1,12 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight, Gift, MapPin, Sparkles } from 'lucide-react';
-import type { CSSProperties, FormEvent } from 'react';
-import { useState } from 'react';
+import type { CSSProperties, FormEvent, RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BeforeAfter from '@/components/site/before-after';
 import HeroVideo from '@/components/site/hero-video';
 import { formatPrice, useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
-import { about, beforeAfter, book, membership, promotions } from '@/routes';
+import { about, beforeAfter, book, promotions } from '@/routes';
 import leads from '@/routes/leads';
 import treatmentRoutes from '@/routes/treatments';
 import type { Branch, Faq, Treatment } from '@/types/site';
@@ -58,7 +58,9 @@ export default function Home({
 }: Props) {
     const { mediaUrl } = usePage().props;
     const media = (file: string) => `${mediaUrl}/${file}`;
+    const hero = useRef<HTMLElement>(null);
     useReveal();
+    useSkinLens(hero);
 
     // Three signature treatments for the numbered row: a facial, a drip and a
     // laser protocol, so the row does not show the same service twice.
@@ -95,32 +97,69 @@ export default function Home({
                 />
             </Head>
 
-            {/* Hero: centered serif statement over a staggered photo strip. */}
-            <section className="relative overflow-hidden bg-pearl pt-14 sm:pt-20">
-                <div className="gutter text-center">
-                    <h1 className="mx-auto max-w-4xl text-ocean">
-                        Advanced care.
-                        <br />
-                        <span className="text-royal italic">Radiant you.</span>
-                    </h1>
-                    <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-charcoal/75 sm:text-lg">
-                        Doctor-led glutathione, laser and facial treatments,
-                        planned around your skin.
-                    </p>
-                    <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                        <Link href={book().url} className="btn btn-solid">
-                            Book consultation
-                        </Link>
-                        <Link
-                            href={treatmentRoutes.index().url}
-                            className="btn btn-outline"
-                        >
-                            Explore treatments
-                        </Link>
-                    </div>
+            {/* Hero: blurred skin with a clear square drifting across it. */}
+            <section
+                ref={hero}
+                className="lens-hero relative isolate h-[min(calc(100dvh-4.5rem),54rem)] min-h-[36rem] overflow-hidden bg-ice"
+            >
+                <img
+                    src={media('skin-closeup.jpg')}
+                    alt=""
+                    aria-hidden="true"
+                    className="lens-hero-blur absolute inset-0 -z-20 h-full w-full object-cover"
+                />
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-0 -z-10 bg-gradient-to-br from-ice/70 via-soft-aqua/25 to-ocean/55"
+                />
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,rgb(245_249_251/0.9),rgb(245_249_251/0.55)_30%,transparent_60%)]"
+                />
+                <div aria-hidden="true" className="skin-lens">
+                    <img src={media('skin-closeup.jpg')} alt="" />
                 </div>
 
-                <div className="mt-14 grid grid-cols-2 items-end gap-2 sm:grid-cols-3 sm:gap-3 lg:mt-16 lg:grid-cols-5">
+                <p className="absolute top-8 left-[max(3rem,calc((100%-80rem)/2))] hidden max-w-[12rem] text-sm leading-snug text-ocean lg:block">
+                    Doctor-led consultation before every plan
+                </p>
+                <p className="absolute top-8 right-[max(3rem,calc((100%-80rem)/2))] hidden max-w-[12rem] text-right text-sm leading-snug text-white lg:block">
+                    Treatments chosen for Filipino skin
+                </p>
+
+                <div className="gutter relative flex h-full flex-col justify-end gap-8 pb-24 sm:pb-10 lg:flex-row lg:items-end lg:justify-between lg:pb-14">
+                    <div className="max-w-sm">
+                        <p className="text-2xl leading-tight font-medium text-ocean sm:text-3xl">
+                            Advanced care.
+                        </p>
+                        <p className="mt-3 text-base leading-relaxed text-ocean/85">
+                            Doctor-led glutathione, laser and facial treatments,
+                            planned around your skin.
+                        </p>
+                        <div className="mt-6 flex flex-wrap gap-3">
+                            <Link href={book().url} className="btn btn-solid">
+                                Book consultation
+                            </Link>
+                            <Link
+                                href={treatmentRoutes.index().url}
+                                className="btn btn-outline bg-white/50"
+                            >
+                                Explore treatments
+                            </Link>
+                        </div>
+                    </div>
+                    <h1 className="lens-hero-title order-first font-display text-[clamp(4rem,12vw,11rem)] leading-[0.86] font-light tracking-[-0.03em] text-white uppercase lg:order-none lg:text-right">
+                        <span className="sr-only">Advanced care. </span>
+                        Radiant
+                        <br />
+                        you
+                    </h1>
+                </div>
+            </section>
+
+            {/* Photo strip, with the clinic film in the middle. */}
+            <section className="bg-pearl pt-3">
+                <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
                     {strip.map((tile, i) => (
                         <div
                             key={i}
@@ -165,7 +204,7 @@ export default function Home({
                             </h2>
                             <Link
                                 href={treatmentRoutes.index().url}
-                                className="group inline-flex items-center gap-2 text-sm font-medium text-royal hover:text-ocean"
+                                className="group inline-flex items-center gap-2 text-sm font-medium text-royal-ink hover:text-ocean"
                             >
                                 All treatments and prices
                                 <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
@@ -182,7 +221,7 @@ export default function Home({
                                     className="group flex flex-col border border-white bg-white/70 p-7 transition-colors duration-200 ease-out hover:border-royal/30 hover:bg-white md:min-h-[26rem]"
                                 >
                                     <div className="flex gap-4">
-                                        <span className="font-display text-3xl font-light text-aqua">
+                                        <span className="font-display text-3xl font-light text-royal">
                                             {i + 1}
                                         </span>
                                         <div>
@@ -227,80 +266,10 @@ export default function Home({
                 </section>
             )}
 
-            {/* Statement band: framed portrait over its own blurred field. */}
-            <section className="relative isolate overflow-hidden">
-                <img
-                    src={media('skin-closeup.jpg')}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 -z-20 h-full w-full scale-110 object-cover blur-2xl"
-                />
-                <div
-                    aria-hidden="true"
-                    className="absolute inset-0 -z-10 bg-gradient-to-br from-ice/85 via-soft-aqua/55 to-royal/45"
-                />
-                <div className="gutter grid gap-10 py-16 lg:grid-cols-12 lg:py-24">
-                    <div className="flex flex-col justify-end gap-6 lg:col-span-4">
-                        <p className="max-w-xs text-lg leading-snug text-ocean">
-                            Every plan starts with a doctor looking at your
-                            skin, not a menu.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            <Link
-                                href={about().url}
-                                className="btn btn-outline bg-white/40"
-                            >
-                                How we work
-                            </Link>
-                            <Link
-                                href={membership().url}
-                                className="btn btn-outline bg-white/40"
-                            >
-                                Membership
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div className="relative lg:col-span-8">
-                        <div className="relative mx-auto w-full max-w-sm lg:mx-0 lg:ml-[12%]">
-                            <img
-                                src={media('skin-closeup.jpg')}
-                                alt="Close-up of healthy, even skin"
-                                loading="lazy"
-                                className="aspect-[4/5] w-full border border-white/70 object-cover"
-                            />
-                            <span className="absolute top-6 -left-44 hidden w-40 text-right text-xs leading-snug text-ocean xl:block">
-                                Doctor-led consultation
-                                <span className="absolute top-1/2 -right-4 h-px w-4 bg-ocean/40" />
-                            </span>
-                            <span className="absolute top-6 -right-44 hidden w-40 text-xs leading-snug text-ocean xl:block">
-                                <span className="absolute top-1/2 -left-4 h-px w-4 bg-ocean/40" />
-                                Plans built for Filipino skin
-                            </span>
-                            <Link
-                                href={treatmentRoutes.index().url}
-                                className="press absolute -right-4 -bottom-4 grid size-24 place-items-center bg-ocean text-xs font-medium tracking-[0.18em] text-white uppercase transition-colors hover:bg-royal sm:-right-8"
-                            >
-                                Discover
-                            </Link>
-                        </div>
-                        <p
-                            aria-hidden="true"
-                            className="pointer-events-none mt-10 font-display text-[clamp(3.5rem,11vw,10rem)] leading-[0.88] font-light tracking-[-0.03em] text-white uppercase lg:absolute lg:right-0 lg:bottom-0 lg:mt-0 lg:text-right"
-                        >
-                            Radiant
-                            <br />
-                            you
-                        </p>
-                    </div>
-                </div>
-            </section>
-
             {/* About: photo grid beside the clinic story. */}
             <section className="bg-white py-20 lg:py-28">
                 <div className="gutter">
-                    <p className="eyebrow text-center">About us</p>
-                    <div className="mt-10 grid items-center gap-12 lg:grid-cols-12">
+                    <div className="grid items-center gap-12 lg:grid-cols-12">
                         <div className="grid grid-cols-2 gap-3 lg:col-span-6">
                             {[
                                 [
@@ -331,7 +300,7 @@ export default function Home({
                         <div className="max-w-xl space-y-5 text-base leading-relaxed text-charcoal/80 lg:col-span-5 lg:col-start-8">
                             <h2 className="text-ocean">
                                 Where science meets{' '}
-                                <span className="text-royal italic">
+                                <span className="text-royal-ink italic">
                                     aesthetics
                                 </span>
                             </h2>
@@ -348,7 +317,7 @@ export default function Home({
                             </p>
                             <Link
                                 href={about().url}
-                                className="group inline-flex items-center gap-2 pt-2 text-sm font-medium text-royal hover:text-ocean"
+                                className="group inline-flex items-center gap-2 pt-2 text-sm font-medium text-royal-ink hover:text-ocean"
                             >
                                 Our story
                                 <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
@@ -434,7 +403,7 @@ export default function Home({
                                 </div>
                                 <div className="px-6 py-7">
                                     <h3 className="text-ocean">{doc.name}</h3>
-                                    <p className="mt-1 text-sm text-royal">
+                                    <p className="mt-1 text-sm text-royal-ink">
                                         {doc.role}
                                     </p>
                                     <Link
@@ -454,7 +423,9 @@ export default function Home({
             {offers.length > 0 && (
                 <section className="bg-pearl py-20 lg:py-24">
                     <div className="gutter">
-                        <p className="eyebrow text-center">Special offers</p>
+                        <h2 className="text-center text-ocean">
+                            Special offers
+                        </h2>
                         <div className="mt-10 grid gap-4 md:grid-cols-2">
                             {offers.map((offer, i) => {
                                 const Icon = i === 0 ? Gift : Sparkles;
@@ -475,7 +446,7 @@ export default function Home({
                                                 'hidden size-24 shrink-0 place-items-center sm:grid',
                                                 filled
                                                     ? 'bg-white/10 text-soft-aqua'
-                                                    : 'border border-ice text-royal',
+                                                    : 'border border-ice text-royal-ink',
                                             )}
                                         >
                                             <Icon
@@ -490,7 +461,7 @@ export default function Home({
                                                         'text-sm',
                                                         filled
                                                             ? 'text-soft-aqua'
-                                                            : 'text-royal',
+                                                            : 'text-royal-ink',
                                                     )}
                                                 >
                                                     {offer.badge}
@@ -510,7 +481,7 @@ export default function Home({
                                                 className={cn(
                                                     'mt-2 text-sm leading-relaxed',
                                                     filled
-                                                        ? 'text-ice/85'
+                                                        ? 'text-ice/90'
                                                         : 'text-charcoal/70',
                                                 )}
                                             >
@@ -542,7 +513,7 @@ export default function Home({
             <section className="bg-ice/45 py-20 lg:py-24">
                 <div className="gutter grid gap-4 lg:grid-cols-2">
                     <div className="border border-white bg-white/70 p-7 sm:p-9">
-                        <p className="text-sm text-royal">Visit us</p>
+                        <p className="text-sm text-royal-ink">Visit us</p>
                         <h2 className="mt-1 text-[clamp(28px,3vw,40px)] text-ocean">
                             Find a clinic near you
                         </h2>
@@ -559,7 +530,7 @@ export default function Home({
                                     >
                                         <span className="flex items-center justify-between font-medium text-ocean">
                                             {b.name}
-                                            <ArrowUpRight className="size-4 text-royal transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                            <ArrowUpRight className="size-4 text-royal-ink transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                                         </span>
                                         <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
                                             <MapPin className="mt-px size-3.5 shrink-0" />
@@ -577,6 +548,117 @@ export default function Home({
             {faqs.length > 0 && <FaqSection faqs={faqs} />}
         </>
     );
+}
+
+/**
+ * Moves the hero's clear square. With a mouse over the hero the square eases
+ * towards the pointer; otherwise it wanders a slow loop over the face. Both
+ * feed one eased position, so leaving the hero glides back into the drift
+ * instead of jumping. The position is written as two CSS variables on the
+ * section (no React state, so nothing re-renders per frame), and the loop
+ * sleeps while the hero is off screen. Reduced motion keeps the pointer
+ * following but drops the drift.
+ */
+function useSkinLens(ref: RefObject<HTMLElement | null>) {
+    useEffect(() => {
+        const el = ref.current;
+
+        if (!el) {
+            return;
+        }
+
+        const still = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        let pointer: { x: number; y: number } | null = null;
+        let pos: { x: number; y: number } | null = null;
+        let frame = 0;
+        let visible = true;
+        const start = performance.now();
+
+        // Normalised centre and reach of the drift: higher up and tighter on
+        // narrow screens, where the copy fills the lower half.
+        const path = () =>
+            el.clientWidth < 768
+                ? { cx: 0.5, cy: 0.3, rx: 0.12, ry: 0.06 }
+                : { cx: 0.54, cy: 0.48, rx: 0.15, ry: 0.11 };
+
+        const tick = (now: number) => {
+            frame = 0;
+            const w = el.clientWidth;
+            const h = el.clientHeight;
+            const half =
+                (el.querySelector<HTMLElement>('.skin-lens')?.offsetWidth ??
+                    0) / 2;
+            const t = (now - start) / 1000;
+            const p = path();
+            const drift = still
+                ? { x: p.cx * w, y: (p.cy - p.ry) * h }
+                : {
+                      x: (p.cx + p.rx * Math.sin((t * 2 * Math.PI) / 24)) * w,
+                      y:
+                          (p.cy + p.ry * Math.sin((t * 2 * Math.PI) / 17 + 1)) *
+                          h,
+                  };
+            const target = pointer ?? drift;
+            pos ??= { ...drift };
+
+            // Quick when following the hand, unhurried when returning.
+            const ease = still && pointer ? 1 : pointer ? 0.14 : 0.035;
+            pos.x += (target.x - pos.x) * ease;
+            pos.y += (target.y - pos.y) * ease;
+            pos.x = Math.min(Math.max(pos.x, half), w - half);
+            pos.y = Math.min(Math.max(pos.y, half), h - half);
+
+            el.style.setProperty('--lx', `${pos.x}px`);
+            el.style.setProperty('--ly', `${pos.y}px`);
+
+            if (visible && (!still || pointer)) {
+                frame = requestAnimationFrame(tick);
+            }
+        };
+
+        const run = () => {
+            if (!frame) {
+                frame = requestAnimationFrame(tick);
+            }
+        };
+
+        const move = (e: PointerEvent) => {
+            if (e.pointerType !== 'mouse') {
+                return;
+            }
+
+            const box = el.getBoundingClientRect();
+            pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
+            run();
+        };
+
+        const leave = () => {
+            pointer = null;
+            run();
+        };
+
+        const observer = new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting;
+
+            if (visible) {
+                run();
+            }
+        });
+
+        el.addEventListener('pointermove', move);
+        el.addEventListener('pointerleave', leave);
+        observer.observe(el);
+        run();
+
+        return () => {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
+            el.removeEventListener('pointermove', move);
+            el.removeEventListener('pointerleave', leave);
+        };
+    }, [ref]);
 }
 
 function FaqSection({ faqs }: { faqs: Faq[] }) {
@@ -598,13 +680,13 @@ function FaqSection({ faqs }: { faqs: Faq[] }) {
                                     type="button"
                                     aria-expanded={isOpen}
                                     onClick={() => setOpen(isOpen ? null : i)}
-                                    className="flex w-full items-center justify-between gap-6 py-5 text-left text-base font-medium text-ocean transition-colors hover:text-royal"
+                                    className="flex w-full items-center justify-between gap-6 py-5 text-left text-base font-medium text-ocean transition-colors hover:text-royal-ink"
                                 >
                                     {faq.question}
                                     <span
                                         aria-hidden="true"
                                         className={cn(
-                                            'text-xl font-light text-royal transition-transform duration-200 ease-out',
+                                            'text-xl font-light text-royal-ink transition-transform duration-200 ease-out',
                                             isOpen && 'rotate-45',
                                         )}
                                     >
@@ -653,7 +735,7 @@ function EnquiryCard({ bookable }: { bookable: Treatment[] }) {
             noValidate
             className="border border-white bg-white/70 p-7 sm:p-9"
         >
-            <p className="text-sm text-royal">Ask us anything</p>
+            <p className="text-sm text-royal-ink">Ask us anything</p>
             <h2 className="mt-1 text-[clamp(28px,3vw,40px)] text-ocean">
                 Send an enquiry
             </h2>
