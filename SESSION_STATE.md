@@ -18,6 +18,18 @@ Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner
 - Browser QA: `playwright-core` in the session scratchpad + `%LOCALAPPDATA%/ms-playwright/chromium-1234/chrome-win64/chrome.exe`; run node with `MSYS_NO_PATHCONV=1` so `/` paths are not mangled.
 - Untracked `ctx-test.ps1`, `deploy.err/.log/.pid` predate this work; left alone, never committed.
 
+## Staging on the new server (2026-10-21)
+
+- **URL:** https://staging.glutarepubliq.com (server 148.163.121.30, cPanel user `glutarepubliq`, DB `glutarepubliq_recursivefrog`). Deployed from commit 905d8a2. Pages, admin login and dashboard verified; `/.env` returns 403, and vendor, composer.json and logs return 404.
+- **No SSH yet:** every SSH port is closed. The key `~/.ssh/glutarepubliq_live` is authorized in cPanel and the `glutarepubliq-staging` entry is in `~/.ssh/config` (port 22 is a guess). Once the host enables shell access, point `scripts/deploy.ps1` at it.
+- **FTP-only deploy (what was done):** FTPS as `staging@staging.glutarepubliq.com` on port 21; the certificate doesn't match the hostname, so curl needs `-k`. The document root is the FTP folder itself, not `public/`. A root `.htaccess` (in the release, not in git) rewrites everything into `public/` and denies dotfiles. Steps:
+  1. Build with `APP_URL=https://staging.glutarepubliq.com npm run build`.
+  2. `git archive HEAD`, then `composer install --no-dev`, copy `public/build`, add the staging `.env` and root `.htaccess`, and zip.
+  3. Upload the zip; the owner extracts it in File Manager.
+  4. The owner imports a SQL dump in phpMyAdmin. The dump comes from a fresh `migrate:fresh --seed` into a scratch DB `glutarepubliq_staging_export`. `staging-database.sql` is in the project root and kept out of git through `.git/info/exclude`.
+- **Limits:** no config or route cache, since there's no shell. Every schema change needs a new SQL import, and a re-import wipes staging data.
+- The staging `.env` uses the same password as the demo logins; the owner should change both the database and FTP passwords.
+
 ## Latest handoff (2026-10-21, real content from glutarepubliq.com)
 
 - **Source:** the clinic's current WordPress site, glutarepubliq.com (home, service pages, contact, gallery). It lists no doctors, no hours and no TikTok, so specialists, hours and membership tiers are still demo content.
