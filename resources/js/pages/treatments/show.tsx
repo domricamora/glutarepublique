@@ -112,6 +112,36 @@ export default function TreatmentShow({
                         {t.description}
                     </p>
 
+                    {t.price_list && t.price_list.length > 0 && (
+                        <div className="mt-10 max-w-xl">
+                            <h2 className="font-sans text-sm font-semibold">
+                                Prices
+                            </h2>
+                            <ul className="numerals mt-3 divide-y divide-border border-y border-border">
+                                {t.price_list.map((row) => (
+                                    <li
+                                        key={row.label}
+                                        className="flex items-baseline justify-between gap-6 py-3 text-sm"
+                                    >
+                                        <span>{row.label}</span>
+                                        <span className="shrink-0 text-right">
+                                            {formatPrice(row.price)}
+                                            {row.unit && (
+                                                <span className="ml-1.5 text-xs text-muted-foreground">
+                                                    {row.unit}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="mt-3 text-xs text-muted-foreground">
+                                Prices are subject to change without prior
+                                notice.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="mt-10 divide-y divide-border border-y border-border">
                         {[
                             ['Before your visit', t.preparation],

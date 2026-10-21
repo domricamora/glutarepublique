@@ -34,14 +34,13 @@ export default function Wordmark({
                   sub: descriptor ?? 'AESTHETICS',
               };
 
-    const logoSrc =
-        variant === 'light'
-            ? 'media/brand/logo-light.webp'
-            : clinic.logo || 'media/brand/logo.webp';
+    // Absolute urls from the server: a relative path breaks on nested pages
+    // such as /treatments/{slug}.
+    const logoSrc = variant === 'light' ? clinic.logo_light : clinic.logo;
     const logoFallback =
         variant === 'light'
-            ? 'media/brand/logo-light.png'
-            : clinic.logo_fallback || 'media/brand/logo.png';
+            ? clinic.logo_light.replace(/\.webp$/, '.png')
+            : clinic.logo_fallback;
 
     const mark = (
         <picture className={cn('block shrink-0', markClassName ?? 'size-11')}>

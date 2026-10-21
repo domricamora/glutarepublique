@@ -19,6 +19,7 @@ class Treatment extends Model
         return ['image' => AssetUrl::class,
             'price' => 'float',
             'promo_price' => 'float',
+            'price_list' => 'array',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
         ];

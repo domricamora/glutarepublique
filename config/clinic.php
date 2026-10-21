@@ -51,10 +51,11 @@ return [
         'email' => env('CLINIC_EMAIL', 'info@glutarepubliq.com'),
     ],
 
+    // As linked from glutarepubliq.com. No TikTok account is published there.
     'social' => [
-        'facebook' => env('CLINIC_FACEBOOK', 'https://www.facebook.com/GlutaRepubliQ'),
-        'instagram' => env('CLINIC_INSTAGRAM', 'https://www.instagram.com/glutarepubliq'),
-        'tiktok' => env('CLINIC_TIKTOK', 'https://www.tiktok.com/@glutarepubliq'),
+        'facebook' => env('CLINIC_FACEBOOK', 'https://www.facebook.com/Gluta-RepubliQ-566381640410768'),
+        'instagram' => env('CLINIC_INSTAGRAM', 'https://www.instagram.com/gluta_republiq'),
+        'tiktok' => env('CLINIC_TIKTOK'),
     ],
 
     'currency' => env('CLINIC_CURRENCY', 'PHP'),

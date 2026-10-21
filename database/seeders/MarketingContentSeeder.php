@@ -63,65 +63,83 @@ class MarketingContentSeeder extends Seeder
     ];
 
     /** slug => [title, summary, description, details, badge, ends_on, treatment, image] */
+    /** The clinic's current offers, from glutarepubliq.com and its promo posts (2026-10-21). */
     public const PROMOTIONS = [
-        'first-visit-consultation' => [
-            'First visit consultation credited',
-            'New here? The doctor consultation fee is credited to your first treatment.',
-            'Every treatment at Gluta RepubliQ starts with a short assessment, so you know what is being recommended and why before you commit. On a first visit we credit the consultation fee against your first treatment booked within 30 days.',
+        'gluta-drip-packages' => [
+            'Gluta drip packages: 5+1 and 10+3',
+            'Buy five gluta drips and get one free, or buy ten and get three.',
+            'Gluta drips work best as a series, so every drip comes in two packages. Book five sessions and the sixth is free, or book ten and get three more.',
             [
-                'Consultation fee of 1,500 pesos credited to your first treatment',
-                'Includes a skin assessment and a written plan you keep',
-                'One credit per client, at any branch',
+                'Bronze: 3,699 pesos for 5+1, 7,299 pesos for 10+3',
+                'Gold: 7,299 pesos for 5+1, 14,499 pesos for 10+3',
+                'Diamond Drip: 9,999 pesos for 5+1, 19,999 pesos for 10+3',
+                'Platinum Drip: 14,000 pesos for 5+1, 26,000 pesos for 10+3',
             ],
-            'New patients',
+            'Best value',
             null,
-            null,
-            '/media/photos/consultation.jpg',
+            'gluta-drip-bronze',
+            '/media/photos/asian-gluta-drip.jpg',
         ],
-        'hydra-facial-series' => [
-            'Hydra Facial series pricing',
-            'Three Hydra Facials booked together, priced per session.',
-            'Hydra Facial works best as a rhythm rather than a one off. Book three sessions as a series and each visit is priced below the single session rate.',
+        'novanad-promo' => [
+            'NovaNAD+ IV drip promo',
+            'NAD+ IV therapy from 5,499 pesos for a 100 mg drip.',
+            'NovaNAD+ is a premium NAD+ IV drip for cellular repair, given by licensed nurses after a consultation.',
             [
-                '2,990 pesos per session when you book three',
-                'Sessions stay valid for six months from the first visit',
-                'Rebook with the front desk at the end of each visit',
+                '100 mg: 5,499 pesos',
+                '250 mg: 15,999 pesos',
+                '500 mg: 24,990 pesos',
             ],
-            'Series pricing',
+            'Promo',
             null,
-            'hydra-facial',
-            '/media/photos/hydrafacial.jpg',
+            'nad-iv-therapy',
+            '/media/photos/iv.jpg',
         ],
-        'bridal-package' => [
-            'Bridal package',
-            'Trial, wedding day makeup and a facial in the weeks before.',
-            'A calm run up to the wedding: a trial where we agree the look, a facial two to three weeks before, and wedding day makeup that holds from ceremony to reception.',
+        'hiko-nose-lift' => [
+            'Hiko Nose Lift for 9,999 pesos',
+            'A non-surgical nose lift with 10 threads, Alartox and filler.',
+            'Hiko Nose Lift shapes and lifts the nose bridge and tip without surgery, using dissolvable threads, Alartox and filler in one visit.',
             [
-                'Bridal trial with a personal makeup lesson',
-                'Wedding day makeup for the bride at your venue',
-                'One pre-wedding facial at any branch',
-                'Cebu, Laguna and Cavite travel included',
+                '10 threads, Alartox and filler included',
+                'Done by a doctor after a consultation',
+                'One visit',
             ],
-            'Book six weeks ahead',
+            'Promo',
             null,
-            'bridal-makeup',
-            '/media/photos/bridal.jpg',
+            'hiko-nose-lift',
+            '/media/photos/fillers.jpg',
         ],
-        'skin-booster-set' => [
-            'Skin Booster set of three',
-            'Three skin booster sessions, four weeks apart, booked as a set.',
-            'Micro-injections of hyaluronic acid for hydration and glow, spaced four weeks apart so your doctor can review how your skin responds between sessions.',
+        'laennec-five-sessions' => [
+            'Laennec placenta, 5 sessions',
+            'Five Laennec placenta shots for 8,499 pesos.',
+            'Laennec is a Japanese placenta injection for skin renewal and vitality. A single shot is 1,800 pesos; the five-session package brings each one down.',
             [
-                'Three sessions of Skin Boosters at a set price',
-                'Doctor review before each session',
-                'Numbing cream included',
+                '5 sessions for 8,499 pesos',
+                '1,800 pesos per single shot',
+                'Given by a licensed physician',
             ],
-            'Runs to 31 December 2026',
-            '2026-12-31',
-            'skin-boosters',
+            'Package',
+            null,
+            'laennec-placenta',
             '/media/photos/booster.jpg',
         ],
+        'ipl-buy-ten' => [
+            'IPL hair removal: buy 10, get 1 free',
+            'IPL OPT + SHR sessions from 499 pesos, with an eleventh session free.',
+            'Hair removal takes a series of sessions, so IPL is priced to make the series easier: buy ten sessions for an area and the eleventh is on us.',
+            [
+                'Lip, underarms, mustache and beard: 499 pesos a session',
+                'Arms 699 pesos, legs 799 pesos, Brazilian and bikini 1,000 pesos',
+                'Buy 10 sessions, get 1 free',
+            ],
+            'Package',
+            null,
+            'ipl-hair-removal',
+            '/media/photos/hair.jpg',
+        ],
     ];
+
+    /** The first demo offers, switched off now the clinic's real ones are listed. */
+    public const RETIRED_PROMOTIONS = ['first-visit-consultation', 'hydra-facial-series', 'bridal-package', 'skin-booster-set'];
 
     /** slug => [title, category, excerpt, body, takeaways, image, author, read minutes, days ago] */
     public const POSTS = [
@@ -379,9 +397,12 @@ class MarketingContentSeeder extends Seeder
                 'ends_on' => $endsOn,
                 'treatment_id' => $treatment ? Treatment::withoutGlobalScopes()->where($org + ['slug' => $treatment])->value('id') : null,
                 'image' => $image,
+                'is_active' => true,
                 'sort' => $sort++,
             ]);
         }
+
+        Promotion::withoutGlobalScopes()->where($org)->whereIn('slug', self::RETIRED_PROMOTIONS)->update(['is_active' => false]);
 
         foreach (self::POSTS as $slug => [$title, $category, $excerpt, $body, $takeaways, $image, $author, $minutes, $daysAgo]) {
             Post::withoutGlobalScopes()->updateOrCreate($org + ['slug' => $slug], [

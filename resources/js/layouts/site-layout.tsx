@@ -33,9 +33,8 @@ const nav = [
 
 // Shown when no social links are configured for the organisation.
 const DEFAULT_SOCIALS: Record<string, string> = {
-    facebook: 'https://www.facebook.com/GlutaRepubliQSomoAVistaMall',
-    instagram: 'https://www.instagram.com/glutarepubliq',
-    tiktok: 'https://www.tiktok.com/@glutarepubliq',
+    facebook: 'https://www.facebook.com/Gluta-RepubliQ-566381640410768',
+    instagram: 'https://www.instagram.com/gluta_republiq',
 };
 
 export default function SiteLayout({ children }: { children: ReactNode }) {

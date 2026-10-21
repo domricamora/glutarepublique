@@ -18,6 +18,7 @@ export type Treatment = {
     duration_minutes: number;
     price: number;
     promo_price: number | null;
+    price_list?: { label: string; price: number; unit: string | null }[] | null;
     image: string | null;
     recommended_sessions?: string | null;
     is_featured?: boolean;

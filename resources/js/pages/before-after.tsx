@@ -1,20 +1,42 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import BeforeAfter from '@/components/site/before-after';
 import { useReveal } from '@/lib/site';
+import { cn } from '@/lib/utils';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
 import type { CompareCase } from '@/types/site';
 
 const stagger = (i: number) => ({ '--i': i }) as CSSProperties;
 
+// Before and after pairs cropped from the clinic's own published posts
+// (glutarepubliq.com). Slug links to the treatment where the menu names it.
+const gallery = [
+    { file: 'aqua-lips.jpg', title: 'Aqua Lips', slug: 'aqua-lips' },
+    { file: 'misty-brows.jpg', title: 'Misty Brows', slug: 'misty-brows' },
+    {
+        file: 'hiko-nose-lift.jpg',
+        title: 'Hiko Nose Lift',
+        slug: 'hiko-nose-lift',
+    },
+    // A wide pair: spans two columns on desktop so the row stays full.
+    {
+        file: 'chin-filler.jpg',
+        title: 'Chin filler',
+        slug: 'fillers',
+        wide: true,
+    },
+    { file: 'melasma.jpg', title: 'Melasma treatment', slug: null },
+];
+
 /**
- * Comparison gallery. Every image is a licensed stock portrait with a
- * simulated "before" treatment, labelled as an illustration and never as a
- * result (plan.md §18, §83).
+ * Comparison gallery: the clinic's own published client photos, then stock
+ * portraits with a simulated "before", labelled as an illustration and never
+ * as a result (plan.md §18, §83).
  */
 export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
+    const { mediaUrl } = usePage().props;
     useReveal();
 
     return (
@@ -22,7 +44,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
             <Head title="Before and after">
                 <meta
                     name="description"
-                    content="Illustrative before and after comparisons for common treatments, and how real clinical photographs are handled with written consent."
+                    content="Before and after photos from Gluta RepubliQ clients, illustrated comparisons for common treatments, and how clinical photographs are handled with written consent."
                 />
             </Head>
 
@@ -34,12 +56,59 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                         <em className="text-champagne">what to expect.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
-                        Drag the handle to compare. The images here are licensed
-                        stock photographs, not patient results, and your
-                        clinician will show you relevant cases in person during
-                        your consultation.
+                        Client photos from our own gallery, then illustrated
+                        comparisons for common treatments. Your clinician will
+                        show you more relevant cases at your consultation.
                     </p>
                 </div>
+            </section>
+
+            <section className="gutter pt-14">
+                <h2 data-reveal className="text-3xl sm:text-4xl">
+                    From our clinics
+                </h2>
+                <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                    {gallery.map((item, i) => (
+                        <figure
+                            key={item.file}
+                            data-reveal
+                            style={stagger(i % 3)}
+                            className={cn('wide' in item && 'lg:col-span-2')}
+                        >
+                            <img
+                                src={`${mediaUrl}/results/${item.file}`}
+                                alt={`${item.title}, before and after`}
+                                loading="lazy"
+                                className={cn(
+                                    'aspect-[4/3] w-full bg-mist object-contain',
+                                    'wide' in item && 'lg:aspect-[8/3]',
+                                )}
+                            />
+                            <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                                <span>Before</span>
+                                <span>After</span>
+                            </div>
+                            <figcaption className="mt-2 text-lg">
+                                {item.slug ? (
+                                    <Link
+                                        href={
+                                            treatmentRoutes.show(item.slug).url
+                                        }
+                                        className="hover:text-rose-ink"
+                                    >
+                                        {item.title}
+                                    </Link>
+                                ) : (
+                                    item.title
+                                )}
+                            </figcaption>
+                        </figure>
+                    ))}
+                </div>
+                <p className="mt-8 text-sm text-muted-foreground">
+                    Photos published by Gluta RepubliQ. Individual results vary
+                    with your skin, history and aftercare.
+                </p>
             </section>
 
             <section className="gutter py-14">

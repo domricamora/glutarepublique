@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 // miss the subdirectory this is installed under.
                 'logo' => asset(config('clinic.logo')),
                 'logo_fallback' => asset(config('clinic.logo_fallback')),
+                'logo_light' => asset(config('clinic.logo_light')),
             ],
             // The clinic's own handles, which the office edits. The config
             // values are the fallback for an installation that has never

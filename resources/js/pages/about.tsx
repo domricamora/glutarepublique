@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useReveal } from '@/lib/site';
 import { book } from '@/routes';
@@ -34,6 +34,21 @@ const principles = [
     ],
 ];
 
+// Videos published on the clinic's YouTube channel; thumbnails stored locally.
+const films = [
+    { id: 'UhMS6d0WY0E', file: 'emsculpt.jpg', title: 'Emsculpt treatment' },
+    {
+        id: 'HP0CWb28mE0',
+        file: 'pamper-day.jpg',
+        title: 'Pamper day at Gluta RepubliQ',
+    },
+    {
+        id: 'biS2tzFkq8E',
+        file: 'client-story.jpg',
+        title: 'Mary Cariño on her visit',
+    },
+];
+
 export default function About({
     specialists,
     branches,
@@ -45,10 +60,10 @@ export default function About({
     useReveal();
 
     const figures: [string, string][] = [
-        ['2019', 'First clinic opened in Cebu'],
+        ['2018', 'Caring for clients since'],
         [`${specialists.length}`, 'Doctors and artists on the team'],
-        [`${branches.length}`, 'Clinics across Luzon and Visayas'],
-        ['60+', 'Treatments on the menu'],
+        [`${branches.length}`, 'Clinics in Laguna, Cavite and Cebu'],
+        ['35+', 'Treatments on the menu'],
     ];
 
     return (
@@ -117,9 +132,10 @@ export default function About({
                         data-reveal
                         className="mt-5 max-w-lg text-muted-foreground"
                     >
-                        The clinic opened in Cebu City with one treatment room
-                        and a simple rule: assess first, then treat. That rule
-                        still decides how a visit runs today, in every branch.
+                        We aim to give our clients quality, yet affordable
+                        services that help them become a better version of
+                        themselves. That is why every visit starts with an
+                        assessment, in every branch.
                     </p>
                     <ul className="mt-10 grid gap-8 sm:grid-cols-2">
                         {principles.map(([title, body], i) => (
@@ -154,6 +170,44 @@ export default function About({
                         />
                     </div>
                 </div>
+            </section>
+
+            {/* Films from the clinic's YouTube channel. Linked, not embedded:
+                the site's CSP allows no third-party frames. */}
+            <section className="gutter pb-20 lg:pb-28">
+                <h2 data-reveal className="text-3xl sm:text-4xl">
+                    Inside the clinic
+                </h2>
+                <ul className="mt-8 grid gap-6 sm:grid-cols-3">
+                    {films.map((film, i) => (
+                        <li key={film.id} data-reveal style={stagger(i)}>
+                            <a
+                                href={`https://www.youtube.com/watch?v=${film.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group block"
+                            >
+                                <span className="relative block aspect-video overflow-hidden bg-mist">
+                                    <img
+                                        src={media(`films/${film.file}`)}
+                                        alt=""
+                                        loading="lazy"
+                                        className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                                    />
+                                    <span className="absolute inset-0 grid place-items-center">
+                                        <span className="grid size-14 place-items-center bg-white/90 text-ink transition-transform duration-200 ease-out group-active:scale-[0.97]">
+                                            <Play className="size-5 fill-current" />
+                                        </span>
+                                    </span>
+                                </span>
+                                <span className="mt-3 flex items-center justify-between gap-3 text-sm font-medium">
+                                    {film.title}
+                                    <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
+                                </span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
             </section>
 
             <section className="gutter bg-mist py-20 lg:py-28">
@@ -204,7 +258,7 @@ export default function About({
 
             <section className="gutter py-20 lg:py-28">
                 <h2 data-reveal className="text-3xl sm:text-4xl">
-                    Three clinics, one standard
+                    {branches.length} clinics, one standard
                 </h2>
                 <div className="mt-12 grid gap-10 lg:grid-cols-3">
                     {branches.map((b, i) => (

@@ -4,6 +4,7 @@ Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner
 
 ### Next steps (start here)
 
+0. **Real content import (2026-10-21, committed, NOT yet deployed):** deploy with `scripts/deploy.ps1` once the owner OKs it; the deploy's `db:seed` retires the demo menu and promos on live. See "Latest handoff" below.
 1. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
 2. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
 3. Pre-existing test failures (6 + 1 error, seed counts, booking concurrency, PeopleTest) are untouched; fix before calling the suite green.
@@ -17,7 +18,21 @@ Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner
 - Browser QA: `playwright-core` in the session scratchpad + `%LOCALAPPDATA%/ms-playwright/chromium-1234/chrome-win64/chrome.exe`; run node with `MSYS_NO_PATHCONV=1` so `/` paths are not mangled.
 - Untracked `ctx-test.ps1`, `deploy.err/.log/.pid` predate this work; left alone, never committed.
 
-## Latest handoff (2026-10-21)
+## Latest handoff (2026-10-21, real content from glutarepubliq.com)
+
+- **Source:** the clinic's current WordPress site, glutarepubliq.com (home, service pages, contact, gallery). It lists no doctors, no hours and no TikTok, so specialists, hours and membership tiers are still demo content.
+- **Treatments:** `SiteContentSeeder::TREATMENTS` is now the real menu: 36 services in 8 categories with the clinic's own prices. The new `treatments.price_list` JSON column (`[{label, price, unit}]`, migration `2026_10_21_200000`) holds per-area and per-package prices, shown as a "Prices" list on `treatments/show.tsx`. `price` is the lowest line ("from"); `promo_price` is null. The demo slugs are in `RETIRED` and set inactive (not deleted, since receipts and bookings name them). `hydra-facial` (now 1,500 pesos) and `hifu-face-lift` (9D HIFU) keep their slugs for tests and links.
+- **Branches:** exact addresses from the site (seeder + data migration, which only replaces the old seeded guesses).
+- **Promotions:** five real offers (gluta 5+1/10+3 packages, NovaNAD+, Hiko Nose Lift 9,999, Laennec 5 sessions 8,499, IPL buy 10 get 1). Demo promos are in `RETIRED_PROMOTIONS` and set inactive. The clinic's promo flyers have text baked in, so stock photos are kept as promo images.
+- **Testimonials:** the three published on the site (Sheena Aquino, Mae Lopez, Christina Reyes). **FAQ:** branch answer corrected; payment methods (cash, Visa, Mastercard, GCash, Maya) and "prices subject to change" added.
+- **Media:** five before and after pairs cropped from the clinic's posts into `public/media/photos/results/` and shown as "From our clinics" on `/before-after`. Three YouTube film thumbnails are in `photos/films/` and shown as "Inside the clinic" on About, linked rather than embedded because the CSP has no `frame-src`. Credits are in `credits.json`.
+- **Socials:** Facebook `Gluta-RepubliQ-566381640410768`, Instagram `gluta_republiq`; TikTok removed because it isn't published.
+- **About:** the figures now read 2018 ("© 2018" on their site) and 35+ treatments; mission line from their site; branch heading uses the branch count.
+- **Fixed:** the footer light logo used a relative path and 404'd on nested pages (`/treatments/x`). It is now the shared `clinic.logo_light` asset URL.
+- Not used: franchise programme flyer (phone 0977 264 8733), weight-loss and "fat kill" flyers (result claims), Facebook branch pages (login needed).
+- QA: home, treatments, treatment detail, before-after, about, promotions, contact at 1440/768/390, no overflow, no console errors. Tests: same 236 pass / 6 fail / 1 error as before (pre-existing).
+
+## Previous handoff (2026-10-21, design)
 
 - **Hero glitter + tagline:** `components/site/glitter.tsx` (30 SVG glints and dust dots, random spots, each moves on `animationiteration`; created after mount to avoid SSR mismatch; hidden under reduced motion; CSS `.glint` / `@keyframes twinkle` in app.css). `clinic.tagline` shown in italic serif above RADIANT YOU, one sentence per line on phones.
 

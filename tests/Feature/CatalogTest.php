@@ -275,7 +275,7 @@ it('adjusts a service price and the register follows, receipts do not', function
 
     expect($sale->total)->toBe(3500.0)
         ->and((float) $sale->items()->first()->unit_price)->not->toBe($was)
-        ->and($was)->toBe(1800.0);
+        ->and($was)->toBe(1500.0);
 });
 
 it('retires a service instead of deleting one that has been used', function () {
@@ -298,7 +298,7 @@ it('retires a service instead of deleting one that has been used', function () {
     expect(Treatment::whereKey($sold->id)->exists())->toBeTrue();
 
     // A booking pins the service too: the foreign key would refuse a delete.
-    $booked = Treatment::where('slug', 'hydraglow-facial')->firstOrFail();
+    $booked = Treatment::where('slug', 'signature-facial')->firstOrFail();
     Appointment::create([
         'organization_id' => boss()->organization_id,
         'reference' => 'APT-TEST-1',
