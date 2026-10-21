@@ -508,3 +508,48 @@
         scale(1.06);
     will-change: transform;
 }
+
+/*
+ * Hero glitter (components/site/glitter.tsx). A soft white glint with a
+ * teal halo; the dots are finer dust. Each cycle is mostly rest, so only a
+ * few are lit at once. Hidden entirely under reduced motion.
+ */
+.glint {
+    position: absolute;
+    color: #ffffff;
+    opacity: 0;
+    filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.95))
+        drop-shadow(0 0 16px rgb(154 192 215 / 0.8));
+    animation-name: twinkle;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform, opacity;
+}
+
+.glint-dot {
+    background: #ffffff;
+    border-radius: 9999px;
+}
+
+@keyframes twinkle {
+    0%,
+    35%,
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(45deg);
+    }
+    85% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(0.75) rotate(80deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glitter {
+        display: none;
+    }
+}

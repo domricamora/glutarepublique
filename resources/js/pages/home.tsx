@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, Gift, MapPin, Sparkles } from 'lucide-react';
 import type { CSSProperties, FormEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import BeforeAfter from '@/components/site/before-after';
+import Glitter from '@/components/site/glitter';
 import HeroVideo from '@/components/site/hero-video';
 import { formatPrice, useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -56,7 +57,7 @@ export default function Home({
     faqs = [],
     offers = [],
 }: Props) {
-    const { mediaUrl } = usePage().props;
+    const { mediaUrl, clinic } = usePage().props;
     const media = (file: string) => `${mediaUrl}/${file}`;
     const hero = useRef<HTMLElement>(null);
     useReveal();
@@ -119,6 +120,7 @@ export default function Home({
                 <div aria-hidden="true" className="skin-lens">
                     <img src={media('skin-closeup.jpg')} alt="" />
                 </div>
+                <Glitter />
 
                 <p className="absolute top-8 left-[max(3rem,calc((100%-80rem)/2))] hidden max-w-[12rem] text-sm leading-snug text-ocean lg:block">
                     Doctor-led consultation before every plan
@@ -148,12 +150,24 @@ export default function Home({
                             </Link>
                         </div>
                     </div>
-                    <h1 className="lens-hero-title order-first font-display text-[clamp(4rem,12vw,11rem)] leading-[0.86] font-light tracking-[-0.03em] text-white uppercase lg:order-none lg:text-right">
-                        <span className="sr-only">Advanced care. </span>
-                        Radiant
-                        <br />
-                        you
-                    </h1>
+                    <div className="order-first lg:order-none lg:text-right">
+                        <p className="mb-3 font-display text-xl font-light text-white italic [text-shadow:0_1px_20px_rgb(34_50_63/0.4)] sm:text-2xl">
+                            {clinic.tagline.split(/(?<=\.)\s+/).map((line) => (
+                                <span
+                                    key={line}
+                                    className="block sm:inline sm:not-last:mr-1.5"
+                                >
+                                    {line}
+                                </span>
+                            ))}
+                        </p>
+                        <h1 className="lens-hero-title font-display text-[clamp(4rem,12vw,11rem)] leading-[0.86] font-light tracking-[-0.03em] text-white uppercase lg:text-right">
+                            <span className="sr-only">Advanced care. </span>
+                            Radiant
+                            <br />
+                            you
+                        </h1>
+                    </div>
                 </div>
             </section>
 

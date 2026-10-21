@@ -4,6 +4,8 @@ Updated 2026-10-21 (marketing site redesigned from the owner's mockups 1 and 2).
 
 ## Latest handoff (2026-10-21)
 
+- **Hero glitter + tagline:** `components/site/glitter.tsx` (30 SVG glints and dust dots, random spots, each moves on `animationiteration`; created after mount to avoid SSR mismatch; hidden under reduced motion; CSS `.glint` / `@keyframes twinkle` in app.css). `clinic.tagline` shown in italic serif above RADIANT YOU, one sentence per line on phones.
+
 - **Hero (owner request, after mockup 2):** blurred `skin-closeup.jpg` full-bleed with a sharp square "lens" over it. `useSkinLens` in `pages/home.tsx` drives `--lx/--ly` on the section: follows the mouse while it is over the hero, glides back into a slow Lissajous drift on leave, sleeps off-screen, reduced motion = no drift. Registration math is in the `.skin-lens` CSS comment (container units). Old "Radiant you" band removed; the photo strip now sits under the hero.
 - **Palette (owner, 2026-10-21):** Powder Blue #9AC0D7, Tropical Teal #6AB5B1, Air Force Blue #5A95B8, Blue Slate #406480, White, mapped onto the existing token names (ocean = Blue Slate, royal = Air Force Blue, new `royal-ink` #3D7599 for small accent text, `powder`, champagne -> powder). PRODUCT.md updated. Eyebrow labels removed from home (impeccable craft floor).
 
