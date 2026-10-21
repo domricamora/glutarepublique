@@ -5,14 +5,13 @@ Updated 2026-10-21 (marketing site redesigned from the owner's mockups 1 and 2).
 ## Latest handoff (2026-10-21)
 
 - **Marketing redesign:** layout and type follow `~/Downloads/glutarepubliq/mockups/mockup1.jpg` (centered serif hero, staggered photo strip with the hero film in the middle, About photo grid, specialist portrait cards, two offer cards) and `mockup2.jpg` (numbered signature-treatment cards with one price figure, large "RADIANT YOU" band over a blurred portrait, results split-view with three fact tiles, two-up clinic finder + enquiry cards, dark footer with newsletter). The logo palette is unchanged (ocean/royal/aqua). Square corners kept (owner rule) even though the mockups are rounded.
-- **Type:** Noto Serif Display (light 300, italic for accents) for h1-h3 + Geist body, loaded in `resources/views/app.blade.php`. Admin headings stay sans via `[data-shell='admin']`. `.btn` is square, sentence case.
+- **Type:** Noto Serif Display (light 300, italic for accents) for h1-h3 + Geist body, self-hosted via @fontsource-variable imports at the top of `resources/css/app.css` (the live CSP blocks Google Fonts, so never link them). Admin headings stay sans via `[data-shell='admin']`. `.btn` is square, sentence case.
 - **Home data:** `PageController::home` now also passes `offers` (first two active promotions). Specialist portraits on the home page are still hard-coded because staff rows have no photos.
 - **Bacoor branch** moved to SOMO A Vista Mall (owner's Facebook page `facebook.com/GlutaRepubliQSomoAVistaMall`): seeder + data migration `2026_10_21_100000`. Footer social fallback points to that page.
 - **Fixed:** chat widget used root-relative `/chat/...` fetches (404 under the local sub-folder); now Wayfinder `routes/chat`.
 - QA: home, about, treatments, contact, book at 1440/768/390, no overflow, no console errors. Tests: same 236 pass / 6 fail / 1 error as before (pre-existing, listed below).
 
 ## Previous handoff (2026-10-07)
-
 
 - Production at `https://glutarepubliq.recursive-frog.com` was returning HTTP 403 because the app source was missing from the remote site directory. The guarded deploy script uploaded the source/assets, ran migrations and seeders, cleared/rebuilt config and route caches, and completed successfully. `/`, `/about`, `/treatments`, and `/contact` all returned HTTP 200 afterward.
 - The remote `.env` had an invalid unquoted `APP_NAME` (`\ Gluta RepubliQ Aesthetics\`); it was corrected to `APP_NAME="Gluta RepubliQ Aesthetics"`. The owner updated the database password; `php artisan db:show` then connected successfully. Never copy the password into this handoff.
