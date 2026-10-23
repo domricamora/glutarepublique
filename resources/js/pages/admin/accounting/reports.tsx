@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { money } from '@/lib/pos';
@@ -73,7 +73,7 @@ export default function AccountingReports(props: Props) {
                             {year}
                         </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Input
                             type="date"
                             value={props.from}
@@ -88,6 +88,18 @@ export default function AccountingReports(props: Props) {
                             aria-label="To"
                             className="h-10"
                         />
+                        {/* A file download, so a plain link rather than an Inertia visit. */}
+                        <a
+                            href={
+                                accounting.reports.export({
+                                    query: { from: props.from, to: props.to },
+                                }).url
+                            }
+                            className="press inline-flex h-10 items-center gap-2 border border-border px-4 text-sm whitespace-nowrap hover:bg-mist dark:hover:bg-white/5"
+                        >
+                            <Download className="h-4 w-4" />
+                            Export CSV
+                        </a>
                     </div>
                 </header>
 

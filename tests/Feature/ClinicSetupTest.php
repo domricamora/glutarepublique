@@ -90,7 +90,7 @@ it('loads the demo records a demonstration installation needs', function () {
     expect(Employee::count())->toBeGreaterThan(0)
         ->and(Product::count())->toBeGreaterThan(0)
         ->and(InventoryMovement::count())->toBeGreaterThan(0)
-        ->and(Branch::count())->toBe(3);
+        ->and(Branch::count())->toBe(count(DatabaseSeeder::BRANCHES));
 
     // Leads and appointments are the exception here, and only here:
     // DatabaseSeeder leaves them to the test suite, which builds its own.
@@ -128,7 +128,7 @@ it('gives a new demo account the demo password', function () {
 
     $this->post(route('admin.setup.store'));
 
-    expect(Hash::check('password', User::where('email', 'owner@glutarepubliq.com')->firstOrFail()->password))
+    expect(Hash::check('ThEsEcReT1126', User::where('email', 'owner@glutarepubliq.com')->firstOrFail()->password))
         ->toBeTrue();
 });
 

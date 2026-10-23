@@ -209,7 +209,7 @@ it('shows the stock, the alerts and the ledger at a branch', function () {
     $this->actingAs($this->supervisor)->get('/admin/inventory')->assertOk()
         ->assertInertia(fn ($page) => $page->component('admin/inventory/index')
             ->where('branch.id', cebu()->id)
-            ->where('branch.name', 'cebu')
+            ->where('branch.name', cebu()->name)
             ->has('rows', 8)
             ->has('movements', 8)
             ->where('alerts.expired', 1)   // the recovery balm is past its date

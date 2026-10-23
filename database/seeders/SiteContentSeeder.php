@@ -91,12 +91,12 @@ class SiteContentSeeder extends Seeder
         $organization = Organization::where('slug', config('clinic.organization', 'glutarepubliq'))->firstOrFail();
         $org = ['organization_id' => $organization->id];
 
-        $hours = ['Mon to Sat' => '10:00 to 20:00', 'Sunday' => '11:00 to 18:00'];
         foreach (['cebu', 'san-pedro', 'sta-rosa', 'bacoor'] as $slug) {
-            Branch::withoutGlobalScopes()->where($org + ['slug' => $slug])->first()?->update([
-                'image' => '/media/photos/about-clinic.jpg',
-                'hours' => $hours,
-            ]);
+            $branch = Branch::withoutGlobalScopes()->where($org + ['slug' => $slug])->first();
+            // Hours are the clinic's to edit, so only a branch still on the old free-text schedule gets the default.
+            $branch?->update([
+                'image' => $branch->getRawOriginal('image') ?? '/media/photos/about-clinic.jpg',
+            ] + ($this->hasSchedule($branch) ? [] : ['hours' => $slug === 'cebu' ? Branch::CEBU_HOURS : Branch::DEFAULT_HOURS]));
         }
 
         $categories = [];
@@ -168,5 +168,12 @@ class SiteContentSeeder extends Seeder
         ] as $i => [$question, $answer]) {
             Faq::withoutGlobalScopes()->create($org + ['question' => $question, 'answer' => $answer, 'sort' => $i]);
         }
+    }
+
+    private function hasSchedule(Branch $branch): bool
+    {
+        $raw = json_decode($branch->getRawOriginal('hours') ?? 'null', true);
+
+        return is_array($raw) && array_is_list($raw) && count($raw) === 7;
     }
 }

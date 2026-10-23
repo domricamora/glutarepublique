@@ -2,12 +2,17 @@
 
 namespace App\Providers;
 
+use App\Models\AuditLog;
 use App\Models\Organization;
 use App\Models\User;
 use App\Payments\PaymentManager;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -34,6 +39,22 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureAccess();
+        $this->auditSignIns();
+    }
+
+    /** Sign-ins, sign-outs and failed attempts go in the audit log (plan.md §31). */
+    protected function auditSignIns(): void
+    {
+        // Every entry belongs to a clinic; with none set up yet (a fresh install) there is nothing to log against.
+        $audit = fn (string $action, string $description) => Organization::current() && AuditLog::record($action, $description);
+
+        Event::listen(Login::class, fn (Login $e) => $audit('auth.login', "{$e->user->name} signed in"));
+        Event::listen(Logout::class, fn (Logout $e) => $e->user && $audit('auth.logout', "{$e->user->name} signed out"));
+        // The address tried is kept, the password never is.
+        Event::listen(Failed::class, fn (Failed $e) => $audit(
+            'auth.failed',
+            'Failed sign-in for '.str((string) ($e->credentials['email'] ?? 'unknown'))->limit(120),
+        ));
     }
 
     /**

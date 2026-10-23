@@ -1,6 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import type { CSSProperties } from 'react';
+import { BranchHours } from '@/components/site/branch-hours';
+import { TeamGrid } from '@/components/site/team-grid';
 import { useReveal } from '@/lib/site';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
@@ -218,42 +220,7 @@ export default function About({
                     Fictional profiles for this demonstration clinic. Each
                     practitioner works from a written plan that you keep.
                 </p>
-                <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-                    {specialists.map((s, i) => (
-                        <article
-                            key={s.id}
-                            data-reveal
-                            style={stagger(i % 3)}
-                            className="flex flex-col"
-                        >
-                            {s.photo && (
-                                <img
-                                    src={s.photo}
-                                    alt={s.name}
-                                    loading="lazy"
-                                    className="aspect-[4/5] w-full object-cover"
-                                />
-                            )}
-                            <h3 className="mt-5 text-2xl">{s.name}</h3>
-                            <p className="mt-1 text-sm text-rose-ink">
-                                {s.title}
-                            </p>
-                            {s.credentials && (
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                    {s.credentials}
-                                </p>
-                            )}
-                            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                                {s.bio}
-                            </p>
-                            {s.branches && s.branches.length > 0 && (
-                                <p className="mt-4 text-xs text-muted-foreground">
-                                    {s.branches.join(' · ')}
-                                </p>
-                            )}
-                        </article>
-                    ))}
-                </div>
+                <TeamGrid specialists={specialists} />
             </section>
 
             <section className="gutter py-20 lg:py-28">
@@ -285,23 +252,7 @@ export default function About({
                                     </a>
                                 </p>
                             )}
-                            {b.hours && (
-                                <dl className="mt-4 divide-y divide-border border-y border-border text-sm">
-                                    {Object.entries(b.hours).map(
-                                        ([day, hours]) => (
-                                            <div
-                                                key={day}
-                                                className="flex justify-between gap-4 py-2"
-                                            >
-                                                <dt className="text-muted-foreground">
-                                                    {day}
-                                                </dt>
-                                                <dd>{hours}</dd>
-                                            </div>
-                                        ),
-                                    )}
-                                </dl>
-                            )}
+                            <BranchHours branch={b} className="mt-4" />
                         </article>
                     ))}
                 </div>

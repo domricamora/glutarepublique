@@ -6,30 +6,15 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import SiteLayout from '@/layouts/site-layout';
+import { isSitePage } from '@/lib/site';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
-const sitePages = [
-    'home',
-    'book',
-    'book-confirmed',
-    'about',
-    'contact',
-    'membership',
-    'promotions',
-    'before-after',
-    'legal',
-];
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
-                return null;
-            case sitePages.includes(name) ||
-                name.startsWith('treatments/') ||
-                name.startsWith('blog/'):
+            case isSitePage(name):
                 return SiteLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

@@ -5,7 +5,10 @@ import {
     CalendarDays,
     Database,
     ExternalLink,
+    FileText,
+    KeyRound,
     LayoutGrid,
+    MapPin,
     MessageCircle,
     ScrollText,
     Settings,
@@ -32,15 +35,18 @@ import {
 import { usePoll } from '@/hooks/use-poll';
 import { useCan } from '@/lib/admin';
 import { dashboard, home } from '@/routes';
+import accounts from '@/routes/admin/accounts';
 import appointments from '@/routes/admin/appointments';
 import accounting from '@/routes/admin/accounting';
 import audit from '@/routes/admin/audit';
+import branches from '@/routes/admin/branches';
 import catalog from '@/routes/admin/catalog';
 import chat from '@/routes/admin/chat';
 import hr from '@/routes/admin/hr';
 import inventory from '@/routes/admin/inventory';
 import payroll from '@/routes/admin/payroll';
 import leads from '@/routes/admin/leads';
+import pages from '@/routes/admin/pages';
 import pos from '@/routes/admin/pos';
 import settings from '@/routes/admin/settings/clinic';
 import setup from '@/routes/admin/setup';
@@ -149,8 +155,27 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(can('content.edit')
+            ? [
+                  {
+                      title: 'Website pages',
+                      href: pages.index(),
+                      icon: FileText,
+                  },
+              ]
+            : []),
         ...(can('settings.edit')
             ? [
+                  {
+                      title: 'Branches',
+                      href: branches.index(),
+                      icon: MapPin,
+                  },
+                  {
+                      title: 'Staff accounts',
+                      href: accounts.index(),
+                      icon: KeyRound,
+                  },
                   {
                       title: 'Clinic settings',
                       href: settings.index(),

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\ClinicSettingsController;
@@ -10,9 +11,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HrController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\LeadController as AdminLeadController;
+use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\SetupController;
+use App\Http\Controllers\Admin\StaffAccountController;
 use App\Http\Controllers\Site\BlogController;
 use App\Http\Controllers\Site\BookingController;
 use App\Http\Controllers\Site\ChatController as SiteChatController;
@@ -26,6 +29,7 @@ Route::get('treatments', [PageController::class, 'treatments'])->name('treatment
 Route::get('treatments/{slug}', [PageController::class, 'treatment'])->name('treatments.show');
 
 Route::get('about', [PageController::class, 'about'])->name('about');
+Route::get('doctors', [PageController::class, 'doctors'])->name('doctors');
 Route::get('membership', [PageController::class, 'membership'])->name('membership');
 Route::get('promotions', [PageController::class, 'promotions'])->name('promotions');
 Route::get('before-after', [PageController::class, 'beforeAfter'])->name('before-after');
@@ -69,6 +73,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Setup: load the reference and content rows the app needs to trade,
         // from the dashboard rather than a shell. Gated on settings.edit
         // because it writes lists that other roles can only read.
+        Route::get('accounts', [StaffAccountController::class, 'index'])->middleware('can:settings.edit')->name('accounts.index');
+        Route::post('accounts', [StaffAccountController::class, 'store'])->middleware('can:settings.edit')->name('accounts.store');
+        Route::patch('accounts/{user}', [StaffAccountController::class, 'update'])->middleware('can:settings.edit')->name('accounts.update');
+
+        Route::get('branches', [BranchController::class, 'index'])->middleware('can:settings.edit')->name('branches.index');
+        Route::post('branches', [BranchController::class, 'store'])->middleware('can:settings.edit')->name('branches.store');
+        Route::patch('branches/{branch}', [BranchController::class, 'update'])->middleware('can:settings.edit')->name('branches.update');
+
+        Route::get('pages', [LegalPageController::class, 'index'])->middleware('can:content.edit')->name('pages.index');
+        Route::patch('pages/{page}', [LegalPageController::class, 'update'])->middleware('can:content.edit')->name('pages.update');
+
         Route::get('setup', [SetupController::class, 'index'])->middleware('can:settings.edit')->name('setup.index');
         Route::post('setup/load', [SetupController::class, 'store'])->middleware('can:settings.edit')->name('setup.store');
         Route::post('setup/clear', [SetupController::class, 'clear'])->middleware('can:settings.edit')->name('setup.clear');
@@ -78,10 +93,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // it is an enquiry and belongs in the same queue.
         Route::get('chat', [ChatController::class, 'index'])->middleware('can:leads.view')->name('chat.index');
         Route::get('chat/{conversation}', [ChatController::class, 'show'])->middleware('can:leads.view')->name('chat.show');
-// What the inbox and the sidebar menu re-read on a timer, so a message that
-// arrives while somebody is on another screen still shows up.
-Route::get('chat-feed', [ChatController::class, 'poll'])->middleware('can:leads.view')->name('chat.poll');
-Route::get('chat/{conversation}/messages', [ChatController::class, 'messages'])->middleware('can:leads.view')->name('chat.messages');
+        // What the inbox and the sidebar menu re-read on a timer, so a message that
+        // arrives while somebody is on another screen still shows up.
+        Route::get('chat-feed', [ChatController::class, 'poll'])->middleware('can:leads.view')->name('chat.poll');
+        Route::get('chat/{conversation}/messages', [ChatController::class, 'messages'])->middleware('can:leads.view')->name('chat.messages');
         Route::post('chat/{conversation}/reply', [ChatController::class, 'reply'])->middleware('can:leads.edit')->name('chat.reply');
         Route::post('chat/{conversation}/close', [ChatController::class, 'close'])->middleware('can:leads.edit')->name('chat.close');
 
@@ -102,6 +117,7 @@ Route::get('chat/{conversation}/messages', [ChatController::class, 'messages'])-
         Route::get('pos', [PosController::class, 'index'])->middleware('can:pos.view')->name('pos.index');
         Route::post('pos', [PosController::class, 'store'])->middleware('can:pos.create')->name('pos.store');
         Route::get('pos/sales', [PosController::class, 'sales'])->middleware('can:pos.view')->name('pos.sales.index');
+        Route::get('pos/sales-export', [PosController::class, 'export'])->middleware('can:pos.view')->name('pos.sales.export');
         Route::get('pos/sales/{sale}', [PosController::class, 'show'])->middleware('can:pos.view')->name('pos.sales.show');
         Route::post('pos/sales/{sale}/refund', [PosController::class, 'refund'])->middleware('can:pos.refund')->name('pos.sales.refund');
 
@@ -160,6 +176,7 @@ Route::get('chat/{conversation}/messages', [ChatController::class, 'messages'])-
         Route::post('accounting/entries', [AccountingController::class, 'store'])->middleware('can:accounting.create')->name('accounting.entries.store');
         Route::post('accounting/entries/{entry}/void', [AccountingController::class, 'void'])->middleware('can:accounting.create')->name('accounting.entries.void');
         Route::get('accounting/reports', [AccountingController::class, 'reports'])->middleware('can:accounting.view')->name('accounting.reports');
+        Route::get('accounting/reports/export', [AccountingController::class, 'reportsExport'])->middleware('can:accounting.view')->name('accounting.reports.export');
         Route::post('accounting/periods/{period}/toggle', [AccountingController::class, 'togglePeriod'])->middleware('can:accounting.create')->name('accounting.periods.toggle');
     });
 });

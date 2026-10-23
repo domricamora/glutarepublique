@@ -66,6 +66,12 @@ class PageController extends Controller
         ]);
     }
 
+    /** Doctors and specialists: practitioners only, the front desk stays on About. */
+    public function doctors(): Response
+    {
+        return Inertia::render('doctors', ['specialists' => $this->specialists()]);
+    }
+
     /** Membership: the monthly tiers and what they include (plan.md §36). */
     public function membership(): Response
     {

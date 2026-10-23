@@ -44,17 +44,12 @@ class AvailableSlots
 
     /**
      * Opening window for a day, or null when closed.
-     * ponytail: fixed hours per weekday; move to a branch_hours table when branches differ more.
      *
      * @return array{0: string, 1: string}|null
      */
     public static function hours(Branch $branch, CarbonImmutable $date): ?array
     {
-        return match (true) {
-            $date->isSunday() => null,
-            $date->isSaturday() => ['10:00', $branch->slug === 'cebu' ? '19:00' : '18:00'],
-            default => ['10:00', $branch->slug === 'cebu' ? '19:00' : '20:00'],
-        };
+        return $branch->hoursOn($date);
     }
 
     /** @return Collection<int, int> */

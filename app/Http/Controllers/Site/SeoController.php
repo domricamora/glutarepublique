@@ -18,6 +18,7 @@ class SeoController extends Controller
             ['loc' => route('treatments.index'), 'priority' => '0.9'],
             ['loc' => route('book'), 'priority' => '0.9'],
             ['loc' => route('about'), 'priority' => '0.7'],
+            ['loc' => route('doctors'), 'priority' => '0.7'],
             ['loc' => route('membership'), 'priority' => '0.7'],
             ['loc' => route('promotions'), 'priority' => '0.6'],
             ['loc' => route('before-after'), 'priority' => '0.6'],

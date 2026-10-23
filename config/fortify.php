@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No public sign-up: staff accounts are created by the clinic in Admin > Staff accounts.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

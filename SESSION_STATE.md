@@ -1,10 +1,22 @@
 # SESSION_STATE.md — HAND-OFF, START HERE
 
-Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner palette, hero glitter; all deployed, live at https://glutarepubliq.recursive-frog.com, last commit on `main` pushed).
+Updated 2026-10-23: contract gap pass (Annex A of `~/Downloads/glutarepubliq/Software-Development-Agreement-Recursive-Frog- GlutaRepubliQ.pdf`) built, tested and deployed to https://glutarepubliq.recursive-frog.com together with the 2026-10-21 real-content import.
+
+## Contract gap pass (2026-10-23)
+
+Annex A checked line by line; what was missing is now built:
+- **A.1** `/doctors` page (practitioners from the staff roll, `components/site/team-grid.tsx` shared with About); **branch hours are one structured schedule** (`branches.hours` = 7-entry list, Sunday first, `[open, close]` or null; `Branch::hoursOn()`, `DEFAULT_HOURS`, `CEBU_HOURS`) read by the website, the live "Open now / Closed now" badge (`components/site/branch-hours.tsx`) and booking (`AvailableSlots::hours`). The old hard-coded booking hours and the disagreeing free-text hours are gone. Legal pages editable in **Admin > Website pages** (`LegalPageController`, `content.edit`).
+- **A.7** CSV export: financial reports (`accounting/reports/export`) and sales by day or month (`pos/sales-export`).
+- **A.9** **Staff accounts** (`StaffAccountController`, `settings.edit`: add, change role, new password, switch off; no self-lockout; Super Admin never assignable), **Branches** admin (`BranchController`), `users.disabled_at` + `EnsureAccountIsActive` middleware, audit of sign-in / sign-out / failed sign-in (AppServiceProvider listeners) and of account, branch and page changes. **Public registration turned off** (it was open: anyone could create an account). Encrypted nightly backups: `php artisan clinic:backup` (scheduled 02:00 Manila in `routes/console.php`).
+- **A.10** `php artisan clinic:import clients|stock file.csv [--dry-run]`; `docs/user-guide.md` (staff, by role) and `docs/operations.md` (cron, backups, restore, import).
+- Admin `->with('success')` messages were never shown anywhere in the office; `use-flash-toast.ts` now toasts them (site pages keep their own banner). `isSitePage()` in `lib/site.ts` is the one list of public pages.
+- Fixed: `HrDemoSeeder` linked staff to the old `@glutarepubliq.test` logins, so no employee had an account (my attendance / my leave broke). Stale test expectations updated (4 branches, 3 Cebu doctors, demo password, real branch name).
 
 ### Next steps (start here)
 
-0. **Real content import (2026-10-21, committed, NOT yet deployed):** deploy with `scripts/deploy.ps1` once the owner OKs it; the deploy's `db:seed` retires the demo menu and promos on live. See "Latest handoff" below.
+0. **Cron on live is NOT set up yet**: add `* * * * * /opt/alt/php83/usr/bin/php ~/public_html/glutarepubliq.recursive-frog.com/artisan schedule:run` in cPanel so backups run. Check `mysqldump` works there with `php artisan clinic:backup` once.
+0b. **Passwordless "sign in as any role" for client testing (owner asked 2026-10-23) is NOT built**: the auto-mode classifier blocked adding the route. Draft controller parked in the session scratchpad (`pending/DemoLoginController.php`): env flag `CLINIC_DEMO_LOGIN`, fixed demo addresses only, audited. Needs the owner's explicit go-ahead / permission rule.
+0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain.
 1. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
 2. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
 3. Pre-existing test failures (6 + 1 error, seed counts, booking concurrency, PeopleTest) are untouched; fix before calling the suite green.
@@ -23,10 +35,10 @@ Updated 2026-10-21, session saved (marketing redesign, mockup-2 lens hero, owner
 - **URL:** https://staging.glutarepubliq.com (server 148.163.121.30, cPanel user `glutarepubliq`, DB `glutarepubliq_recursivefrog`). Deployed from commit 905d8a2. Pages, admin login and dashboard verified; `/.env` returns 403, and vendor, composer.json and logs return 404.
 - **No SSH yet:** every SSH port is closed. The key `~/.ssh/glutarepubliq_live` is authorized in cPanel and the `glutarepubliq-staging` entry is in `~/.ssh/config` (port 22 is a guess). Once the host enables shell access, point `scripts/deploy.ps1` at it.
 - **FTP-only deploy (what was done):** FTPS as `staging@staging.glutarepubliq.com` on port 21; the certificate doesn't match the hostname, so curl needs `-k`. The document root is the FTP folder itself, not `public/`. A root `.htaccess` (in the release, not in git) rewrites everything into `public/` and denies dotfiles. Steps:
-  1. Build with `APP_URL=https://staging.glutarepubliq.com npm run build`.
-  2. `git archive HEAD`, then `composer install --no-dev`, copy `public/build`, add the staging `.env` and root `.htaccess`, and zip.
-  3. Upload the zip; the owner extracts it in File Manager.
-  4. The owner imports a SQL dump in phpMyAdmin. The dump comes from a fresh `migrate:fresh --seed` into a scratch DB `glutarepubliq_staging_export`. `staging-database.sql` is in the project root and kept out of git through `.git/info/exclude`.
+    1. Build with `APP_URL=https://staging.glutarepubliq.com npm run build`.
+    2. `git archive HEAD`, then `composer install --no-dev`, copy `public/build`, add the staging `.env` and root `.htaccess`, and zip.
+    3. Upload the zip; the owner extracts it in File Manager.
+    4. The owner imports a SQL dump in phpMyAdmin. The dump comes from a fresh `migrate:fresh --seed` into a scratch DB `glutarepubliq_staging_export`. `staging-database.sql` is in the project root and kept out of git through `.git/info/exclude`.
 - **Limits:** no config or route cache, since there's no shell. Every schema change needs a new SQL import, and a re-import wipes staging data.
 - The staging `.env` uses the same password as the demo logins; the owner should change both the database and FTP passwords.
 

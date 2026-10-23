@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The books (plan.md §24): a chart of accounts, the journal, and the three
@@ -114,6 +115,45 @@ class AccountingController extends Controller
     /** Trial balance, income statement and balance sheet from the same journal. */
     public function reports(Request $request): Response
     {
+        return Inertia::render('admin/accounting/reports', $this->reportData($request));
+    }
+
+    /** The same three statements as the screen, as one CSV an accountant can open in a spreadsheet. */
+    public function reportsExport(Request $request): StreamedResponse
+    {
+        $r = $this->reportData($request);
+
+        return response()->streamDownload(function () use ($r) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Trial balance', 'Year to '.$r['to']]);
+            fputcsv($out, ['Code', 'Account', 'Debit', 'Credit']);
+            foreach ($r['trial_balance'] as $line) {
+                fputcsv($out, [$line['code'], $line['name'], $line['debit'], $line['credit']]);
+            }
+            fputcsv($out, ['', 'Total', $r['trial_totals']['debit'], $r['trial_totals']['credit']]);
+            fputcsv($out, []);
+            fputcsv($out, ['Income statement', 'Year to '.$r['to']]);
+            foreach (['revenue' => 'Revenue', 'expenses' => 'Expenses'] as $key => $label) {
+                foreach ($r['income_statement'][$key] as $b) {
+                    fputcsv($out, [$b['code'], $b['name'], $label, $b['year']]);
+                }
+            }
+            fputcsv($out, ['', 'Net income', '', $r['income_statement']['net']]);
+            fputcsv($out, []);
+            fputcsv($out, ['Balance sheet', 'As at '.$r['to']]);
+            foreach (['assets' => 'Asset', 'liabilities' => 'Liability', 'equity' => 'Equity'] as $key => $label) {
+                foreach ($r['balance_sheet'][$key] as $b) {
+                    fputcsv($out, [$b['code'], $b['name'], $label, $b['year']]);
+                }
+            }
+            fputcsv($out, ['', 'Current year earnings', 'Equity', $r['balance_sheet']['retained']]);
+            fclose($out);
+        }, "financial-reports-{$r['to']}.csv", ['Content-Type' => 'text/csv']);
+    }
+
+    /** @return array<string, mixed> */
+    private function reportData(Request $request): array
+    {
         $to = CarbonImmutable::parse($request->date('to') ?? now()->toDateString());
         $from = CarbonImmutable::parse($request->date('from') ?? CarbonImmutable::createFromDate($to->year, 1, 1)->toDateString());
         $since = CarbonImmutable::createFromDate($to->year, 1, 1);
@@ -138,7 +178,7 @@ class AccountingController extends Controller
 
         $trial = $this->trialLines($since, $to);
 
-        return Inertia::render('admin/accounting/reports', [
+        return [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'trial_balance' => $trial,
@@ -163,7 +203,7 @@ class AccountingController extends Controller
                 'retained' => round($revenue - $expenses, 2),
                 'balances' => abs($assets - ($liabilities + $equity + ($revenue - $expenses))) < 0.05,
             ],
-        ]);
+        ];
     }
 
     /** Closing a month is how a set of books stops moving under you. */

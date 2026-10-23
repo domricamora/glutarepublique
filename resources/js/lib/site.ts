@@ -1,6 +1,25 @@
 import { useEffect, useState } from 'react';
 import type { Branch } from '@/types/site';
 
+const SITE_PAGES = [
+    'home',
+    'book',
+    'book-confirmed',
+    'about',
+    'doctors',
+    'contact',
+    'membership',
+    'promotions',
+    'before-after',
+    'legal',
+];
+
+/** Inertia components drawn in the public site layout rather than the admin one. */
+export const isSitePage = (name: string): boolean =>
+    SITE_PAGES.includes(name) ||
+    name.startsWith('treatments/') ||
+    name.startsWith('blog/');
+
 const peso = new Intl.NumberFormat('en-PH', {
     style: 'currency',
     currency: 'PHP',
@@ -43,28 +62,57 @@ export const upcomingDays = (n: number): Date[] => {
     });
 };
 
-/** Mirrors App\Actions\Booking\AvailableSlots::hours. */
-export const openWindow = (
-    branch: Pick<Branch, 'slug'>,
-    d: Date,
-): [number, number] | null => {
-    const day = d.getDay();
+const toHour = (time: string): number => {
+    const [h, m] = time.split(':').map(Number);
 
-    if (day === 0) {
-        return null;
-    }
-
-    const close = branch.slug === 'cebu' ? 19 : day === 6 ? 18 : 20;
-
-    return [10, close];
+    return h + m / 60;
 };
 
-export const isOpenNow = (branch: Pick<Branch, 'slug'>): boolean => {
+/** The branch's own schedule, the same one App\Models\Branch::hoursOn books against. */
+export const openWindow = (
+    branch: Pick<Branch, 'hours'>,
+    d: Date,
+): [number, number] | null => {
+    const day = branch.hours?.[d.getDay()];
+
+    return day ? [toHour(day[0]), toHour(day[1])] : null;
+};
+
+export const isOpenNow = (branch: Pick<Branch, 'hours'>): boolean => {
     const now = manilaNow();
     const window = openWindow(branch, now);
     const hour = now.getHours() + now.getMinutes() / 60;
 
     return window !== null && hour >= window[0] && hour < window[1];
+};
+
+export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** Monday-first rows with runs of equal days folded: "Mon to Fri 10:00 to 20:00". */
+export const hoursSummary = (
+    hours: Branch['hours'],
+): { days: string; time: string }[] => {
+    const rows: { time: string; from: number; to: number }[] = [];
+
+    [1, 2, 3, 4, 5, 6, 0].forEach((day) => {
+        const slot = hours?.[day];
+        const time = slot ? `${slot[0]} to ${slot[1]}` : 'Closed';
+        const last = rows.at(-1);
+
+        if (last && last.time === time) {
+            last.to = day;
+        } else {
+            rows.push({ time, from: day, to: day });
+        }
+    });
+
+    return rows.map((r) => ({
+        days:
+            r.from === r.to
+                ? DAY_NAMES[r.from]
+                : `${DAY_NAMES[r.from]} to ${DAY_NAMES[r.to]}`,
+        time: r.time,
+    }));
 };
 
 /** The appointment card follows the visitor between pages until they book. */

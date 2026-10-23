@@ -15,7 +15,7 @@ it('shows the marketing pages from the seeded content', function () {
             // seeder ticked for the website, rather than the three seeded
             // specialist rows the office cannot edit.
             ->has('specialists', 7)
-            ->has('branches', 3)
+            ->has('branches', 4)
             ->has('testimonials', 3)
             ->has('faqs', 4));
 
@@ -26,16 +26,16 @@ it('shows the marketing pages from the seeded content', function () {
 
     $this->get('/promotions')->assertOk()
         ->assertInertia(fn ($page) => $page->component('promotions')
-            ->has('promotions', 4)
+            ->has('promotions', 5)
             ->has('tiers', 3));
 
     $this->get('/before-after')->assertOk()
-        ->assertInertia(fn ($page) => $page->component('before-after')->has('cases', 7));
+        ->assertInertia(fn ($page) => $page->component('before-after')->has('cases', 4));
 
     $this->get('/contact')->assertOk()
         ->assertInertia(fn ($page) => $page->component('contact')
-            ->has('branches', 3)
-            ->has('treatments', 21));
+            ->has('branches', 4)
+            ->has('treatments', count(\Database\Seeders\SiteContentSeeder::TREATMENTS)));
 });
 
 it('serves the journal with a topic filter and an article', function () {
@@ -148,6 +148,7 @@ it('does not list the same person twice', function () {
     $html = $this->get('/about')->assertOk()->getContent();
 
     foreach (Employee::query()->get() as $person) {
-        expect(substr_count($html, e($person->name).'"'))->toBeLessThanOrEqual(1);
+        // Matched as a whole JSON value: "Camille Rivera" is also the tail of "Dr. Camille Rivera".
+        expect(substr_count($html, '"name":"'.$person->name.'"'))->toBeLessThanOrEqual(1);
     }
 });

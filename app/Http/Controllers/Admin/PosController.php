@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The counter (plan.md 19). Staff ring up services and products, take payment
@@ -130,6 +131,47 @@ class PosController extends Controller
             ],
             'statuses' => Sale::STATUSES,
         ]);
+    }
+
+    /** Sales between two dates as CSV, one row per sale, for the books or a spreadsheet. */
+    public function export(Request $request): StreamedResponse
+    {
+        $filters = $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'branch' => ['nullable', 'integer'],
+        ]);
+        $to = CarbonImmutable::parse($filters['to'] ?? now()->toDateString());
+        $from = CarbonImmutable::parse($filters['from'] ?? $to->toDateString());
+
+        $sales = Sale::with(['user:id,name', 'branch:id,name', 'lead:id,first_name,last_name', 'payments:id,sale_id,method,amount'])
+            ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])
+            ->when($filters['branch'] ?? null, fn (Builder $q, $branch) => $q->where('branch_id', $branch))
+            ->orderBy('id');
+
+        return response()->streamDownload(function () use ($sales) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Reference', 'Date', 'Branch', 'Cashier', 'Client', 'Status', 'Subtotal', 'Discount', 'Total', 'Paid', 'Balance', 'Methods']);
+            $sales->chunk(500, function ($chunk) use ($out) {
+                foreach ($chunk as $sale) {
+                    fputcsv($out, [
+                        $sale->reference,
+                        $sale->created_at->format('Y-m-d H:i'),
+                        $sale->branch?->name,
+                        $sale->user?->name,
+                        $sale->client_name ?: $sale->lead?->fullName() ?: 'Walk-in',
+                        $sale->status,
+                        $sale->subtotal,
+                        $sale->discount_amount,
+                        $sale->total,
+                        $sale->amount_paid,
+                        $sale->balance,
+                        $sale->payments->pluck('method')->unique()->implode(' + '),
+                    ]);
+                }
+            });
+            fclose($out);
+        }, "sales-{$from->toDateString()}-to-{$to->toDateString()}.csv", ['Content-Type' => 'text/csv']);
     }
 
     /** @return array<string, mixed> */

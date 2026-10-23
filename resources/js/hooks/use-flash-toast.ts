@@ -1,11 +1,12 @@
 import { router } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { isSitePage } from '@/lib/site';
 import type { FlashToast } from '@/types/ui';
 
 export function useFlashToast(): void {
     useEffect(() => {
-        return router.on('flash', (event) => {
+        const offFlash = router.on('flash', (event) => {
             const flash = (event as CustomEvent).detail?.flash;
             const data = flash?.toast as FlashToast | undefined;
 
@@ -15,5 +16,23 @@ export function useFlashToast(): void {
 
             toast[data.type](data.message);
         });
+
+        // Controllers answer with ->with('success', ...), shared as flash.success.
+        // The public site prints it in its own banner, so only the office toasts it.
+        const offSuccess = router.on('success', (event) => {
+            const page = event.detail.page;
+            const message = (
+                page.props.flash as { success?: string | null } | undefined
+            )?.success;
+
+            if (message && !isSitePage(page.component)) {
+                toast.success(message);
+            }
+        });
+
+        return () => {
+            offFlash();
+            offSuccess();
+        };
     }, []);
 }

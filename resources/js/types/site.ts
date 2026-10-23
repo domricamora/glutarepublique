@@ -50,7 +50,8 @@ export type Branch = {
     phone?: string | null;
     email?: string | null;
     image?: string | null;
-    hours?: Record<string, string> | null;
+    /** Index = day of week, Sunday first; null = closed. */
+    hours?: ([string, string] | null)[] | null;
     map_url?: string | null;
 };
 

@@ -53,13 +53,15 @@ it('creates a lead, an appointment and a CRM activity from one booking', functio
 });
 
 it('never double books a doctor', function () {
-    // Cebu has two doctors, so the same slot can be booked twice, not three times.
-    $this->post('/book', booking())->assertRedirect();
-    $this->post('/book', booking(['first_name' => 'Bea']))->assertRedirect();
-    $this->post('/book', booking(['first_name' => 'Cai']))->assertSessionHasErrors('time');
+    // The same slot can be taken once per Cebu doctor, and not once more.
+    $doctors = Branch::where('slug', 'cebu')->firstOrFail()->specialists()->where('is_active', true)->count();
+    foreach (range(1, $doctors) as $i) {
+        $this->post('/book', booking(['first_name' => "Client $i"]))->assertRedirect()->assertSessionHasNoErrors();
+    }
+    $this->post('/book', booking(['first_name' => 'One too many']))->assertSessionHasErrors('time');
 
-    expect(Appointment::count())->toBe(2)
-        ->and(Appointment::pluck('specialist_id')->unique())->toHaveCount(2);
+    expect(Appointment::count())->toBe($doctors)
+        ->and(Appointment::pluck('specialist_id')->unique())->toHaveCount($doctors);
 });
 
 it('requires privacy consent', function () {

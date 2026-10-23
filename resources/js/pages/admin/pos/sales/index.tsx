@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import type { Labels } from '@/lib/admin';
 import { formatDate } from '@/lib/admin';
 import type { SaleRow } from '@/lib/pos';
@@ -112,6 +112,30 @@ export default function PosSales({
                                 >
                                     {item.name}
                                 </button>
+                            ))}
+                        </div>
+                        {/* File downloads: plain links, not Inertia visits. */}
+                        <div className="flex border border-border text-sm">
+                            {[
+                                ['Export day', date],
+                                ['Export month', `${date.slice(0, 8)}01`],
+                            ].map(([label, from]) => (
+                                <a
+                                    key={label}
+                                    href={
+                                        pos.sales.export({
+                                            query: {
+                                                from,
+                                                to: date,
+                                                branch: branch ?? undefined,
+                                            },
+                                        }).url
+                                    }
+                                    className="inline-flex h-10 items-center gap-2 px-3 whitespace-nowrap hover:bg-mist dark:hover:bg-white/5"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    {label}
+                                </a>
                             ))}
                         </div>
                         <Link
