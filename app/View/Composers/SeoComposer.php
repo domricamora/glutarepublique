@@ -124,11 +124,149 @@ class SeoComposer
             return ['noindex' => true];
         }
 
-        return $seo + [
+        // Page-type schemas on top of the page's own, and the site itself on every page.
+        $extra = match ($component) {
+            'treatments/index' => [$this->catalog($p['categories'] ?? [])],
+            'membership' => [$this->tierOffers($p['tiers'] ?? [])],
+            'promotions' => [$this->promotionOffers($p['promotions'] ?? [])],
+            'about' => [$this->webPage('AboutPage', $seo['title'])],
+            'contact' => [$this->webPage('ContactPage', $seo['title'])],
+            default => [],
+        };
+        $seo['jsonld'] = [$this->website(), ...$seo['jsonld'], ...$extra];
+
+        // The branded share card for this page, when one has been built (scripts/og-images.cjs).
+        $card = match ($component) {
+            'treatments/show' => 'treatment-'.($p['treatment']['slug'] ?? ''),
+            'blog/show' => 'post-'.($p['post']['slug'] ?? ''),
+            'treatments/index' => 'treatments',
+            'blog/index' => 'journal',
+            default => $component,
+        };
+
+        return [
             'canonical' => url()->current(),
-            'image' => $seo['image'] ?? asset('media/photos/clinic-interior.jpg'),
+            'image' => $this->card($card) ?? $seo['image'] ?? $this->card('home') ?? asset('media/photos/clinic-interior.jpg'),
             'type' => $seo['type'] ?? 'website',
             'site_name' => $name,
+        ] + $seo;
+    }
+
+    private function card(string $key): ?string
+    {
+        return is_file(public_path("media/og/{$key}.jpg")) ? asset("media/og/{$key}.jpg") : null;
+    }
+
+    /** @return array<string, mixed> */
+    private function website(): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            '@id' => route('home').'#website',
+            'name' => config('clinic.name'),
+            'url' => route('home'),
+            'inLanguage' => 'en-PH',
+            'publisher' => ['@id' => route('home').'#clinic'],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function webPage(string $type, string $title): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => $type,
+            'name' => $title,
+            'url' => url()->current(),
+            'isPartOf' => ['@id' => route('home').'#website'],
+            'about' => ['@id' => route('home').'#clinic'],
+        ];
+    }
+
+    /**
+     * Every treatment with its starting price, grouped by category.
+     *
+     * @param  list<array<string, mixed>>  $categories
+     * @return array<string, mixed>
+     */
+    private function catalog(array $categories): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'OfferCatalog',
+            'name' => 'Treatments and prices at '.config('clinic.name'),
+            'url' => route('treatments.index'),
+            'itemListElement' => collect($categories)->filter(fn ($c) => ! empty($c['treatments']))->values()->map(fn ($c) => [
+                '@type' => 'OfferCatalog',
+                'name' => $c['name'],
+                'itemListElement' => collect($c['treatments'])->map(fn ($t) => [
+                    '@type' => 'Offer',
+                    'priceCurrency' => 'PHP',
+                    'price' => (float) ($t['promo_price'] ?? $t['price']),
+                    'url' => route('treatments.show', $t['slug']),
+                    'itemOffered' => [
+                        '@type' => 'Service',
+                        'name' => $t['name'],
+                        'description' => $t['summary'] ?? null,
+                        'provider' => ['@id' => route('home').'#clinic'],
+                    ],
+                ])->all(),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $tiers
+     * @return array<string, mixed>
+     */
+    private function tierOffers(array $tiers): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'OfferCatalog',
+            'name' => 'Membership at '.config('clinic.name'),
+            'url' => route('membership'),
+            'itemListElement' => collect($tiers)->map(fn ($t) => [
+                '@type' => 'Offer',
+                'name' => $t['name'].' membership',
+                'description' => $t['tagline'] ?? null,
+                'priceSpecification' => [
+                    '@type' => 'UnitPriceSpecification',
+                    'price' => (float) $t['price_monthly'],
+                    'priceCurrency' => 'PHP',
+                    'unitCode' => 'MON',
+                    'referenceQuantity' => ['@type' => 'QuantitativeValue', 'value' => 1, 'unitCode' => 'MON'],
+                ],
+                'seller' => ['@id' => route('home').'#clinic'],
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $promotions
+     * @return array<string, mixed>
+     */
+    private function promotionOffers(array $promotions): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => 'Promotions at '.config('clinic.name'),
+            'itemListElement' => collect($promotions)->values()->map(fn ($x, $i) => [
+                '@type' => 'ListItem',
+                'position' => $i + 1,
+                'item' => array_filter([
+                    '@type' => 'Offer',
+                    'name' => $x['title'],
+                    'description' => $x['summary'] ?? null,
+                    'url' => route('promotions'),
+                    'validThrough' => $x['ends_on'] ?? null,
+                    'priceCurrency' => isset($x['treatment']['price']) ? 'PHP' : null,
+                    'price' => isset($x['treatment']['price']) ? (float) ($x['treatment']['promo_price'] ?? $x['treatment']['price']) : null,
+                    'seller' => ['@id' => route('home').'#clinic'],
+                ]),
+            ])->all(),
         ];
     }
 

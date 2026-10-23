@@ -41,6 +41,14 @@
                 <meta property="og:description" content="{{ $seo['description'] ?? '' }}" data-inertia="seo-og-description">
                 <meta property="og:url" content="{{ $seo['canonical'] }}" data-inertia="seo-og-url">
                 <meta property="og:image" content="{{ $seo['image'] }}" data-inertia="seo-og-image">
+                @if (str_contains($seo['image'], '/media/og/'))
+                    <meta property="og:image:width" content="1200" data-inertia="seo-og-image-width">
+                    <meta property="og:image:height" content="630" data-inertia="seo-og-image-height">
+                @endif
+                <meta property="og:image:alt" content="{{ $seo['title'] }}" data-inertia="seo-og-image-alt">
+                <meta name="twitter:title" content="{{ $seo['title'] }}" data-inertia="seo-twitter-title">
+                <meta name="twitter:description" content="{{ $seo['description'] ?? '' }}" data-inertia="seo-twitter-description">
+                <meta name="twitter:image" content="{{ $seo['image'] }}" data-inertia="seo-twitter-image">
                 <meta property="og:locale" content="en_PH" data-inertia="seo-og-locale">
                 <meta name="twitter:card" content="summary_large_image" data-inertia="seo-twitter-card">
             @endif

@@ -32,6 +32,18 @@ it('describes the clinic and every branch with opening hours on the home page', 
         ->toContain('Branches and opening hours');
 });
 
+it('gives each page its own share card and the catalogue its prices', function () {
+    $html = $this->get(route('treatments.index'))->assertOk()->getContent();
+
+    expect($html)->toContain('media/og/treatments.jpg')
+        ->toContain('og:image:width')
+        ->toContain('"@type":"WebSite"')
+        ->toContain('"@type":"OfferCatalog"');
+
+    $treatment = Treatment::where('slug', 'hydra-facial')->firstOrFail();
+    expect($this->get(route('treatments.show', $treatment->slug))->getContent())->toContain('media/og/treatment-hydra-facial.jpg');
+});
+
 it('keeps the office out of search', function () {
     $this->get('/login')->assertOk()->assertSee('<meta name="robots" content="noindex, nofollow"', false);
 });
