@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Organization;
 use App\Models\User;
 use App\Payments\PaymentManager;
+use App\View\Composers\SeoComposer;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Pennant\Feature;
@@ -40,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAccess();
         $this->auditSignIns();
+
+        // Server-written SEO for the React pages (titles, schema, crawlable text).
+        View::composer('app', SeoComposer::class);
     }
 
     /** Sign-ins, sign-outs and failed attempts go in the audit log (plan.md §31). */

@@ -51,7 +51,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="site theme-light min-h-dvh bg-pure-white text-charcoal">
-            <LocalBusinessSchema />
             <a
                 href="#main"
                 className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-white focus:px-4 focus:py-2"
@@ -193,64 +192,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                 </div>
             )}
         </div>
-    );
-}
-
-function LocalBusinessSchema() {
-    const { clinic } = usePage().props;
-    const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'MedicalBusiness',
-        name: clinic.name,
-        description: `${clinic.tagline} Physician-led glutathione and aesthetic care clinic.`,
-        url: home().url,
-        telephone: clinic.contact.phone,
-        email: clinic.contact.email,
-        priceRange: '₱₱',
-        currenciesAccepted: 'PHP',
-        paymentAccepted: 'Cash, GCash, Maya, credit card',
-        address: {
-            '@type': 'PostalAddress',
-            streetAddress: clinic.contact.address,
-            addressCountry: 'PH',
-        },
-        openingHoursSpecification: [
-            {
-                '@type': 'OpeningHoursSpecification',
-                dayOfWeek: [
-                    'Monday',
-                    'Tuesday',
-                    'Wednesday',
-                    'Thursday',
-                    'Friday',
-                ],
-                opens: '10:00',
-                closes: '20:00',
-            },
-            {
-                '@type': 'OpeningHoursSpecification',
-                dayOfWeek: ['Saturday', 'Sunday'],
-                opens: '10:00',
-                closes: '19:00',
-            },
-        ],
-        medicalSpecialty: ['Dermatology', 'Aesthetic Medicine'],
-        availableService: [
-            { '@type': 'MedicalProcedure', name: 'Glutathione IV Drips' },
-            { '@type': 'MedicalProcedure', name: 'Laser Skin Rejuvenation' },
-            { '@type': 'MedicalProcedure', name: 'HydraGlow Facial' },
-            {
-                '@type': 'MedicalProcedure',
-                name: 'Acne & Pigmentation Treatment',
-            },
-        ],
-    };
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
     );
 }
 

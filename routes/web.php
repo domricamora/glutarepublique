@@ -47,6 +47,7 @@ Route::get('data-privacy-notice', [PageController::class, 'page'])->defaults('pa
 
 Route::get('sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('llms.txt', [SeoController::class, 'llms'])->name('llms');
 
 Route::get('book', [BookingController::class, 'create'])->name('book');
 Route::get('book/slots', [BookingController::class, 'slots'])->middleware('throttle:60,1')->name('book.slots');
