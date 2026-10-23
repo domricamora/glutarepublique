@@ -146,5 +146,10 @@
         "file": "clinic/cebu-storefront.jpg",
         "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
         "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/southwoods-storefront": {
+        "file": "clinic/southwoods-storefront.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Southwoods Mall branch (opening January 2027)",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
     }
 }

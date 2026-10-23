@@ -114,7 +114,7 @@ class PageController extends Controller
     public function contact(): Response
     {
         return Inertia::render('contact', [
-            'branches' => Branch::where('is_active', true)->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url']),
+            'branches' => Branch::where('is_active', true)->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url', 'opens_on']),
             'treatments' => Treatment::where('is_active', true)->orderBy('sort')->get(['id', 'name']),
         ]);
     }
@@ -204,6 +204,6 @@ class PageController extends Controller
     /** @return \Illuminate\Database\Eloquent\Collection<int, Branch> */
     private function branches()
     {
-        return Branch::where('is_active', true)->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours']);
+        return Branch::where('is_active', true)->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'opens_on']);
     }
 }

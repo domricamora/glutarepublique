@@ -18,13 +18,13 @@ function supervisor(): User
 
 function clinicNurse(): Employee
 {
-    return Employee::where('name', 'Camille Rivera')->firstOrFail();
+    return Employee::where('name', 'Jermaine Ramirez')->firstOrFail();
 }
 
 function staffPayload(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'Camille Rivera',
+        'name' => 'Jermaine Ramirez',
         'employee_no' => clinicNurse()->employee_no,
         'position' => 'Registered Nurse',
         'department' => 'Clinic',
@@ -119,7 +119,7 @@ it('keeps staff off the website until someone says otherwise', function () {
     $team = collect($this->get('/about')->viewData('page')['props']['specialists'])
         ->pluck('name');
 
-    expect($team->contains('Camille Rivera'))->toBeFalse();
+    expect($team->contains('Jermaine Ramirez'))->toBeFalse();
 })->skip(false);
 
 it('publishes a member of staff to the about page when asked', function () {
@@ -134,7 +134,7 @@ it('publishes a member of staff to the about page when asked', function () {
 
     $team = collect($this->get('/about')->viewData('page')['props']['specialists']);
 
-    $her = $team->firstWhere('name', 'Camille Rivera');
+    $her = $team->firstWhere('name', 'Jermaine Ramirez');
 
     expect($her)->not->toBeNull()
         ->and($her['title'])->toBe('Registered Nurse')
@@ -143,7 +143,7 @@ it('publishes a member of staff to the about page when asked', function () {
 });
 
 it('shows a receptionist on the about page but not on a treatment page', function () {
-    $reception = Employee::where('position', 'like', '%Front Desk%')->firstOrFail();
+    $reception = Employee::where('position', 'Receptionist')->firstOrFail();
 
     $this->actingAs(supervisor())->patch("/admin/hr/employees/{$reception->id}", staffPayload([
         'name' => $reception->name,
@@ -204,5 +204,5 @@ it('takes a stood-down person off the website', function () {
     $names = collect($this->get('/about')->viewData('page')['props']['specialists'])
         ->pluck('name');
 
-    expect($names->contains('Camille Rivera'))->toBeFalse();
+    expect($names->contains('Jermaine Ramirez'))->toBeFalse();
 });

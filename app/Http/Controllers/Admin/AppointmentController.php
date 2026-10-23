@@ -80,7 +80,7 @@ class AppointmentController extends Controller
         return Inertia::render('admin/appointments/create', [
             'date' => $filters['date'] ?? now()->toDateString(),
             'treatments' => Treatment::where('is_active', true)->orderBy('sort')->get(['id', 'name', 'duration_minutes']),
-            'branches' => Branch::where('is_active', true)->orderBy('id')->get(['id', 'name']),
+            'branches' => Branch::where('is_active', true)->bookable()->orderBy('id')->get(['id', 'name']),
             'specialists' => Specialist::where('is_active', true)->orderBy('sort')->with('branches:id')->get(['id', 'name', 'title'])
                 ->map(fn (Specialist $s) => $s->only(['id', 'name', 'title']) + ['branch_ids' => $s->branches->pluck('id')]),
             'lead' => $lead ? ['id' => $lead->id, 'name' => $lead->fullName(), 'phone' => $lead->phone] : null,

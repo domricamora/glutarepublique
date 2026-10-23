@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Logs a view of a public page for the traffic report.
  *
- * Privacy first: no IP address is kept. The visitor is a hash of the address,
- * the browser and the date, salted with the app key, so it counts unique
- * visitors within a day and cannot follow anyone across days. Staff signed in
+ * The visitor is a hash of the address, the browser and the date, salted with
+ * the app key, so it counts unique visitors within a day. The IP address itself
+ * is kept too, at the owner's request, and pruned with the row after 13 months. Staff signed in
  * to the office, bots, the office itself and background requests are skipped.
  */
 class TrackPageView
@@ -56,6 +56,7 @@ class TrackPageView
             'campaign' => $tag('utm_campaign', 120),
             'referrer_host' => $external ? Str::limit($external, 120, '') : null,
             'device' => preg_match('/iPad|Tablet/i', $agent) ? 'tablet' : (preg_match('/Mobi|Android|iPhone/i', $agent) ? 'mobile' : 'desktop'),
+            'ip_address' => $request->ip(),
             'visitor' => substr(hash_hmac('sha256', $request->ip().'|'.$agent.'|'.now()->toDateString(), (string) config('app.key')), 0, 16),
         ]);
     }

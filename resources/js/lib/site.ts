@@ -78,6 +78,20 @@ export const openWindow = (
     return day ? [toHour(day[0]), toHour(day[1])] : null;
 };
 
+/** "Opening January 2027" while a branch has not opened yet, else null. */
+export function openingLabel(branch: {
+    opens_on?: string | null;
+}): string | null {
+    if (!branch.opens_on) {
+        return null;
+    }
+    const opens = new Date(`${branch.opens_on}T00:00:00+08:00`);
+
+    return opens.getTime() > Date.now()
+        ? `Opening ${opens.toLocaleDateString('en-PH', { month: 'long', year: 'numeric', timeZone: 'Asia/Manila' })}`
+        : null;
+}
+
 export const isOpenNow = (branch: Pick<Branch, 'hours'>): boolean => {
     const now = manilaNow();
     const window = openWindow(branch, now);

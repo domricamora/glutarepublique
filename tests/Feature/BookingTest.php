@@ -68,3 +68,12 @@ it('requires privacy consent', function () {
     $this->post('/book', booking(['privacy_consent' => null]))->assertSessionHasErrors('privacy_consent');
     expect(Appointment::count())->toBe(0);
 });
+
+it('keeps a branch that has not opened out of booking', function () {
+    $southwoods = Branch::where('slug', 'southwoods')->firstOrFail();
+    $southwoods->update(['opens_on' => now()->addMonth()->toDateString()]);
+
+    $this->get('/book')->assertInertia(fn ($page) => $page->where('branches', fn ($branches) => collect($branches)->pluck('slug')->doesntContain('southwoods')));
+    $this->post('/book', booking(['branch_id' => $southwoods->id]))->assertNotFound();
+    expect(Appointment::count())->toBe(0);
+});

@@ -20,7 +20,7 @@ function clerk(): User
 
 function theNurse(): Employee
 {
-    return Employee::where('name', 'Camille Rivera')->firstOrFail();
+    return Employee::where('name', 'Jermaine Ramirez')->firstOrFail();
 }
 
 function rates(array $overrides = []): array

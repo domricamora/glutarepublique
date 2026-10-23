@@ -3,7 +3,13 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 // The clinic's own Emsculpt session first, then the licensed stock clips.
-const CLIPS = ['clinic-emsculpt', 'hero-7581441', 'hero-5308682', 'hero-5308683', 'hero-12322630'];
+const CLIPS = [
+    'clinic-emsculpt',
+    'hero-7581441',
+    'hero-5308682',
+    'hero-5308683',
+    'hero-12322630',
+];
 
 /**
  * Short muted clips that crossfade in turn, filling whatever box they are put

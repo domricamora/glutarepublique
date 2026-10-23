@@ -65,7 +65,7 @@ class TrafficController extends Controller
             'sources' => $group('source'),
             'campaigns' => $group('campaign'),
             'devices' => $group('device', 3),
-            'log' => PageView::latest('id')->limit(50)->get(['id', 'path', 'source', 'campaign', 'referrer_host', 'device', 'created_at'])
+            'log' => PageView::latest('id')->limit(50)->get(['id', 'path', 'source', 'campaign', 'referrer_host', 'device', 'ip_address', 'country', 'region', 'city', 'created_at'])
                 ->map(fn (PageView $v) => [
                     'id' => $v->id,
                     'path' => $v->path,
@@ -73,6 +73,8 @@ class TrafficController extends Controller
                     'campaign' => $v->campaign,
                     'referrer' => $v->referrer_host,
                     'device' => $v->device,
+                    'ip' => $v->ip_address,
+                    'location' => collect([$v->city, $v->region, $v->country])->filter()->unique()->implode(', ') ?: null,
                     'at' => $v->created_at?->toIso8601String(),
                 ]),
             'live' => PageView::where('created_at', '>=', now()->subMinutes(30))->distinct()->count('visitor'),

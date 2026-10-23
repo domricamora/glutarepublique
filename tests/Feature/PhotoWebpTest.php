@@ -32,7 +32,7 @@ function shopBalm(): Product
 it('turns a jpeg into a webp, whatever the extension says', function () {
     $path = (new UploadPhoto)(
         UploadedFile::fake()->image('portrait.jpg', 900, 1200),
-        'Camille Rivera',
+        'Jermaine Ramirez',
     );
 
     expect($path)->toEndWith('.webp')
@@ -111,7 +111,7 @@ it('stores a product photo as webp and puts it on the record', function () {
 });
 
 it('keeps a staff photo in its own folder, away from product photos', function () {
-    $staffPath = (new UploadPhoto)(UploadedFile::fake()->image('a.jpg'), 'Camille Rivera');
+    $staffPath = (new UploadPhoto)(UploadedFile::fake()->image('a.jpg'), 'Jermaine Ramirez');
     $productPath = (new UploadPhoto('products'))(UploadedFile::fake()->image('b.jpg'), 'Balm');
 
     expect($staffPath)->toStartWith('/media/photos/staff/')

@@ -20,21 +20,32 @@ use Illuminate\Database\Seeder;
 class HrDemoSeeder extends Seeder
 {
     /**
-     * email, name, position, department, salary, allowance, hired
+     * The clinic's own roster (payroll intake sheet, 2026-10-23); TBA vacancies
+     * left out. The sheet has no pay data yet, so salary, allowance and hire
+     * date are placeholders by position until the client fills it in. The
+     * three doctors are not on the sheet and stay as before.
+     *
+     * email, name, position, department, salary, allowance, hired, branch
      *
      * @var array<int, array<int, mixed>>
      */
     private const STAFF = [
-        ['admin@glutarepubliq.com', 'Isabel Montenegro', 'Clinic Director', 'Management', 95000, 8000, '2019-03-04'],
-        ['owner@glutarepubliq.com', 'Karla Ugalino Velasco', 'Owner', 'Management', 120000, 10000, '2018-01-15'],
-        ['reception@glutarepubliq.com', 'Joanna Dizon', 'Front Desk Supervisor', 'Front Desk', 38000, 2500, '2021-06-01'],
-        [null, 'Camille Rivera', 'Registered Nurse', 'Clinic', 34000, 1500, '2022-02-14'],
-        [null, 'Trisha Navarro', 'Aesthetician', 'Clinic', 32000, 1200, '2023-09-01'],
-        [null, 'Marco Villanueva', 'Therapist', 'Clinic', 45000, 2000, '2020-11-09'],
-        [null, 'Grace Lim', 'Head Aesthetician', 'Clinic', 52000, 3000, '2019-08-19'],
-        [null, 'Dr. Adrian Santos', 'Aesthetic Physician', 'Clinic', 145000, 12000, '2018-05-07'],
-        [null, 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'Clinic', 128000, 10000, '2020-10-12'],
-        [null, 'Dr. Camille Rivera', 'Medical Director', 'Clinic', 165000, 15000, '2017-01-23'],
+        ['admin@glutarepubliq.com', 'Mary Grace Agulto', 'HR Associate', 'HR', 26000, 1500, '2024-03-01', 'southwoods'],
+        ['owner@glutarepubliq.com', 'Karla Ugalino Velasco', 'Owner', 'Management', 120000, 10000, '2018-01-15', 'cebu'],
+        ['reception@glutarepubliq.com', 'Jeankie Panon', 'Receptionist', 'Front Desk', 20000, 1000, '2023-06-01', 'cebu'],
+        [null, 'Jermaine Ramirez', 'Registered Nurse', 'Clinic', 34000, 1500, '2022-02-14', 'bacoor'],
+        [null, 'Ivy Neri', 'Registered Nurse / Branch Manager', 'Clinic', 42000, 2500, '2021-05-03', 'cebu'],
+        [null, 'Janet Culango', 'Medical Aesthetician', 'Clinic', 30000, 1200, '2022-08-01', 'cebu'],
+        [null, 'Suzette Jacalan', 'Senior Facialist', 'Clinic', 26000, 1200, '2021-09-15', 'cebu'],
+        [null, 'Jenrose Rosacena', 'Junior Facialist', 'Clinic', 20000, 800, '2024-01-08', 'cebu'],
+        [null, 'Jamaica Dupilas', 'Junior Facialist', 'Clinic', 20000, 800, '2024-06-03', 'cebu'],
+        [null, 'Mery Joy Legita', 'Registered Nurse', 'Clinic', 32000, 1500, '2025-11-03', 'southwoods'],
+        [null, 'Tesha Tolentino Emaas', 'Senior Facialist', 'Clinic', 26000, 1200, '2025-11-03', 'southwoods'],
+        [null, 'Marinel Bombaes', 'Facialist', 'Clinic', 22000, 1000, '2023-02-01', 'bacoor'],
+        [null, 'Nenet Canilas', 'Facialist', 'Clinic', 22000, 1000, '2023-02-01', 'bacoor'],
+        [null, 'Dr. Adrian Santos', 'Aesthetic Physician', 'Clinic', 145000, 12000, '2018-05-07', 'cebu'],
+        [null, 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'Clinic', 128000, 10000, '2020-10-12', 'san-pedro'],
+        [null, 'Dr. Camille Rivera', 'Medical Director', 'Clinic', 165000, 15000, '2017-01-23', 'cebu'],
     ];
 
     /** Everyone who treats clients, doctors included (plan.md §28). */
@@ -42,10 +53,16 @@ class HrDemoSeeder extends Seeder
         'Dr. Adrian Santos',
         'Dr. Rhea Kapoor',
         'Dr. Camille Rivera',
-        'Camille Rivera',
-        'Trisha Navarro',
-        'Marco Villanueva',
-        'Grace Lim',
+        'Ivy Neri',
+        'Jermaine Ramirez',
+        'Mery Joy Legita',
+        'Janet Culango',
+        'Suzette Jacalan',
+        'Tesha Tolentino Emaas',
+        'Jenrose Rosacena',
+        'Jamaica Dupilas',
+        'Marinel Bombaes',
+        'Nenet Canilas',
     ];
 
     /** @var array<string, string> */
@@ -53,26 +70,24 @@ class HrDemoSeeder extends Seeder
         'Dr. Adrian Santos' => 'MD, Lic. 18000',
         'Dr. Rhea Kapoor' => 'MD Dermatology, Lic. 18411',
         'Dr. Camille Rivera' => 'MD, FAAD, Lic. 17976',
-        'Camille Rivera' => 'RN, Lic. 44120',
-        'Trisha Navarro' => 'Aesthetician',
-        'Marco Villanueva' => 'PT, Lic. 30877',
-        'Grace Lim' => 'Aesthetician, Senior',
+        'Ivy Neri' => 'RN',
+        'Jermaine Ramirez' => 'RN',
+        'Mery Joy Legita' => 'RN',
     ];
 
     public function run(): void
     {
         $credentials = self::CREDENTIALS;
         $organization = Organization::where('slug', config('clinic.organization'))->firstOrFail();
-        $branch = Branch::where('slug', 'cebu')->firstOrFail();
-        $campus = Branch::where('slug', 'san-pedro')->first() ?? $branch;
+        $branches = Branch::pluck('id', 'slug');
         $reviewer = User::where('organization_id', $organization->id)->orderBy('id')->first();
 
-        foreach (self::STAFF as $index => [$email, $name, $position, $department, $salary, $allowance, $hired]) {
+        foreach (self::STAFF as $index => [$email, $name, $position, $department, $salary, $allowance, $hired, $at]) {
             $employee = Employee::updateOrCreate(
                 ['organization_id' => $organization->id, 'employee_no' => 'EMP-'.str_pad((string) ($index + 1), 4, '0', STR_PAD_LEFT)],
                 [
                     'user_id' => $email ? User::where('email', $email)->value('id') : null,
-                    'branch_id' => $index % 4 === 3 ? $campus->id : $branch->id,
+                    'branch_id' => $branches[$at] ?? $branches['cebu'],
                     'name' => $name,
                     'position' => $position,
                     'department' => $department,
@@ -90,9 +105,6 @@ class HrDemoSeeder extends Seeder
                         'Dr. Adrian Santos' => 'Injectables and laser',
                         'Dr. Rhea Kapoor' => 'HydraGlow and skin rejuvenation',
                         'Dr. Camille Rivera' => 'Medical dermatology',
-                        'Marco Villanueva' => 'Body and face contouring',
-                        'Trisha Navarro' => 'Facials and peels',
-                        'Camille Rivera' => 'Injections and wound care',
                         default => null,
                     },
                 ]
@@ -112,8 +124,8 @@ class HrDemoSeeder extends Seeder
         // from a customer.
         Employee::whereIn('name', self::CLINICIANS)->update(['show_on_site' => true]);
 
-        $nurse = Employee::where('name', 'Camille Rivera')->firstOrFail();
-        $therapist = Employee::where('name', 'Marco Villanueva')->firstOrFail();
+        $nurse = Employee::where('name', 'Jermaine Ramirez')->firstOrFail();
+        $therapist = Employee::where('name', 'Marinel Bombaes')->firstOrFail();
 
         LeaveRequest::updateOrCreate(
             ['employee_id' => $nurse->id, 'from_date' => now()->subDays(6)->toDateString()],

@@ -30,7 +30,7 @@ class BookAppointment
      */
     public function __invoke(array $data): Appointment
     {
-        $branch = Branch::whereKey($data['branch_id'])->firstOrFail();
+        $branch = Branch::whereKey($data['branch_id'])->bookable()->firstOrFail();
         $treatment = Treatment::whereKey($data['treatment_id'])->firstOrFail();
         $specialist = empty($data['specialist_id']) ? null : Specialist::whereKey($data['specialist_id'])->firstOrFail();
         $start = CarbonImmutable::parse($data['date'].' '.$data['time']);

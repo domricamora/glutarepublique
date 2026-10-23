@@ -30,6 +30,8 @@ type Props = {
         campaign: string | null;
         referrer: string | null;
         device: string;
+        ip: string | null;
+        location: string | null;
         at: string;
     }[];
     live: number;
@@ -236,7 +238,7 @@ export default function Traffic(props: Props) {
 
                 <Panel title="Traffic log" note="The latest 50 page views">
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[40rem] text-sm">
+                        <table className="w-full min-w-[48rem] text-sm">
                             <thead>
                                 <tr className="border-b border-border text-left text-muted-foreground">
                                     <th className="py-2 pr-4 font-normal">
@@ -251,7 +253,12 @@ export default function Traffic(props: Props) {
                                     <th className="py-2 pr-4 font-normal">
                                         Campaign
                                     </th>
-                                    <th className="py-2 font-normal">Device</th>
+                                    <th className="py-2 pr-4 font-normal">
+                                        Device
+                                    </th>
+                                    <th className="py-2 font-normal">
+                                        IP address
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -278,15 +285,23 @@ export default function Traffic(props: Props) {
                                         <td className="py-2 pr-4">
                                             {v.campaign ?? '—'}
                                         </td>
-                                        <td className="py-2 capitalize">
+                                        <td className="py-2 pr-4 capitalize">
                                             {v.device}
+                                        </td>
+                                        <td className="py-2 whitespace-nowrap tabular-nums">
+                                            {v.ip ?? '-'}
+                                            {v.location && (
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {v.location}
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
                                 {props.log.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={5}
+                                            colSpan={6}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             No visits recorded yet.

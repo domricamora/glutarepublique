@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import BeforeAfter from '@/components/site/before-after';
 import Glitter from '@/components/site/glitter';
 import HeroVideo from '@/components/site/hero-video';
-import { formatPrice, useReveal } from '@/lib/site';
+import { formatPrice, openingLabel, useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { about, beforeAfter, book, promotions } from '@/routes';
 import leads from '@/routes/leads';
@@ -290,7 +290,10 @@ export default function Home({
                     <div className="grid items-center gap-12 lg:grid-cols-12">
                         <div className="grid grid-cols-2 gap-3 lg:col-span-6">
                             {[
-                                ['clinic/cebu-reception-desk.jpg', 'Gluta RepubliQ reception, Cebu'],
+                                [
+                                    'clinic/cebu-reception-desk.jpg',
+                                    'Gluta RepubliQ reception, Cebu',
+                                ],
                                 [
                                     'clinic/cebu-drip-lounge.jpg',
                                     'Clients in the drip lounge',
@@ -535,23 +538,40 @@ export default function Home({
                         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
                             {branches.map((b) => (
                                 <li key={b.id}>
-                                    <Link
-                                        href={
-                                            book({
-                                                query: { branch: b.id },
-                                            }).url
-                                        }
-                                        className="group flex h-full flex-col border border-ice bg-white p-4 transition-colors duration-200 ease-out hover:border-royal/40"
-                                    >
-                                        <span className="flex items-center justify-between font-medium text-ocean">
-                                            {b.name}
-                                            <ArrowUpRight className="size-4 text-royal-ink transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                                        </span>
-                                        <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
-                                            <MapPin className="mt-px size-3.5 shrink-0" />
-                                            {b.address}
-                                        </span>
-                                    </Link>
+                                    {openingLabel(b) ? (
+                                        <div className="flex h-full flex-col border border-ice bg-white p-4">
+                                            <span className="flex items-center justify-between gap-3 font-medium text-ocean">
+                                                {b.name}
+                                                <span className="text-[11px] font-medium tracking-wide text-royal-ink uppercase">
+                                                    {openingLabel(b)}
+                                                </span>
+                                            </span>
+                                            <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
+                                                <MapPin className="mt-px size-3.5 shrink-0" />
+                                                {[b.address, b.city]
+                                                    .filter(Boolean)
+                                                    .join(', ')}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            href={
+                                                book({
+                                                    query: { branch: b.id },
+                                                }).url
+                                            }
+                                            className="group flex h-full flex-col border border-ice bg-white p-4 transition-colors duration-200 ease-out hover:border-royal/40"
+                                        >
+                                            <span className="flex items-center justify-between font-medium text-ocean">
+                                                {b.name}
+                                                <ArrowUpRight className="size-4 text-royal-ink transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                            </span>
+                                            <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
+                                                <MapPin className="mt-px size-3.5 shrink-0" />
+                                                {b.address}
+                                            </span>
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>

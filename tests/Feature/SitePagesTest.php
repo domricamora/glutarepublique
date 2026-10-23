@@ -14,8 +14,8 @@ it('shows the marketing pages from the seeded content', function () {
             // The roster is the staff roll now, filtered to the clinicians the
             // seeder ticked for the website, rather than the three seeded
             // specialist rows the office cannot edit.
-            ->has('specialists', 7)
-            ->has('branches', 3)
+            ->has('specialists', 13)
+            ->has('branches', 4)
             ->has('testimonials', 3)
             ->has('faqs', 4));
 
@@ -34,7 +34,7 @@ it('shows the marketing pages from the seeded content', function () {
 
     $this->get('/contact')->assertOk()
         ->assertInertia(fn ($page) => $page->component('contact')
-            ->has('branches', 3)
+            ->has('branches', 4)
             ->has('treatments', count(\Database\Seeders\SiteContentSeeder::TREATMENTS)));
 });
 
@@ -148,7 +148,7 @@ it('does not list the same person twice', function () {
     $html = $this->get('/about')->assertOk()->getContent();
 
     foreach (Employee::query()->get() as $person) {
-        // Matched as a whole JSON value: "Camille Rivera" is also the tail of "Dr. Camille Rivera".
+        // Matched as a whole JSON value, so one name never counts as part of another.
         expect(substr_count($html, '"name":"'.$person->name.'"'))->toBeLessThanOrEqual(1);
     }
 });

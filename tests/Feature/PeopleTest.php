@@ -22,7 +22,7 @@ function owner(): User
 
 function nurse(): Employee
 {
-    return Employee::where('name', 'Camille Rivera')->firstOrFail();
+    return Employee::where('name', 'Jermaine Ramirez')->firstOrFail();
 }
 
 function makeEmployee(array $overrides = []): Employee
@@ -43,7 +43,7 @@ function makeEmployee(array $overrides = []): Employee
 }
 
 it('lists the staff roll and keeps it behind the permission', function () {
-    $this->actingAs(owner())->get('/admin/hr')->assertOk()->assertSee('Camille Rivera');
+    $this->actingAs(owner())->get('/admin/hr')->assertOk()->assertSee('Jermaine Ramirez');
 
     $this->actingAs(User::where('email', 'reception@glutarepubliq.com')->firstOrFail())
         ->get('/admin/hr')->assertOk();
@@ -225,7 +225,7 @@ it('edits a staff record, pay and all', function () {
     $employee = nurse();
 
     $this->actingAs(boss())->patch("/admin/hr/employees/{$employee->id}", [
-        'name' => 'Camille Rivera-Smith',
+        'name' => 'Jermaine Ramirez-Smith',
         'employee_no' => $employee->employee_no,
         'position' => 'Senior Nurse',
         'department' => 'Clinic',
@@ -237,7 +237,7 @@ it('edits a staff record, pay and all', function () {
     ])->assertRedirect();
 
     $employee->refresh();
-    expect($employee->name)->toBe('Camille Rivera-Smith')
+    expect($employee->name)->toBe('Jermaine Ramirez-Smith')
         ->and($employee->position)->toBe('Senior Nurse')
         ->and($employee->base_salary)->toBe(38000.0);
 });
@@ -326,7 +326,7 @@ it('stands someone down without losing their history, then brings them back', fu
 
 it('will not take an employee number that is already on the roll', function () {
     $this->actingAs(boss())->patch('/admin/hr/employees/'.nurse()->id, [
-        'name' => 'Camille Rivera',
+        'name' => 'Jermaine Ramirez',
         'employee_no' => 'EMP-0001',
         'position' => 'Nurse',
         'department' => 'Clinic',
@@ -358,7 +358,7 @@ it('opens a person with everything the edit form needs', function () {
         ->and($props['schedules'])->toHaveKey('monthly');
 
     // A clinician reaches the page with their clinical details intact.
-    $doctor = Employee::where('practitioner', true)->firstOrFail();
+    $doctor = Employee::where('practitioner', true)->where('name', 'like', 'Dr.%')->firstOrFail();
     $doctorProps = $this->actingAs(boss())
         ->get("/admin/hr/employees/{$doctor->id}")
         ->assertOk()

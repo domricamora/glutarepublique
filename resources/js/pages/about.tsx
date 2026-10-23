@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { BranchHours } from '@/components/site/branch-hours';
 import { TeamGrid } from '@/components/site/team-grid';
-import { useReveal } from '@/lib/site';
+import { openingLabel, useReveal } from '@/lib/site';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
 import type { Branch, Faq, Specialist, Testimonial } from '@/types/site';
@@ -225,7 +225,8 @@ export default function About({
 
             <section className="gutter py-20 lg:py-28">
                 <h2 data-reveal className="text-3xl sm:text-4xl">
-                    {branches.length} clinics, one standard
+                    {branches.filter((b) => !openingLabel(b)).length} clinics,
+                    one standard
                 </h2>
                 <div className="mt-12 grid gap-10 lg:grid-cols-3">
                     {branches.map((b, i) => (

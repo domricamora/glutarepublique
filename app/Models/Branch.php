@@ -6,6 +6,7 @@ use App\Casts\AssetUrl;
 use App\Models\Concerns\BelongsToOrganization;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,9 +21,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $phone
  * @property string|null $email
  * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $opens_on
  * @property list<array{0: string, 1: string}|null> $hours
  */
-#[Fillable(['organization_id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url', 'is_active'])]
+#[Fillable(['organization_id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url', 'is_active', 'opens_on'])]
 class Branch extends Model
 {
     use BelongsToOrganization;
@@ -54,6 +56,12 @@ class Branch extends Model
      *
      * @return Attribute<list<array{0: string, 1: string}|null>, list<array{0: string, 1: string}|null>|null>
      */
+    /** Open for appointments: no opening date, or one already reached. */
+    public function scopeBookable(Builder $query): void
+    {
+        $query->where(fn (Builder $q) => $q->whereNull('opens_on')->orWhereDate('opens_on', '<=', today()));
+    }
+
     protected function hours(): Attribute
     {
         return Attribute::make(
@@ -68,6 +76,6 @@ class Branch extends Model
 
     protected function casts(): array
     {
-        return ['image' => AssetUrl::class, 'is_active' => 'boolean'];
+        return ['image' => AssetUrl::class, 'is_active' => 'boolean', 'opens_on' => 'date:Y-m-d'];
     }
 }

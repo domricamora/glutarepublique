@@ -22,7 +22,7 @@ class BranchController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/branches/index', [
-            'branches' => Branch::orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'hours', 'map_url', 'is_active']),
+            'branches' => Branch::orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'hours', 'map_url', 'is_active', 'opens_on']),
         ]);
     }
 
@@ -55,6 +55,7 @@ class BranchController extends Controller
             'email' => ['nullable', 'email', 'max:190'],
             'map_url' => ['nullable', 'url:https', 'max:500'],
             'is_active' => ['required', 'boolean'],
+            'opens_on' => ['nullable', 'date'],
             'hours' => ['required', 'array', 'size:7'],
             'hours.*' => ['nullable', 'array', 'size:2'],
             'hours.*.*' => ['required', 'date_format:H:i'],

@@ -106,7 +106,7 @@ it('plans a week, including a night shift, and copies it forward', function () {
         ->post('/admin/hr/schedule', ['employee_id' => $person->id, 'date' => $monday->toDateString(), 'rest' => true])->assertForbidden();
 });
 
-it('logs public page views without keeping an IP address, and skips staff and bots', function () {
+it('logs public page views with the visitor IP address, and skips staff and bots', function () {
     $this->withHeader('User-Agent', 'Mozilla/5.0 (iPhone)')->get('/treatments?utm_source=facebook&utm_campaign=glow-promo')->assertOk();
     $this->withHeader('User-Agent', 'Googlebot/2.1')->get('/about')->assertOk();
     $this->actingAs(kioskOwner())->get('/about')->assertOk();
@@ -117,7 +117,7 @@ it('logs public page views without keeping an IP address, and skips staff and bo
         ->and($view->campaign)->toBe('glow-promo')
         ->and($view->device)->toBe('mobile')
         ->and(strlen($view->visitor))->toBe(16)
-        ->and(json_encode($view->getAttributes()))->not->toContain('127.0.0.1');
+        ->and($view->ip_address)->toBe('127.0.0.1');
 
     $this->get('/admin/traffic')->assertOk()->assertInertia(fn ($p) => $p
         ->component('admin/traffic/index')

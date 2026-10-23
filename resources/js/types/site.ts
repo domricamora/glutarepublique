@@ -53,6 +53,8 @@ export type Branch = {
     /** Index = day of week, Sunday first; null = closed. */
     hours?: ([string, string] | null)[] | null;
     map_url?: string | null;
+    /** Y-m-d; while in the future the branch is announced, not bookable. */
+    opens_on?: string | null;
 };
 
 export type Testimonial = {

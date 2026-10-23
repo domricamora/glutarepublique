@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DAY_NAMES, hoursSummary } from '@/lib/site';
+import { DAY_NAMES, hoursSummary, openingLabel } from '@/lib/site';
 import { dashboard } from '@/routes';
 import branchRoutes from '@/routes/admin/branches';
 
@@ -21,6 +21,7 @@ type Branch = {
     hours: Hours;
     map_url: string | null;
     is_active: boolean;
+    opens_on: string | null;
 };
 
 const MONDAY_FIRST = [1, 2, 3, 4, 5, 6, 0];
@@ -33,6 +34,7 @@ const blank = {
     email: '',
     map_url: '',
     is_active: true,
+    opens_on: '',
     hours: [
         null,
         ['10:00', '20:00'],
@@ -93,6 +95,11 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
                                         {!branch.is_active && (
                                             <Badge variant="secondary">
                                                 Hidden
+                                            </Badge>
+                                        )}
+                                        {openingLabel(branch) && (
+                                            <Badge variant="outline">
+                                                {openingLabel(branch)}
                                             </Badge>
                                         )}
                                     </p>
@@ -156,6 +163,7 @@ function BranchForm({
                   email: branch.email ?? '',
                   map_url: branch.map_url ?? '',
                   is_active: branch.is_active,
+                  opens_on: branch.opens_on ?? '',
                   hours: branch.hours,
               }
             : blank,
@@ -168,7 +176,14 @@ function BranchForm({
         );
 
     const text = (
-        key: 'name' | 'address' | 'city' | 'phone' | 'email' | 'map_url',
+        key:
+            | 'name'
+            | 'address'
+            | 'city'
+            | 'phone'
+            | 'email'
+            | 'map_url'
+            | 'opens_on',
         label: string,
         type = 'text',
     ) => (
@@ -222,6 +237,17 @@ function BranchForm({
                     />
                     Show on the website and take bookings
                 </label>
+                <div className="sm:col-span-2">
+                    {text(
+                        'opens_on',
+                        'Opens on (leave empty once open)',
+                        'date',
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Before this date the website shows the branch as opening
+                        soon and online booking skips it.
+                    </p>
+                </div>
             </div>
 
             <fieldset className="grid content-start gap-2">

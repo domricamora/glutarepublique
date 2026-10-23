@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { hoursSummary, isOpenNow } from '@/lib/site';
+import { hoursSummary, isOpenNow, openingLabel } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import type { Branch } from '@/types/site';
 
@@ -8,7 +8,7 @@ export function BranchHours({
     branch,
     className,
 }: {
-    branch: Pick<Branch, 'hours'>;
+    branch: Pick<Branch, 'hours' | 'opens_on'>;
     className?: string;
 }) {
     // Read after mount: the server render cannot know the visitor's "now".
@@ -21,6 +21,22 @@ export function BranchHours({
 
         return () => window.clearInterval(id);
     }, [branch]);
+
+    const opening = openingLabel(branch);
+
+    if (opening) {
+        return (
+            <p
+                className={cn(
+                    'inline-flex items-center gap-2 text-xs font-medium tracking-wide text-royal-ink uppercase',
+                    className,
+                )}
+            >
+                <span aria-hidden className="size-2 rounded-full bg-royal" />
+                {opening}
+            </p>
+        );
+    }
 
     return (
         <div className={className}>

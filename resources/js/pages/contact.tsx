@@ -1,7 +1,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { CSSProperties, FormEvent } from 'react';
 import { BranchHours } from '@/components/site/branch-hours';
-import { useReveal } from '@/lib/site';
+import { openingLabel, useReveal } from '@/lib/site';
 import { book, legal } from '@/routes';
 import leads from '@/routes/leads';
 import type { Branch } from '@/types/site';
@@ -299,12 +299,14 @@ export default function Contact({ branches, treatments }: Props) {
                                             className="mt-4"
                                         />
                                         <div className="mt-5 flex flex-wrap gap-4 text-sm">
-                                            <Link
-                                                href={`${book().url}?branch=${branch.slug}`}
-                                                className="press inline-flex items-center gap-2 bg-plum px-5 py-2.5 text-sm font-medium text-white hover:bg-plum-deep"
-                                            >
-                                                Book at {branch.name}
-                                            </Link>
+                                            {!openingLabel(branch) && (
+                                                <Link
+                                                    href={`${book().url}?branch=${branch.slug}`}
+                                                    className="press inline-flex items-center gap-2 bg-plum px-5 py-2.5 text-sm font-medium text-white hover:bg-plum-deep"
+                                                >
+                                                    Book at {branch.name}
+                                                </Link>
+                                            )}
                                             {branch.map_url && (
                                                 <a
                                                     href={branch.map_url}

@@ -91,14 +91,18 @@ class SiteContentSeeder extends Seeder
         $organization = Organization::where('slug', config('clinic.organization', 'glutarepubliq'))->firstOrFail();
         $org = ['organization_id' => $organization->id];
 
-        foreach (['cebu', 'san-pedro', 'sta-rosa', 'bacoor'] as $slug) {
+        foreach (['cebu', 'san-pedro', 'sta-rosa', 'bacoor', 'southwoods'] as $slug) {
             $branch = Branch::withoutGlobalScopes()->where($org + ['slug' => $slug])->first();
             // Hours are the clinic's to edit, so only a branch still on the old free-text schedule gets the default.
             $branch?->update([
                 // A seeded default (or the old 455px crop) gives way to the clinic's own photo where there is one;
                 // a photo chosen in the office is kept.
                 'image' => in_array($branch->getRawOriginal('image'), [null, '/media/photos/about-clinic.jpg', '/media/photos/clinic-interior.jpg'], true)
-                    ? ($slug === 'cebu' ? '/media/photos/clinic/cebu-storefront.jpg' : '/media/photos/clinic-interior.jpg')
+                    ? match ($slug) {
+                        'cebu' => '/media/photos/clinic/cebu-storefront.jpg',
+                        'southwoods' => '/media/photos/clinic/southwoods-storefront.jpg',
+                        default => '/media/photos/clinic-interior.jpg',
+                    }
                     : $branch->getRawOriginal('image'),
             ] + ($this->hasSchedule($branch) ? [] : ['hours' => $slug === 'cebu' ? Branch::CEBU_HOURS : Branch::DEFAULT_HOURS]));
         }
@@ -166,7 +170,7 @@ class SiteContentSeeder extends Seeder
             ['How many sessions are required?', 'Visible radiance is often noticed after 1–2 sessions. For sustained brightening and collagen remodeling, a customized series of 4–8 sessions is typically recommended.'],
             ['Is there any downtime?', 'Most treatments, including our signature glutathione drips and HydraGlow facials, have zero downtime. Gentle laser sessions may have mild rosy flushing for 1–2 hours.'],
             ['Do you offer customized treatment plans?', 'Every client begins with a thorough skin assessment. Your physician customizes the protocol, active concentrations, and schedule for your unique skin profile.'],
-            ['Which branches can I visit?', 'We have three clinics: San Pedro, Laguna (Esperanza Bldg., Pacita Ave.), SOMO A Vista Mall in Bacoor, Cavite, and Robinsons Galleria in Cebu City.'],
+            ['Which branches can I visit?', 'We have three clinics: San Pedro, Laguna (Esperanza Bldg., Pacita Ave.), SOMO A Vista Mall in Bacoor, Cavite, and Robinsons Galleria in Cebu City. A fourth clinic opens at Southwoods Mall, Biñan, Laguna in January 2027.'],
             ['How can I pay?', 'Cash, Visa, Mastercard, GCash and Maya are accepted at every branch.'],
             ['Are prices fixed?', 'Prices on this site are our current rates and are subject to change without prior notice. Your plan and its price are confirmed at your consultation, before any treatment.'],
         ] as $i => [$question, $answer]) {

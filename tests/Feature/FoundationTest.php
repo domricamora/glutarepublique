@@ -14,7 +14,7 @@ it('scopes tenant data to the signed-in user organization', function () {
 
     $this->actingAs(User::where('email', 'owner@glutarepubliq.com')->first());
 
-    expect(Branch::pluck('slug')->sort()->values()->all())->toBe(['bacoor', 'cebu', 'san-pedro', 'sta-rosa']);
+    expect(Branch::pluck('slug')->sort()->values()->all())->toBe(['bacoor', 'cebu', 'san-pedro', 'southwoods', 'sta-rosa']);
 });
 
 it('fills organization_id on new tenant rows', function () {

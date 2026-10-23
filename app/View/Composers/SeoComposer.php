@@ -291,7 +291,7 @@ class SeoComposer
             'paymentAccepted' => 'Cash, Visa, Mastercard, GCash, Maya',
             'medicalSpecialty' => ['Dermatology', 'PlasticSurgery'],
             'sameAs' => array_values(ClinicSetting::socials()),
-            'department' => Branch::where('is_active', true)->orderBy('id')->get()->map(fn (Branch $b) => $this->branch($b))->all(),
+            'department' => Branch::where('is_active', true)->bookable()->orderBy('id')->get()->map(fn (Branch $b) => $this->branch($b))->all(),
         ];
     }
 
@@ -537,7 +537,7 @@ class SeoComposer
         return '<h2>Branches and opening hours</h2><ul>'.Branch::where('is_active', true)->orderBy('id')->get()->map(function (Branch $b) use ($days) {
             $hours = collect([1, 2, 3, 4, 5, 6, 0])->map(fn ($d) => $days[$d].' '.($b->hours[$d] ? $b->hours[$d][0].' to '.$b->hours[$d][1] : 'closed'))->implode(', ');
 
-            return '<li><strong>'.e($b->name).'</strong>: '.e(trim($b->address.', '.$b->city, ', ')).'. Phone '.e((string) $b->phone).'. Open '.e($hours).'.</li>';
+            return '<li><strong>'.e($b->name).'</strong>: '.e(trim($b->address.', '.$b->city, ', ')).'. '.($b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y').'.' : 'Phone '.e((string) $b->phone).'. Open '.e($hours).'.').'</li>';
         })->implode('').'</ul>';
     }
 
