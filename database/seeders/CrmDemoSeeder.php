@@ -60,6 +60,13 @@ class CrmDemoSeeder extends Seeder
         $today = CarbonImmutable::today();
 
         foreach (self::PEOPLE as $i => [$first, $last]) {
+            // Runs on every deploy: a demo person already on file is left alone,
+            // or each deploy would add the same forty leads again.
+            $email = Str::lower(Str::slug($first.' '.$last, '.')).'@example.com';
+            if (Lead::withoutGlobalScopes()->where($org + ['email' => $email])->exists()) {
+                continue;
+            }
+
             [$source, $utmSource, $utmMedium, $campaign] = self::SOURCES[$i % count(self::SOURCES)];
             $branch = $branches[$i % $branches->count()];
             $treatment = $treatments[mt_rand(0, $treatments->count() - 1)];
@@ -74,7 +81,7 @@ class CrmDemoSeeder extends Seeder
             $lead = Lead::withoutGlobalScopes()->create($org + [
                 'first_name' => $first,
                 'last_name' => $last,
-                'email' => Str::lower(Str::slug($first.' '.$last, '.')).'@example.com',
+                'email' => $email,
                 'phone' => sprintf('09%02d %03d %04d', mt_rand(15, 99), mt_rand(100, 999), mt_rand(1000, 9999)),
                 'source' => $source,
                 'stage' => $stage,
@@ -113,16 +120,23 @@ class CrmDemoSeeder extends Seeder
             // than only the local map -- an in-memory guard alone let a
             // collision through and aborted the seed partway on a duplicate
             // key, leaving a demonstration half loaded.
+            $start = null;
             for ($slot = 0; $slot < 40; $slot++) {
-                $start = $day->copy()->setTime(9 + ($slot % 10), intdiv($slot, 10) * 15);
+                $candidate = $day->copy()->setTime(9 + ($slot % 10), intdiv($slot, 10) * 15);
 
-                if (! isset($taken[$specialist->id.'|'.$start->toDateTimeString()])
+                if (! isset($taken[$specialist->id.'|'.$candidate->toDateTimeString()])
                     && ! Appointment::withoutGlobalScopes()
                         ->where('specialist_id', $specialist->id)
-                        ->where('starts_at', $start)
+                        ->where('starts_at', $candidate)
                         ->exists()) {
+                    $start = $candidate;
                     break;
                 }
+            }
+
+            // A fully booked day keeps the lead and skips the visit, never a duplicate slot.
+            if ($start === null) {
+                continue;
             }
 
             $taken[$specialist->id.'|'.$start->toDateTimeString()] = true;
