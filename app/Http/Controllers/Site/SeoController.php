@@ -48,6 +48,7 @@ class SeoController extends Controller
             'Disallow: /dashboard',
             'Disallow: /settings',
             'Disallow: /book/confirmed',
+            'Disallow: /kiosk',
             '',
             'Sitemap: '.route('sitemap'),
         ];

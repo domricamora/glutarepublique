@@ -58,7 +58,11 @@ class DatabaseSeeder extends Seeder
         $this->call(AccountingSeeder::class);
 
         if (! app()->runningUnitTests()) {
+            // A year of history first (once per database); the CRM seeder then
+            // fills today and this week around it, checking the diary for each slot.
+            $this->call(ShowcaseHistorySeeder::class);
             $this->call(CrmDemoSeeder::class);
+            $this->call(TrafficDemoSeeder::class);
         }
     }
 }

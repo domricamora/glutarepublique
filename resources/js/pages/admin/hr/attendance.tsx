@@ -1,5 +1,11 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, LogIn, LogOut } from 'lucide-react';
+import {
+    ArrowLeft,
+    CalendarDays,
+    LogIn,
+    LogOut,
+    MonitorSmartphone,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -7,15 +13,23 @@ import { useCan } from '@/lib/admin';
 import { manilaNow, toIsoDate } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import hr from '@/routes/admin/hr';
+import kiosk from '@/routes/kiosk';
+
+type Status = 'present' | 'late' | 'absent' | 'rest' | 'expected';
 
 type Row = {
+    id: number;
     name: string;
     position: string;
+    shift: string | null;
     time_in: string | null;
     time_out: string | null;
     hours: number;
     overtime_minutes: number;
-    complete: boolean;
+    late_minutes: number;
+    status: Status;
+    source: string | null;
+    photo: string | null;
 };
 
 type Props = {
@@ -31,6 +45,14 @@ type Props = {
     open_shifts: number;
 };
 
+const STATUS: Record<Status, [string, string]> = {
+    present: ['On time', 'text-royal-ink'],
+    late: ['Late', 'text-destructive'],
+    absent: ['Absent', 'text-destructive font-medium'],
+    rest: ['Rest day', 'text-muted-foreground'],
+    expected: ['Not in yet', 'text-muted-foreground'],
+};
+
 export default function HrAttendance({
     date,
     me,
@@ -42,10 +64,11 @@ export default function HrAttendance({
     const form = useForm({ date });
     const today8 = toIsoDate(manilaNow());
     const inWorking = Boolean(today?.time_in) && !today?.time_out;
+    const count = (s: Status) => rows.filter((r) => r.status === s).length;
 
     return (
         <>
-            <Head title="Who is in" />
+            <Head title="Time record" />
             <div className="flex flex-1 flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
                 <header className="flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -57,11 +80,12 @@ export default function HrAttendance({
                             Staff
                         </Link>
                         <h1 className="mt-2 font-display text-3xl md:text-4xl">
-                            Who is in
+                            Time record
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            {date === today8 ? 'Today' : date} · {rows.length}{' '}
-                            clocked in
+                            {date === today8 ? 'Today' : date} ·{' '}
+                            {count('present') + count('late')} in ·{' '}
+                            {count('late')} late · {count('absent')} absent
                             {open_shifts > 0 &&
                                 ` · ${open_shifts} still clocked in`}
                         </p>
@@ -77,12 +101,28 @@ export default function HrAttendance({
                                     hr.attendance({
                                         query: { date: e.target.value },
                                     }).url,
+                                    {},
                                     { preserveScroll: true },
                                 )
                             }
                             aria-label="Date"
-                            className="h-10"
+                            className="h-10 w-auto"
                         />
+                        <Link
+                            href={hr.schedule().url}
+                            className="press inline-flex h-10 items-center gap-2 border border-border px-3 text-sm hover:bg-mist dark:hover:bg-white/5"
+                        >
+                            <CalendarDays className="h-4 w-4" /> Schedule
+                        </Link>
+                        {/* The tablet page, opened in its own tab to set up a branch device. */}
+                        <a
+                            href={kiosk.index().url}
+                            target="_blank"
+                            rel="noopener"
+                            className="press inline-flex h-10 items-center gap-2 border border-border px-3 text-sm hover:bg-mist dark:hover:bg-white/5"
+                        >
+                            <MonitorSmartphone className="h-4 w-4" /> Kiosk
+                        </a>
                         {me && can('hr.create') && (
                             <Button
                                 type="button"
@@ -108,7 +148,7 @@ export default function HrAttendance({
                                 {inWorking
                                     ? `Clock out${
                                           today?.time_in
-                                              ? ` (in ${today.time_in})`
+                                              ? ` (in ${today.time_in.slice(0, 5)})`
                                               : ''
                                       }`
                                     : 'Clock in'}
@@ -125,12 +165,16 @@ export default function HrAttendance({
                 )}
 
                 <div className="overflow-x-auto border border-border">
-                    <table className="w-full text-sm">
+                    <table className="w-full min-w-[44rem] text-sm">
                         <thead>
                             <tr className="border-b border-border text-left text-muted-foreground">
                                 <th className="px-4 py-3 font-normal">Name</th>
+                                <th className="px-4 py-3 font-normal">Shift</th>
                                 <th className="px-4 py-3 font-normal">In</th>
                                 <th className="px-4 py-3 font-normal">Out</th>
+                                <th className="px-4 py-3 font-normal">
+                                    Status
+                                </th>
                                 <th className="px-4 py-3 text-right font-normal">
                                     Hours
                                 </th>
@@ -142,24 +186,62 @@ export default function HrAttendance({
                         <tbody>
                             {rows.map((row) => (
                                 <tr
-                                    key={row.name}
+                                    key={row.id}
                                     className="border-b border-border last:border-0"
                                 >
                                     <td className="px-4 py-3">
-                                        {row.name}
-                                        <span className="block text-xs text-muted-foreground">
-                                            {row.position}
+                                        <span className="flex items-center gap-3">
+                                            {row.photo ? (
+                                                <a
+                                                    href={row.photo}
+                                                    target="_blank"
+                                                    rel="noopener"
+                                                    title="Clock-in photo"
+                                                >
+                                                    <img
+                                                        src={row.photo}
+                                                        alt={`${row.name} at clock-in`}
+                                                        className="size-9 rounded-full object-cover"
+                                                    />
+                                                </a>
+                                            ) : (
+                                                <span className="size-9 shrink-0" />
+                                            )}
+                                            <span>
+                                                {row.name}
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {row.position}
+                                                    {row.source === 'kiosk' &&
+                                                        ' · kiosk'}
+                                                </span>
+                                            </span>
                                         </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-muted-foreground tabular-nums">
+                                        {row.shift ?? 'Not scheduled'}
                                     </td>
                                     <td className="px-4 py-3 tabular-nums">
                                         {row.time_in ?? '—'}
                                     </td>
                                     <td className="px-4 py-3 tabular-nums">
-                                        {row.time_out ?? (
-                                            <span className="text-gold-deep">
-                                                still in
-                                            </span>
+                                        {row.time_out ??
+                                            (row.time_in ? (
+                                                <span className="text-gold-deep">
+                                                    still in
+                                                </span>
+                                            ) : (
+                                                '—'
+                                            ))}
+                                    </td>
+                                    <td
+                                        className={cn(
+                                            'px-4 py-3',
+                                            STATUS[row.status][1],
                                         )}
+                                    >
+                                        {STATUS[row.status][0]}
+                                        {row.late_minutes > 0 &&
+                                            ` by ${row.late_minutes} min`}
                                     </td>
                                     <td className="px-4 py-3 text-right tabular-nums">
                                         {row.hours > 0
@@ -168,7 +250,7 @@ export default function HrAttendance({
                                     </td>
                                     <td className="px-4 py-3 text-right tabular-nums">
                                         {row.overtime_minutes > 0
-                                            ? `${Math.round(row.overtime_minutes / 60)} h`
+                                            ? `${(row.overtime_minutes / 60).toFixed(1)} h`
                                             : '—'}
                                     </td>
                                 </tr>
@@ -176,10 +258,11 @@ export default function HrAttendance({
                             {rows.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={5}
+                                        colSpan={7}
                                         className="px-4 py-10 text-center text-muted-foreground"
                                     >
-                                        Nobody has clocked in on this day.
+                                        Nobody was scheduled or clocked in on
+                                        this day.
                                     </td>
                                 </tr>
                             )}

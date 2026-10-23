@@ -16,6 +16,8 @@ void createInertiaApp({
         switch (true) {
             case isSitePage(name):
                 return SiteLayout;
+            case name.startsWith('kiosk/'):
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

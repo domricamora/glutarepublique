@@ -46,7 +46,7 @@ const doctors = [
     {
         name: 'Dr. Rhea Kapoor',
         role: 'Cosmetic Dermatologist',
-        photo: 'doctor-1.jpg',
+        photo: 'doctor-sofia.jpg',
     },
 ];
 
@@ -76,7 +76,7 @@ export default function Home({
             h: 'lg:h-[19rem]',
         },
         {
-            file: 'hero-treatment.jpg',
+            file: 'laser.jpg',
             alt: 'Laser treatment at the clinic',
             h: 'lg:h-[16rem]',
         },
@@ -286,10 +286,7 @@ export default function Home({
                     <div className="grid items-center gap-12 lg:grid-cols-12">
                         <div className="grid grid-cols-2 gap-3 lg:col-span-6">
                             {[
-                                [
-                                    'about-clinic.jpg',
-                                    'Gluta RepubliQ reception',
-                                ],
+                                ['reception.jpg', 'Gluta RepubliQ reception'],
                                 [
                                     'asian-dermatologist-consultation.jpg',
                                     'Doctor in a consultation room',

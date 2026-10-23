@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Hr\ClockPunch;
 use App\Actions\Media\UploadPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
@@ -10,18 +11,25 @@ use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\Organization;
 use App\Models\PayrollAdjustment;
+use App\Models\WorkSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Who works here, when they were in, and their time off (plan.md §28). */
 class HrController extends Controller
 {
+    /** Minutes after the shift start before a clock-in counts as late. */
+    public const GRACE_MINUTES = 5;
+
     public function index(Request $request): Response
     {
         $filters = $request->validate([
@@ -215,6 +223,7 @@ class HrController extends Controller
                 'id' => $employee->id,
                 'name' => $employee->name,
                 'employee_no' => $employee->employee_no,
+                'has_kiosk_pin' => $employee->kiosk_pin !== null,
                 'position' => $employee->position,
                 'department' => $employee->department,
                 'branch' => $employee->branch?->name,
@@ -311,47 +320,84 @@ class HrController extends Controller
             'today' => $mine
                 ? Attendance::where('employee_id', $mine->id)->whereDate('work_date', $day)->first()?->only(['time_in', 'time_out', 'minutes', 'overtime_minutes'])
                 : null,
-            'rows' => Attendance::with('employee:id,name,position')
-                ->whereDate('work_date', $day)
-                ->join('employees', 'employees.id', '=', 'attendances.employee_id')
-                ->orderBy('employees.name')
-                ->get(['attendances.id', 'attendances.time_in', 'attendances.time_out', 'attendances.minutes', 'attendances.overtime_minutes', 'attendances.employee_id', 'employees.name', 'employees.position'])
-                ->map(fn (Attendance $a) => [
-                    'name' => $a->employee->name,
-                    'position' => $a->employee->position,
-                    'time_in' => $a->time_in,
-                    'time_out' => $a->time_out,
-                    'hours' => $a->hours(),
-                    'overtime_minutes' => $a->overtime_minutes,
-                    'complete' => $a->isComplete(),
-                ]),
+            'rows' => $this->dtr($day),
             'open_shifts' => Attendance::whereDate('work_date', $day)->whereNull('time_out')->count(),
         ]);
     }
 
+    /**
+     * The day's time record: everyone scheduled or clocked in, with how late
+     * they were against their shift, so an absence shows up as a row rather
+     * than as nobody noticing a name is missing.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function dtr(CarbonImmutable $day): array
+    {
+        $attendances = Attendance::whereDate('work_date', $day)->get()->keyBy('employee_id');
+        $schedules = WorkSchedule::whereDate('work_date', $day)->get()->keyBy('employee_id');
+        $past = $day->lt(today());
+
+        return Employee::active()
+            ->whereIn('id', $attendances->keys()->merge($schedules->keys())->unique())
+            ->orderBy('name')
+            ->get(['id', 'name', 'position'])
+            ->map(function (Employee $e) use ($attendances, $schedules, $past) {
+                $a = $attendances->get($e->id);
+                $s = $schedules->get($e->id);
+                $shiftStart = $s && ! $s->is_rest_day ? $s->starts_at : null;
+                $late = $a?->time_in && $shiftStart
+                    ? max(0, intdiv((int) strtotime($a->time_in) - (int) strtotime($shiftStart), 60) - self::GRACE_MINUTES)
+                    : 0;
+                $started = $shiftStart && ($past || now()->format('H:i:s') > $shiftStart);
+
+                return [
+                    'id' => $e->id,
+                    'name' => $e->name,
+                    'position' => $e->position,
+                    'shift' => $s ? ($s->is_rest_day ? 'Rest day' : substr($s->starts_at, 0, 5).' to '.substr($s->ends_at, 0, 5)) : null,
+                    'time_in' => $a?->time_in ? substr($a->time_in, 0, 5) : null,
+                    'time_out' => $a?->time_out ? substr($a->time_out, 0, 5) : null,
+                    'hours' => $a?->hours() ?? 0,
+                    'overtime_minutes' => $a->overtime_minutes ?? 0,
+                    'late_minutes' => $late,
+                    'status' => match (true) {
+                        $s?->is_rest_day && ! $a => 'rest',
+                        (bool) $a => $late > 0 ? 'late' : 'present',
+                        $started => 'absent',
+                        default => 'expected',
+                    },
+                    'source' => $a->source ?? null,
+                    'photo' => $a?->photo_in ? route('admin.hr.attendance.photo', $a) : null,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /** The PIN this person types at the branch kiosk. Stored hashed; HR can reset it, never read it. */
+    public function kioskPin(Request $request, Employee $employee): RedirectResponse
+    {
+        $data = $request->validate(['pin' => ['required', 'digits_between:4,6']]);
+        $employee->forceFill(['kiosk_pin' => Hash::make($data['pin'])])->save();
+
+        return back()->with('success', "Kiosk PIN set for {$employee->name}. They clock in with employee number {$employee->employee_no}.");
+    }
+
+    /** The clock-in photo from the kiosk, for HR only; it never sits in public storage. */
+    public function attendancePhoto(Attendance $attendance): StreamedResponse
+    {
+        abort_unless($attendance->photo_in && Storage::disk('local')->exists($attendance->photo_in), 404);
+
+        return Storage::disk('local')->response($attendance->photo_in);
+    }
+
     /** Clock in, or clock out of the day that is already open. */
-    public function clock(Request $request): RedirectResponse
+    public function clock(Request $request, ClockPunch $punch): RedirectResponse
     {
         $data = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
-        $day = $data['date'] ?? now()->toDateString();
         $employee = Employee::where('user_id', $request->user()->id)->firstOrFail();
-        $now = now()->format('H:i');
-
-        $attendance = Attendance::firstOrNew([
-            'employee_id' => $employee->id,
-            'work_date' => $day,
-        ]);
-
-        $attendance->fill([
-            'time_in' => $attendance->time_in ?? $now,
-            'time_out' => $attendance->time_in ? $now : null,
-        ]);
-
-        $attendance->minutes = $attendance->time_in && $attendance->time_out
-            ? (int) max(0, (strtotime($attendance->time_out) - strtotime($attendance->time_in)) / 60)
-            : 0;
-        $attendance->overtime_minutes = (int) max(0, $attendance->minutes - 480);
-        $attendance->save();
+        $attendance = $punch($employee, $data['date'] ?? now()->toDateString());
 
         return back()->with('success', $attendance->time_out && $attendance->time_in
             ? 'Clocked out at '.$attendance->time_out.'.'

@@ -1,15 +1,15 @@
 <?php
 
 use App\Actions\Dashboard\ClinicAnalytics;
-use Database\Seeders\DatabaseSeeder;
 use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\Lead;
 use App\Models\Organization;
-use App\Models\Specialist;
 use App\Models\Payment;
 use App\Models\Sale;
+use App\Models\Specialist;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 
 /**
  * The dashboard's numbers, checked against figures worked out by hand.
@@ -89,7 +89,10 @@ it('takes refunds out of the revenue the graph shows', function () {
         'sale_id' => $sale->id,
         'method' => 'card',
         'type' => 'refund',
-        'amount' => $refund,
+        // Signed as the till signs it (RingUpSale::recordPayment). This test
+        // used to insert a positive refund, which hid that the analytics were
+        // adding real, negative refunds back onto revenue.
+        'amount' => -$refund,
         'user_id' => till()->id,
         'paid_at' => now(),
     ]);
@@ -177,6 +180,127 @@ it('leaves cancelled visits out of the booking breakdown', function () {
     expect($byStatus['completed']['count'])->toBeGreaterThanOrEqual(2)
         ->and($byStatus['no_show']['count'])->toBe(1)
         ->and($byStatus->has('cancelled'))->toBeFalse();
+});
+
+/** A visit in the diary, a given number of days ago, one hour long. */
+function visitFor(Lead $lead, Specialist $specialist, string $status, int $daysAgo, int $hour = 10): Appointment
+{
+    return Appointment::create([
+        'organization_id' => $lead->organization_id,
+        'lead_id' => $lead->id,
+        'specialist_id' => $specialist->id,
+        'reference' => 'T'.substr(uniqid(), -6).random_int(10, 99),
+        'branch_id' => Branch::where('slug', 'cebu')->value('id'),
+        'treatment_id' => facial()->id,
+        'starts_at' => now()->subDays($daysAgo)->setTime($hour, 0),
+        'ends_at' => now()->subDays($daysAgo)->setTime($hour + 1, 0),
+        'status' => $status,
+    ]);
+}
+
+function diaryPeople(int $leads = 1): array
+{
+    $org = Organization::firstOrFail();
+    $specialist = Specialist::create([
+        'organization_id' => $org->id,
+        'name' => 'Dr. Test',
+        'slug' => 'dr-test-'.uniqid(),
+        'title' => 'Dermatologist',
+        'bio' => 'For the analytics tests.',
+        'is_active' => true,
+    ]);
+
+    $people = [];
+
+    for ($i = 0; $i < $leads; $i++) {
+        $people[] = Lead::create([
+            'organization_id' => $org->id,
+            'branch_id' => Branch::where('slug', 'cebu')->value('id'),
+            'first_name' => 'Patient'.$i,
+            'last_name' => 'Test',
+        ]);
+    }
+
+    return [$specialist, $people];
+}
+
+it('compares against the previous period only, not the previous period plus this one', function () {
+    $today = sellOn(now()->toDateTimeString(), [['kind' => 'service', 'id' => facial()->id, 'quantity' => 1]]);
+    $money = (new ClinicAnalytics(30))->toArray()['money'];
+
+    // This used to read the previous window from its start to today, so a sale
+    // made today appeared in both columns and every month looked flat.
+    expect($money['revenue'])->toBe((float) $today->total)
+        ->and($money['previous_revenue'])->toBe(0.0);
+
+    $earlier = sellOn(now()->subDays(40)->toDateTimeString(), [['kind' => 'service', 'id' => facial()->id, 'quantity' => 1]]);
+    $money = (new ClinicAnalytics(30))->toArray()['money'];
+
+    expect($money['previous_revenue'])->toBe((float) $earlier->total)
+        ->and($money['revenue'])->toBe((float) $today->total);
+});
+
+it('tells new patients from returning ones', function () {
+    [$doctor, [$regular, $first]] = diaryPeople(2);
+
+    visitFor($regular, $doctor, 'completed', 60);
+    visitFor($regular, $doctor, 'completed', 2);
+    visitFor($first, $doctor, 'completed', 3);
+    // Seen twice inside the window is still one new patient.
+    visitFor($first, $doctor, 'completed', 1);
+
+    $patients = (new ClinicAnalytics(30))->toArray()['patients'];
+
+    expect($patients['new'])->toBe(1)
+        ->and($patients['returning'])->toBe(1)
+        ->and($patients['retention'])->toBe(0.5);
+});
+
+it('counts a no-show as booked time and a cancellation as time given back', function () {
+    [$doctor, [$lead]] = diaryPeople();
+
+    visitFor($lead, $doctor, 'completed', 2, 9);
+    visitFor($lead, $doctor, 'no_show', 2, 11);
+    visitFor($lead, $doctor, 'cancelled', 2, 13);
+
+    $use = (new ClinicAnalytics(30))->toArray()['utilisation'];
+
+    expect($use['booked_hours'])->toBe(2.0)
+        ->and($use['no_show_rate'])->toBe(0.5)
+        ->and($use['capacity_hours'])->toBeGreaterThan(0.0)
+        ->and($use['rate'])->toBe(round(2 / $use['capacity_hours'], 4));
+});
+
+it('lists every pipeline stage in order, empty ones included', function () {
+    $funnel = (new ClinicAnalytics(30))->toArray()['funnel'];
+
+    expect(array_column($funnel, 'stage'))->toBe(array_keys(Lead::STAGES));
+});
+
+it('splits revenue by category so the rows add back up to the total', function () {
+    sellOn(now()->subDay()->toDateTimeString(), [
+        ['kind' => 'service', 'id' => facial()->id, 'quantity' => 1],
+        ['kind' => 'product', 'id' => balm()->id, 'quantity' => 1],
+    ]);
+
+    $figures = (new ClinicAnalytics(30))->toArray();
+    $byName = collect($figures['categories'])->keyBy('name');
+
+    expect($byName->has('Retail products'))->toBeTrue()
+        ->and($byName->has(facial()->category->name))->toBeTrue()
+        ->and(round($byName->sum('revenue'), 2))->toBe($figures['money']['revenue']);
+});
+
+it('keeps category takings off the front desk while showing it the diary figures', function () {
+    $reception = User::where('email', 'reception@glutarepubliq.com')->firstOrFail();
+
+    $this->actingAs($reception)
+        ->get('/dashboard')
+        ->assertInertia(
+            fn ($page) => $page->where('analytics.categories', null)
+                ->has('analytics.patients.new')
+                ->has('analytics.utilisation.booked_hours'),
+        );
 });
 
 it('says nothing about conversion when there were no enquiries at all', function () {

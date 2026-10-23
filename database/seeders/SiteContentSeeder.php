@@ -95,7 +95,8 @@ class SiteContentSeeder extends Seeder
             $branch = Branch::withoutGlobalScopes()->where($org + ['slug' => $slug])->first();
             // Hours are the clinic's to edit, so only a branch still on the old free-text schedule gets the default.
             $branch?->update([
-                'image' => $branch->getRawOriginal('image') ?? '/media/photos/about-clinic.jpg',
+                // about-clinic.jpg was a 455px crop shown full width; anything else was chosen in the office.
+                'image' => in_array($branch->getRawOriginal('image'), [null, '/media/photos/about-clinic.jpg'], true) ? '/media/photos/clinic-interior.jpg' : $branch->getRawOriginal('image'),
             ] + ($this->hasSchedule($branch) ? [] : ['hours' => $slug === 'cebu' ? Branch::CEBU_HOURS : Branch::DEFAULT_HOURS]));
         }
 
@@ -133,7 +134,7 @@ class SiteContentSeeder extends Seeder
         $specialists = [
             ['dr-camille-rivera', 'Dr. Camille Rivera', 'Medical Director, Aesthetic Dermatology', 'MD, Aesthetic & Laser Specialist', 'Dr. Rivera specializes in advanced laser aesthetics, pigmentation clearance, and medical-grade glutathione protocols with over 10 years of clinical practice.', 'asian-dermatologist-consultation.jpg', ['Laser rejuvenation', 'Glutathione protocols', 'Melasma treatment'], ['cebu', 'san-pedro']],
             ['dr-adrian-santos', 'Dr. Adrian Santos', 'Aesthetic Physician', 'MD, Aesthetic Medicine & Trichology', 'Dr. Santos focuses on non-invasive facial sculpting, HIFU, and anti-aging therapies with tailored protocols.', 'asian-doctor-male.jpg', ['HIFU lifting', 'Facial contouring', 'Skin tightening'], ['cebu', 'bacoor', 'san-pedro']],
-            ['dr-rhea-kapoor', 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'MD Dermatology', 'Dr. Kapoor brings 8+ years of dedicated expertise in delicate acne scar treatments, dermal peels, and glass-skin facial rejuvenation.', 'doctor-1.jpg', ['HydraGlow', 'Acne scar revision', 'Skin rejuvenation'], ['sta-rosa', 'cebu']],
+            ['dr-rhea-kapoor', 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'MD Dermatology', 'Dr. Kapoor brings 8+ years of dedicated expertise in delicate acne scar treatments, dermal peels, and glass-skin facial rejuvenation.', 'doctor-sofia.jpg', ['HydraGlow', 'Acne scar revision', 'Skin rejuvenation'], ['sta-rosa', 'cebu']],
         ];
 
         $branches = Branch::withoutGlobalScopes()->where($org)->pluck('id', 'slug');

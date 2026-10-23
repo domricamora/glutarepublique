@@ -96,7 +96,9 @@ Below the agenda, the analytics panel shows revenue, gross profit, average sale,
 **Staff** is the employee list: personal and job details, branch, pay and photo.
 
 - Tick **Practitioner** and **Show on the website** to list a doctor or specialist on the website's Doctors and About pages, with their photo, title and focus.
-- **Attendance**: clock people in and out; hours and overtime are worked out for you.
+- **Schedule**: the week's shifts per person. Click a day to set a shift (use the 4 to 12 hour buttons for quick lengths), a rest day, or a night shift (an end time earlier than the start ends the next morning). **Copy last week** repeats the rota without touching days already planned.
+- **Time record**: everyone scheduled or clocked in that day, with their shift, time in and out, **late** (more than 5 minutes after the shift start), **absent** (shift started, no clock-in), hours and overtime. Overtime counts against the scheduled shift, or 8 hours when there is none. A kiosk clock-in shows the photo taken.
+- **Branch kiosk (DTR)**: open **/kiosk** on the branch tablet once, pick the branch and bookmark the page. Staff clock in and out there with their employee number and **kiosk PIN**; clocking in needs a photo from the tablet camera. Five wrong PINs lock that number out for 5 minutes. Set or reset a person's PIN on their Staff page (HR never sees the old one).
 - **Leave**: staff request leave; a manager approves or declines it.
 - **Resign** someone when they leave (they disappear from the website and from payroll), or reinstate them.
 
@@ -125,6 +127,10 @@ Below the agenda, the analytics panel shows revenue, gross profit, average sale,
 - **Add an account**: name, email, role and a first password. Give it to the person in person; they can change it and turn on two-factor.
 - Roles: Organization Owner and Clinic Administrator (everything), Branch Manager, Receptionist, Cashier, Inventory Manager, HR Manager, Accountant, Marketing Manager, and the clinical roles (Doctor, Nurse, Aesthetician, Therapist), who see appointments. The form shows which screens each role opens.
 - When someone leaves, **switch off** their account instead of deleting it: they are signed out at once, and their sales and notes keep their name.
+
+### Website traffic
+
+**Website traffic** counts visits to the public website by itself (no outside tracker, no cookies, no IP address kept): visitors, page views, the daily trend, top pages, where visitors came from (Google, Facebook, Instagram, TikTok, a campaign link or direct), campaigns, devices, the share who sent an enquiry, and a log of the latest 50 page views. Signed-in staff and search-engine robots are not counted. Tag ad and post links with `?utm_source=facebook&utm_campaign=your-promo` to see each campaign separately.
 
 ### Website pages
 

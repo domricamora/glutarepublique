@@ -5,6 +5,7 @@ Updated 2026-10-23: contract gap pass (Annex A of `~/Downloads/glutarepubliq/Sof
 ## Contract gap pass (2026-10-23)
 
 Annex A checked line by line; what was missing is now built:
+
 - **A.1** `/doctors` page (practitioners from the staff roll, `components/site/team-grid.tsx` shared with About); **branch hours are one structured schedule** (`branches.hours` = 7-entry list, Sunday first, `[open, close]` or null; `Branch::hoursOn()`, `DEFAULT_HOURS`, `CEBU_HOURS`) read by the website, the live "Open now / Closed now" badge (`components/site/branch-hours.tsx`) and booking (`AvailableSlots::hours`). The old hard-coded booking hours and the disagreeing free-text hours are gone. Legal pages editable in **Admin > Website pages** (`LegalPageController`, `content.edit`).
 - **A.7** CSV export: financial reports (`accounting/reports/export`) and sales by day or month (`pos/sales-export`).
 - **A.9** **Staff accounts** (`StaffAccountController`, `settings.edit`: add, change role, new password, switch off; no self-lockout; Super Admin never assignable), **Branches** admin (`BranchController`), `users.disabled_at` + `EnsureAccountIsActive` middleware, audit of sign-in / sign-out / failed sign-in (AppServiceProvider listeners) and of account, branch and page changes. **Public registration turned off** (it was open: anyone could create an account). Encrypted nightly backups: `php artisan clinic:backup` (scheduled 02:00 Manila in `routes/console.php`).
@@ -12,16 +13,23 @@ Annex A checked line by line; what was missing is now built:
 - Admin `->with('success')` messages were never shown anywhere in the office; `use-flash-toast.ts` now toasts them (site pages keep their own banner). `isSitePage()` in `lib/site.ts` is the one list of public pages.
 - Fixed: `HrDemoSeeder` linked staff to the old `@glutarepubliq.test` logins, so no employee had an account (my attendance / my leave broke). Stale test expectations updated (4 branches, 3 Cebu doctors, demo password, real branch name).
 
+## Owner requests, second pass (2026-10-23)
+
+- **KPI dashboard** ported from `../beautyclinic` (the newer Aesthetic Clinic codebase that runs aesthetic-clinic.recursive-frog.com): `ClinicAnalytics`, `DashboardController`, `components/admin/{analytics-panel,charts}.tsx`, `DashboardAnalyticsTest` (helpers live in PosTest). Restyled square + our palette. `ShowcaseHistorySeeder` (a year of history through the real till) runs **once per database** (`ClinicSetting` flag `demo.history_seeded`), reads branch hours, and checks the DB before taking a slot.
+- **DTR kiosk + work schedule** (vet project design, ported to Inertia): `/kiosk` picks a branch, `/kiosk/{branch}` punches with employee no. + hashed `employees.kiosk_pin` + camera photo (stored on the private `local` disk, served to HR via `admin.hr.attendance.photo`); 5 wrong PINs = 5-minute lock. `work_schedules` table + `admin/hr/schedule` grid (night shifts, rest days, quick lengths, copy last week). `App\Actions\Hr\ClockPunch` is the one clock for the office button and the kiosk; overtime counts against the scheduled shift. Time record (`admin/hr/attendance`) shows shift, late (5-min grace), absent. HR sets PINs on the employee page. Demo rota seeded by `HrDemoSeeder::schedule()` (never overwrites).
+- **Website traffic**: `TrackPageView` middleware → `page_views` (no IP; daily-rotating HMAC visitor id; skips staff, bots, office, kiosk, partial reloads), `admin/traffic` report (`content.view`), pruned after 13 months by `model:prune` (scheduled 03:00). `TrafficDemoSeeder` fills 90 days once.
+- **Login** restyled like aesthetic-clinic: split photo layout (`layouts/auth/auth-simple-layout.tsx`) + "Exploring the demo? Sign in as" buttons that fill the email only. The safety classifier blocks shipping the demo password in the page or seeding per-role demo accounts with a known password; testers type the password.
+- **Blurry photos** replaced: 85px doctor crops, 455px branch photo, mockup crops removed; branches use `clinic-interior.jpg` unless the office chose another.
+- **Cron on live added 2026-10-23** (crontab backed up to `~/crontab.bak-*`). `clinic:backup` verified on live (99 KB).
+
 ### Next steps (start here)
 
-00. **Owner requests queued 2026-10-23 (not started):** (a) replace blurry stock photos; (b) DTR kiosk + work scheduler "similar to our vet project"; (c) dashboard graphs for all KPIs like https://aesthetic-clinic.recursive-frog.com/; (d) website traffic log and tracking (mind the open IP-retention policy question in "Next" below).
-0. **Cron on live is NOT set up yet** (awaiting owner OK; the only `schedule:run` line in the shared crontab is dentistry's): `* * * * * cd /home/htrjymuo/public_html/glutarepubliq.recursive-frog.com && /opt/cpanel/ea-php83/root/usr/bin/php artisan schedule:run >> /dev/null 2>&1`. `clinic:backup` verified on live 2026-10-23 (99 KB). SSH is port 9022 (`ssh -p 9022 -i ~/.ssh/ck_deskpulse htrjymuo@ck.deskpulse.click`).
-0b. **Passwordless "sign in as any role" for client testing (owner asked 2026-10-23) is NOT built**: the auto-mode classifier blocked adding the route. Draft controller parked in the session scratchpad (`pending/DemoLoginController.php`): env flag `CLINIC_DEMO_LOGIN`, fixed demo addresses only, audited. Needs the owner's explicit go-ahead / permission rule.
-0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain.
-1. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
-2. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
-3. Pre-existing test failures (6 + 1 error, seed counts, booking concurrency, PeopleTest) are untouched; fix before calling the suite green.
-4. Then the older backlog below (settings/auth screens on the stock layout, untouched plan.md sections).
+0. **Still blocked by the auto-mode classifier** (needs a permission rule from the owner, not just chat approval): passwordless "sign in as any role" (draft was `app/Http/Controllers/DemoLoginController.php`, removed) and per-role demo accounts with the shared password. The owner said staging allows it; ask them to add an allow rule, then rebuild.
+0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain. Privacy notice should mention the cookieless traffic count (client's lawyer to word it).
+1. SSH is port 9022: `ssh -p 9022 -i ~/.ssh/ck_deskpulse htrjymuo@ck.deskpulse.click`.
+2. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
+3. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
+5. Then the older backlog below (settings/auth screens on the stock layout, untouched plan.md sections).
 
 ### Gotchas
 

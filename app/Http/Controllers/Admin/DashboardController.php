@@ -22,7 +22,7 @@ use Inertia\Response;
  */
 class DashboardController extends Controller
 {
-    private const WINDOWS = [7, 30, 90, 180];
+    private const WINDOWS = [7, 30, 90, 365];
 
     private int $days = 30;
 
@@ -50,7 +50,7 @@ class DashboardController extends Controller
             // counter's takings are not on a receptionist's. Each part of the
             // analytics block is gated on its own permission so a user with
             // leads but not accounting still gets their charts.
-            'analytics' => $this->analytics($user->can('accounting.view'), $user->can('pos.view')),
+            'analytics' => $this->analytics($user->can('accounting.view'), $user->can('pos.view'), $canAppointments, $canLeads),
             'leads' => $canLeads ? Lead::latest()->limit(6)->with('treatment:id,name')->get()->map(LeadController::row(...)) : null,
             'statuses' => Appointment::STATUSES,
             'stages' => Lead::STAGES,
@@ -65,7 +65,7 @@ class DashboardController extends Controller
      * thirty days of grouped rows is small, the cost of running the same
      * aggregation five times because each key was asked for separately is not.
      */
-    private function analytics(bool $money, bool $pos): array
+    private function analytics(bool $money, bool $pos, bool $diary, bool $leads): array
     {
         $figures = (new ClinicAnalytics($this->days))->toArray();
 
@@ -77,6 +77,15 @@ class DashboardController extends Controller
             'money' => $money ? $figures['money'] : null,
             'top_treatments' => $pos ? $figures['top_treatments'] : null,
             'payment_mix' => $pos ? $figures['payment_mix'] : null,
+            'patients' => $diary ? $figures['patients'] : null,
+            'utilisation' => $diary ? $figures['utilisation'] : null,
+            'practitioners' => $diary ? $figures['practitioners'] : null,
+            // Visits per branch are diary figures; takings per branch are money.
+            'branches' => $diary ? array_map(fn ($b) => [...$b, 'revenue' => $money ? $b['revenue'] : null], $figures['branches']) : null,
+            'categories' => $money ? $figures['categories'] : null,
+            'monthly' => array_map(fn ($m) => [...$m, 'revenue' => $money ? $m['revenue'] : null, 'visits' => $diary ? $m['visits'] : null], $figures['monthly']),
+            'funnel' => $leads ? $figures['funnel'] : null,
+            'sources' => $leads ? $figures['sources'] : null,
         ];
     }
 }

@@ -25,7 +25,12 @@ export function useFlashToast(): void {
                 page.props.flash as { success?: string | null } | undefined
             )?.success;
 
-            if (message && !isSitePage(page.component)) {
+            // The kiosk shows its own large confirmation instead.
+            if (
+                message &&
+                !isSitePage(page.component) &&
+                !page.component.startsWith('kiosk/')
+            ) {
                 toast.success(message);
             }
         });

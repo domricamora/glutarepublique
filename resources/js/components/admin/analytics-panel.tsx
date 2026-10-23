@@ -1,7 +1,27 @@
 import { Link } from '@inertiajs/react';
-import { BarChart, RingChart, TrendChart } from '@/components/admin/charts';
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import type { ReactNode } from 'react';
+import {
+    ColumnChart,
+    Donut,
+    Funnel,
+    HBars,
+    SERIES,
+    Sparkline,
+    TrendChart,
+} from '@/components/admin/charts';
+import { sourceLabel } from '@/lib/admin';
 import { money } from '@/lib/pos';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
+
+type Split = { new: number; returning: number; retention: number | null };
+type Use = {
+    rate: number | null;
+    booked_hours: number;
+    capacity_hours: number;
+    no_show_rate: number | null;
+};
 
 export type Analytics = {
     window: { days: number; from: string; to: string };
@@ -35,325 +55,523 @@ export type Analytics = {
     } | null;
     top_treatments: { name: string; sold: number; revenue: number }[] | null;
     payment_mix:
-        | {
-              method: string;
-              label: string;
-              amount: number;
-              count: number;
-          }[]
+        | { method: string; label: string; amount: number; count: number }[]
         | null;
+    patients: (Split & { previous: Split }) | null;
+    utilisation: (Use & { previous: Use }) | null;
+    practitioners:
+        | { name: string; title: string; visits: number; value: number }[]
+        | null;
+    branches: { name: string; revenue: number | null; visits: number }[] | null;
+    categories: { name: string; revenue: number }[] | null;
+    monthly: { month: string; revenue: number | null; visits: number | null }[];
+    funnel: { stage: string; label: string; count: number }[] | null;
+    sources: { source: string; leads: number; won: number }[] | null;
 };
 
-const SLICES = [
-    '#4A1D3F',
-    '#A67C00',
-    '#7A5C7E',
-    '#3F6B5C',
-    '#B08968',
-    '#5C5C5C',
+const WINDOWS: [number, string][] = [
+    [7, '7 days'],
+    [30, '30 days'],
+    [90, '90 days'],
+    [365, '12 months'],
 ];
 
-const WINDOWS = [7, 30, 90];
+const peso0 = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    maximumFractionDigits: 0,
+});
+const pesos = (n: number) => peso0.format(n);
+const count = (n: number) => new Intl.NumberFormat('en-PH').format(n);
+const pct = (n: number | null) =>
+    n === null ? 'n/a' : `${Math.round(n * 100)}%`;
+const day = (iso: string) =>
+    new Date(`${iso}T12:00:00`).toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+    });
+const month = (ym: string) =>
+    new Date(`${ym}-15T12:00:00`).toLocaleDateString('en-PH', {
+        month: 'short',
+    });
 
 /**
- * Change against the previous period, or null when there is nothing to compare.
- *
- * Growing from nothing to something is not an infinite percentage, and
- * printing one would dress an absence of data up as a result.
+ * Change against the previous period, or nothing when there is nothing to
+ * compare. Growing from zero is not an infinite percentage. Rates compare in
+ * points, because "utilisation up 50%" from 20% to 30% misleads.
  */
-const change = (current: number, previous: number): string | null => {
-    if (previous === 0) return null;
+function Delta({
+    now,
+    before,
+    points = false,
+    invert = false,
+}: {
+    now: number | null;
+    before: number | null;
+    points?: boolean;
+    invert?: boolean;
+}) {
+    if (now === null || before === null || (!points && before === 0)) {
+        return (
+            <span className="text-xs text-muted-foreground">
+                No earlier period to compare
+            </span>
+        );
+    }
 
-    const percent = ((current - previous) / Math.abs(previous)) * 100;
-    return `${percent > 0 ? '+' : ''}${percent.toFixed(0)}%`;
-};
+    const diff = points
+        ? (now - before) * 100
+        : ((now - before) / Math.abs(before)) * 100;
 
-function Figure({
+    // A change that rounds to nothing is no change; "-0%" with a down arrow says otherwise.
+    if (Math.abs(diff) < (points ? 0.05 : 0.5)) {
+        return (
+            <span className="text-xs text-muted-foreground">
+                Level with the previous period
+            </span>
+        );
+    }
+
+    const up = diff >= 0;
+    const good = invert ? !up : up;
+    const Icon = up ? ArrowUpRight : ArrowDownRight;
+
+    return (
+        <span
+            className={cn(
+                'inline-flex items-center gap-1 text-xs font-medium tabular-nums',
+                good
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    : 'text-rose-ink dark:text-lilac',
+            )}
+        >
+            <Icon className="size-3.5" aria-hidden />
+            {up ? '+' : ''}
+            {diff.toFixed(points ? 1 : 0)}
+            {points ? ' pts' : '%'}
+            <span className="font-normal text-muted-foreground">
+                vs previous
+            </span>
+        </span>
+    );
+}
+
+function Kpi({
     label,
     value,
-    current,
-    previous,
+    sub,
+    delta,
+    spark,
 }: {
     label: string;
     value: string;
-    current?: number;
-    previous?: number;
+    sub?: string;
+    delta?: ReactNode;
+    spark?: number[];
 }) {
-    const delta =
-        current === undefined || previous === undefined
-            ? null
-            : change(current, previous);
-
     return (
-        <div className="bg-background px-4 py-3">
-            <dt className="text-xs tracking-wide text-muted-foreground uppercase">
-                {label}
-            </dt>
-            <dd className="mt-1 font-display text-2xl tabular-nums">{value}</dd>
-            {delta && (
-                <p
-                    className={`mt-0.5 text-xs tabular-nums ${
-                        delta.startsWith('+')
-                            ? 'text-green-700 dark:text-green-400'
-                            : 'text-muted-foreground'
-                    }`}
-                >
-                    {delta} on the period before
+        <div className="flex flex-col justify-between gap-3 border border-border bg-card p-5">
+            <div>
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="mt-1.5 font-display text-[2rem] leading-none tracking-[-0.01em] tabular-nums">
+                    {value}
                 </p>
-            )}
+                {sub && (
+                    <p className="mt-2 text-xs text-muted-foreground">{sub}</p>
+                )}
+            </div>
+            {spark && <Sparkline values={spark} className="-mx-1" />}
+            {delta}
         </div>
     );
 }
 
-function Panel({
+function Card({
     title,
-    description,
+    note,
     children,
+    className,
 }: {
     title: string;
-    description?: string;
-    children: React.ReactNode;
+    note?: string;
+    children: ReactNode;
+    className?: string;
 }) {
     return (
-        <section className="space-y-3">
-            <div>
-                <h2 className="font-display text-xl">{title}</h2>
-                {description && (
-                    <p className="text-sm text-muted-foreground">
-                        {description}
-                    </p>
-                )}
-            </div>
-            {children}
+        <section
+            className={cn('border border-border bg-card p-5 md:p-6', className)}
+        >
+            <h3 className="text-base font-medium">{title}</h3>
+            {note && (
+                <p className="mt-0.5 text-sm text-muted-foreground">{note}</p>
+            )}
+            <div className="mt-5">{children}</div>
         </section>
     );
 }
 
 export default function AnalyticsPanel({
-    analytics,
+    analytics: a,
 }: {
     analytics: Analytics;
 }) {
-    const { window, daily, money: cash, bookings, front_desk } = analytics;
-
-    const totalBookings = bookings.reduce((sum, row) => sum + row.count, 0);
-    const noShows = bookings
-        .filter((row) => row.status === 'no_show')
-        .reduce((sum, row) => sum + row.count, 0);
+    const cash = a.money;
+    const seen = a.patients ? a.patients.new + a.patients.returning : null;
+    const seenBefore = a.patients
+        ? a.patients.previous.new + a.patients.previous.returning
+        : null;
+    const daily = a.daily.map((d) => ({ ...d, label: day(d.date) }));
+    const lastYear = a.monthly.map((m) => ({ ...m, label: month(m.month) }));
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <header className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h2 className="font-display text-xl">
+                    <h2 className="font-display text-2xl">
                         How the clinic is doing
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        {window.from} to {window.to}
+                        {day(a.window.from)} to {day(a.window.to)}, against the{' '}
+                        {a.window.days === 365
+                            ? 'year'
+                            : `${a.window.days} days`}{' '}
+                        before
                     </p>
                 </div>
-
-                {/* A plain reload, not a router visit: the whole panel is one
-                    query and Inertia would swap the page underneath to do it. */}
                 <div
-                    className="flex gap-px border border-border bg-border"
+                    className="flex border border-border bg-card p-0.5"
                     role="group"
                     aria-label="Reporting period"
                 >
-                    {WINDOWS.map((days) => (
+                    {WINDOWS.map(([days, label]) => (
                         <Link
                             key={days}
                             href={dashboard({ query: { days } }).url}
                             preserveScroll
                             aria-current={
-                                window.days === days ? 'true' : undefined
+                                a.window.days === days ? 'true' : undefined
                             }
-                            className={`px-3 py-1.5 text-sm transition-colors duration-150 ease-out ${
-                                window.days === days
+                            className={cn(
+                                'px-3 py-1.5 text-sm transition-colors duration-150 ease-out',
+                                a.window.days === days
                                     ? 'bg-plum text-white'
-                                    : 'bg-background hover:bg-mist dark:hover:bg-white/5'
-                            }`}
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                            )}
                         >
-                            {days} days
+                            {label}
                         </Link>
                     ))}
                 </div>
             </header>
 
-            {cash && (
-                <Panel title="Takings">
-                    <dl className="grid grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">
-                        <Figure
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {cash && (
+                    <>
+                        <Kpi
                             label="Revenue"
-                            value={money(cash.revenue)}
-                            current={cash.revenue}
-                            previous={cash.previous_revenue}
+                            value={pesos(cash.revenue)}
+                            sub={`${count(cash.sales)} sales, net of ${pesos(cash.refunds)} refunds`}
+                            spark={a.daily.map((d) => d.revenue)}
+                            delta={
+                                <Delta
+                                    now={cash.revenue}
+                                    before={cash.previous_revenue}
+                                />
+                            }
                         />
-                        <Figure
+                        <Kpi
                             label="Gross profit"
-                            value={money(cash.profit)}
-                            current={cash.profit}
-                            previous={cash.previous_profit}
+                            value={pesos(cash.profit)}
+                            sub={
+                                cash.revenue > 0
+                                    ? `${Math.round((cash.profit / cash.revenue) * 100)}% margin before wages and rent`
+                                    : 'Before wages and rent'
+                            }
+                            spark={a.daily.map((d) => d.profit)}
+                            delta={
+                                <Delta
+                                    now={cash.profit}
+                                    before={cash.previous_profit}
+                                />
+                            }
                         />
-                        <Figure
-                            label="Average sale"
-                            value={money(cash.average_sale)}
+                        <Kpi
+                            label="Average ticket"
+                            value={pesos(cash.average_sale)}
+                            sub={`${pesos(cash.discounts)} given in discounts`}
                         />
-                        <Figure label="Refunded" value={money(cash.refunds)} />
-                    </dl>
-
-                    <TrendChart
-                        points={daily.map((day) => ({
-                            date: day.date,
-                            revenue: day.revenue,
-                            profit: day.profit,
-                        }))}
+                    </>
+                )}
+                {a.patients && (
+                    <Kpi
+                        label="Patients seen"
+                        value={count(seen ?? 0)}
+                        sub={`${count(a.patients.new)} new, ${count(a.patients.returning)} returning`}
+                        spark={a.daily.map((d) => d.completed)}
+                        delta={<Delta now={seen} before={seenBefore} />}
                     />
-
-                    <p className="text-xs text-muted-foreground">
-                        Gross profit is takings less what the goods sold cost.
-                        It is before wages, rent and running costs, so it is not
-                        what the clinic keeps. Treatments are counted at full
-                        price because no cost of goods is recorded against them,
-                        which flatters the margin here.
-                    </p>
-                </Panel>
-            )}
-
-            <div className="grid gap-8 lg:grid-cols-2">
-                <Panel
-                    title="Bookings"
-                    description={
-                        totalBookings > 0
-                            ? `${totalBookings} visits, ${noShows} no-shows.`
-                            : 'Nothing booked in this period.'
-                    }
-                >
-                    <BarChart
-                        points={daily.map((day) => ({
-                            date: day.date,
-                            value: day.bookings,
-                        }))}
+                )}
+                {a.utilisation && (
+                    <Kpi
+                        label="Chair utilisation"
+                        value={pct(a.utilisation.rate)}
+                        sub={`${count(a.utilisation.booked_hours)} of ${count(a.utilisation.capacity_hours)} practitioner hours booked`}
+                        delta={
+                            <Delta
+                                now={a.utilisation.rate}
+                                before={a.utilisation.previous.rate}
+                                points
+                            />
+                        }
                     />
-
-                    <ul className="space-y-1.5 border-t border-border pt-3 text-sm">
-                        {bookings.length === 0 && (
-                            <li className="text-muted-foreground">
-                                No visits in this period.
-                            </li>
-                        )}
-                        {bookings.map((row) => (
-                            <li key={row.status} className="flex gap-2">
-                                <span className="text-muted-foreground">
-                                    {row.label}
-                                </span>
-                                <span className="ml-auto tabular-nums">
-                                    {row.count}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </Panel>
-
-                <Panel
-                    title="Enquiries"
-                    description="What the website brought in, and how far it got."
-                >
-                    <dl className="grid grid-cols-2 gap-px border border-border bg-border">
-                        <Figure
-                            label="New enquiries"
-                            value={String(front_desk.leads)}
-                        />
-                        <Figure
-                            label="Became customers"
-                            value={String(front_desk.won)}
-                        />
-                        <Figure
-                            label="Chat conversations"
-                            value={String(front_desk.conversations)}
-                        />
-                        <Figure
-                            label="Still open"
-                            value={String(front_desk.open_conversations)}
-                        />
-                    </dl>
-
-                    <BarChart
-                        tone="gold"
-                        height={80}
-                        points={daily.map((day) => ({
-                            date: day.date,
-                            value: day.leads,
-                        }))}
+                )}
+                <Kpi
+                    label="Enquiry conversion"
+                    value={pct(a.front_desk.conversion)}
+                    sub={`${count(a.front_desk.won)} of ${count(a.front_desk.leads)} enquiries became customers`}
+                    spark={a.daily.map((d) => d.leads)}
+                />
+                {a.utilisation && (
+                    <Kpi
+                        label="No-show rate"
+                        value={pct(a.utilisation.no_show_rate)}
+                        sub="Of visits that were due"
+                        delta={
+                            <Delta
+                                now={a.utilisation.no_show_rate}
+                                before={a.utilisation.previous.no_show_rate}
+                                points
+                                invert
+                            />
+                        }
                     />
-
-                    <p className="text-xs text-muted-foreground">
-                        {front_desk.conversion === null
-                            ? 'No enquiries came in, so there is no conversion rate to report.'
-                            : `${Math.round(front_desk.conversion * 100)}% of enquiries became customers.`}
-                    </p>
-                </Panel>
+                )}
+                {a.patients && (
+                    <Kpi
+                        label="Returning patients"
+                        value={pct(a.patients.retention)}
+                        sub="Seen before this period"
+                        delta={
+                            <Delta
+                                now={a.patients.retention}
+                                before={a.patients.previous.retention}
+                                points
+                            />
+                        }
+                    />
+                )}
             </div>
 
-            {analytics.payment_mix && (
-                <Panel
-                    title="How they paid"
-                    description="Refunds are counted against the method they came back through."
-                >
-                    {analytics.payment_mix.length > 0 ? (
-                        <RingChart
-                            segments={analytics.payment_mix.map(
-                                (row, index) => ({
-                                    label: row.label,
-                                    value: row.amount,
-                                    color: SLICES[index % SLICES.length],
-                                }),
-                            )}
+            {cash && (
+                <div className="grid gap-4 xl:grid-cols-3">
+                    <Card
+                        className="xl:col-span-2"
+                        title="Revenue and gross profit"
+                        note="Daily, net of refunds. Gross profit is takings less the cost of goods sold; treatments carry no recorded cost, which flatters it."
+                    >
+                        <TrendChart
+                            points={daily}
+                            format={pesos}
+                            series={[
+                                {
+                                    key: 'revenue',
+                                    label: 'Revenue',
+                                    color: SERIES[0],
+                                },
+                                {
+                                    key: 'profit',
+                                    label: 'Gross profit',
+                                    color: SERIES[1],
+                                    dashed: true,
+                                },
+                            ]}
                         />
-                    ) : (
-                        <p className="text-sm text-muted-foreground">
-                            No payments recorded in this period.
-                        </p>
+                    </Card>
+                    {a.categories && (
+                        <Card
+                            title="Where the money came from"
+                            note="Revenue by treatment category"
+                        >
+                            {a.categories.length > 0 ? (
+                                <Donut
+                                    segments={a.categories.map((c) => ({
+                                        label: c.name,
+                                        value: c.revenue,
+                                    }))}
+                                    format={pesos}
+                                    center={{
+                                        value: new Intl.NumberFormat('en-PH', {
+                                            notation: 'compact',
+                                            maximumFractionDigits: 1,
+                                        }).format(cash.revenue),
+                                        label: 'pesos',
+                                    }}
+                                />
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No sales in this period.
+                                </p>
+                            )}
+                        </Card>
                     )}
-                </Panel>
+                </div>
             )}
 
-            {analytics.top_treatments &&
-                analytics.top_treatments.length > 0 && (
-                    <Panel title="Best sellers">
-                        <ul className="divide-y divide-border border-y border-border">
-                            {analytics.top_treatments.map((row) => {
-                                const top = analytics.top_treatments?.[0];
-                                const share =
-                                    top && top.revenue > 0
-                                        ? (row.revenue / top.revenue) * 100
-                                        : 0;
-
-                                return (
-                                    <li key={row.name} className="py-2.5">
-                                        <div className="flex items-baseline gap-3 text-sm">
-                                            <span className="truncate">
-                                                {row.name}
-                                            </span>
-                                            <span className="ml-auto text-muted-foreground tabular-nums">
-                                                {row.sold} sold
-                                            </span>
-                                            <span className="w-24 text-right tabular-nums">
-                                                {money(row.revenue)}
-                                            </span>
-                                        </div>
-                                        <div className="mt-1.5 h-1 bg-mist dark:bg-white/10">
-                                            <div
-                                                className="h-1 bg-plum"
-                                                style={{ width: `${share}%` }}
-                                            />
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </Panel>
+            <div className="grid gap-4 lg:grid-cols-2">
+                {lastYear.some((m) => m.revenue !== null) && (
+                    <Card
+                        title="The last 12 months: revenue"
+                        note="Net takings per calendar month"
+                    >
+                        <ColumnChart
+                            points={lastYear.map((m) => ({
+                                label: m.label,
+                                value: m.revenue,
+                            }))}
+                            format={pesos}
+                        />
+                    </Card>
                 )}
+                {lastYear.some((m) => m.visits !== null) && (
+                    <Card
+                        title="The last 12 months: visits"
+                        note="Completed visits per calendar month"
+                    >
+                        <ColumnChart
+                            points={lastYear.map((m) => ({
+                                label: m.label,
+                                value: m.visits,
+                            }))}
+                            format={count}
+                            color={SERIES[1]}
+                        />
+                    </Card>
+                )}
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+                {a.branches && (
+                    <Card
+                        title="Branches"
+                        note={
+                            cash
+                                ? 'Revenue, with completed visits'
+                                : 'Completed visits'
+                        }
+                    >
+                        <HBars
+                            rows={a.branches.map((b) => ({
+                                label: b.name,
+                                value: b.revenue ?? b.visits,
+                                note:
+                                    b.revenue !== null
+                                        ? `${count(b.visits)} visits`
+                                        : undefined,
+                            }))}
+                            format={cash ? pesos : count}
+                        />
+                    </Card>
+                )}
+                {a.practitioners && (
+                    <Card
+                        title="Busiest practitioners"
+                        note="Completed visits and their list value"
+                    >
+                        {a.practitioners.length > 0 ? (
+                            <HBars
+                                rows={a.practitioners.map((p) => ({
+                                    label: p.name,
+                                    value: p.visits,
+                                    note: pesos(p.value),
+                                }))}
+                                format={(n) => `${count(n)} visits`}
+                                color={SERIES[1]}
+                            />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                No completed visits in this period.
+                            </p>
+                        )}
+                    </Card>
+                )}
+                {a.payment_mix && (
+                    <Card
+                        title="How patients paid"
+                        note="Refunds count against the method they went back through"
+                    >
+                        {a.payment_mix.length > 0 ? (
+                            <Donut
+                                segments={a.payment_mix.map((p) => ({
+                                    label: p.label,
+                                    value: p.amount,
+                                }))}
+                                format={pesos}
+                            />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                No payments in this period.
+                            </p>
+                        )}
+                    </Card>
+                )}
+            </div>
+
+            {(a.funnel || a.sources) && (
+                <div className="grid gap-4 lg:grid-cols-2">
+                    {a.funnel && (
+                        <Card
+                            title="Enquiry funnel"
+                            note="Enquiries from this period, by how far they have got"
+                        >
+                            <Funnel
+                                stages={a.funnel.map((f) => ({
+                                    label: f.label,
+                                    count: f.count,
+                                }))}
+                            />
+                        </Card>
+                    )}
+                    {a.sources && (
+                        <Card
+                            title="Where enquiries come from"
+                            note="With the share that became customers"
+                        >
+                            {a.sources.length > 0 ? (
+                                <HBars
+                                    rows={a.sources.map((s) => ({
+                                        label: sourceLabel(s.source),
+                                        value: s.leads,
+                                        note: `${Math.round((s.won / Math.max(1, s.leads)) * 100)}% won`,
+                                    }))}
+                                    format={(n) => `${count(n)} leads`}
+                                    color={SERIES[2]}
+                                />
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No enquiries in this period.
+                                </p>
+                            )}
+                        </Card>
+                    )}
+                </div>
+            )}
+
+            {a.top_treatments && a.top_treatments.length > 0 && (
+                <Card
+                    title="Best-selling treatments"
+                    note="By revenue at the counter"
+                >
+                    <HBars
+                        rows={a.top_treatments.map((t) => ({
+                            label: t.name,
+                            value: t.revenue,
+                            note: `${count(t.sold)} sold`,
+                        }))}
+                        format={(n) => money(n)}
+                        color={SERIES[3]}
+                    />
+                </Card>
+            )}
         </div>
     );
 }

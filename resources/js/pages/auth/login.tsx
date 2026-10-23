@@ -17,6 +17,17 @@ type Props = {
     canResetPassword: boolean;
 };
 
+/** The staging demo logins seeded by DatabaseSeeder; the password is shared with testers separately. */
+const DEMO: [string, string, string][] = [
+    ['Owner', 'owner@glutarepubliq.com', 'Dashboard, money, stock and people'],
+    [
+        'Front desk',
+        'reception@glutarepubliq.com',
+        'Agenda, leads, chat and the till',
+    ],
+    ['Super admin', 'admin@glutarepubliq.com', 'Everything, settings included'],
+];
+
 export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
@@ -99,6 +110,56 @@ export default function Login({ status, canResetPassword }: Props) {
                             </Button>
                         </div>
 
+                        <section
+                            aria-labelledby="demo-heading"
+                            className="border border-border bg-mist p-4 dark:bg-white/5"
+                        >
+                            <h2
+                                id="demo-heading"
+                                className="text-sm font-medium"
+                            >
+                                Exploring the demo? Sign in as
+                            </h2>
+                            <ul className="mt-3 grid gap-2">
+                                {DEMO.map(([role, email, sees]) => (
+                                    <li key={email}>
+                                        <button
+                                            type="button"
+                                            disabled={processing}
+                                            onClick={() => {
+                                                // Fills the address only; the password is still typed.
+                                                const field =
+                                                    document.getElementById(
+                                                        'email',
+                                                    ) as HTMLInputElement | null;
+
+                                                if (field) {
+                                                    field.value = email;
+                                                }
+
+                                                document
+                                                    .getElementById('password')
+                                                    ?.focus();
+                                            }}
+                                            className="press flex w-full items-center justify-between gap-3 border border-border bg-card px-3 py-2.5 text-left transition-colors hover:border-royal disabled:opacity-50"
+                                        >
+                                            <span>
+                                                <span className="block text-sm font-medium">
+                                                    {role}
+                                                </span>
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {sees}
+                                                </span>
+                                            </span>
+                                            <span className="text-xs text-rose-ink">
+                                                Use
+                                            </span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+
                         <p className="text-center text-sm text-muted-foreground">
                             No account yet? Ask the clinic administrator.
                         </p>
@@ -116,6 +177,6 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Welcome back',
+    description: 'Sign in to the clinic desk.',
 };

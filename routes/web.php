@@ -14,8 +14,11 @@ use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\SetupController;
 use App\Http\Controllers\Admin\StaffAccountController;
+use App\Http\Controllers\Admin\TrafficController;
+use App\Http\Controllers\KioskController;
 use App\Http\Controllers\Site\BlogController;
 use App\Http\Controllers\Site\BookingController;
 use App\Http\Controllers\Site\ChatController as SiteChatController;
@@ -58,6 +61,11 @@ Route::get('chat/status', [SiteChatController::class, 'status'])->name('chat.sta
 Route::get('chat/{token}', [SiteChatController::class, 'show'])->middleware('throttle:120,1')->name('chat.show');
 Route::post('chat/{token}', [SiteChatController::class, 'store'])->name('chat.store');
 
+// The branch DTR tablet: no sign-in, employee number and PIN instead.
+Route::get('kiosk', [KioskController::class, 'index'])->name('kiosk.index');
+Route::get('kiosk/{branch}', [KioskController::class, 'show'])->name('kiosk.show');
+Route::post('kiosk/{branch}', [KioskController::class, 'punch'])->middleware('throttle:30,1')->name('kiosk.punch');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
@@ -80,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('branches', [BranchController::class, 'index'])->middleware('can:settings.edit')->name('branches.index');
         Route::post('branches', [BranchController::class, 'store'])->middleware('can:settings.edit')->name('branches.store');
         Route::patch('branches/{branch}', [BranchController::class, 'update'])->middleware('can:settings.edit')->name('branches.update');
+
+        Route::get('traffic', [TrafficController::class, 'index'])->middleware('can:content.view')->name('traffic.index');
 
         Route::get('pages', [LegalPageController::class, 'index'])->middleware('can:content.edit')->name('pages.index');
         Route::patch('pages/{page}', [LegalPageController::class, 'update'])->middleware('can:content.edit')->name('pages.update');
@@ -156,6 +166,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('hr/employees/{employee}/photo', [HrController::class, 'photo'])->middleware('can:hr.create')->name('hr.photo');
         Route::delete('hr/employees/{employee}/photo', [HrController::class, 'removePhoto'])->middleware('can:hr.create')->name('hr.photo.destroy');
         Route::get('hr/employees/{employee}', [HrController::class, 'show'])->middleware('can:hr.view')->name('hr.show');
+        Route::patch('hr/employees/{employee}/kiosk-pin', [HrController::class, 'kioskPin'])->middleware('can:hr.create')->name('hr.kiosk-pin');
+        Route::get('hr/attendance/{attendance}/photo', [HrController::class, 'attendancePhoto'])->middleware('can:hr.view')->name('hr.attendance.photo');
+        Route::get('hr/schedule', [ScheduleController::class, 'index'])->middleware('can:hr.view')->name('hr.schedule');
+        Route::post('hr/schedule', [ScheduleController::class, 'save'])->middleware('can:hr.create')->name('hr.schedule.save');
+        Route::delete('hr/schedule', [ScheduleController::class, 'clear'])->middleware('can:hr.create')->name('hr.schedule.clear');
+        Route::post('hr/schedule/copy', [ScheduleController::class, 'copyLastWeek'])->middleware('can:hr.create')->name('hr.schedule.copy');
 
         // Payroll: a run calculated from the records, then approved, then paid (plan.md 26).
         Route::get('payroll', [PayrollController::class, 'index'])->middleware('can:payroll.view')->name('payroll.index');

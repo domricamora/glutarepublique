@@ -2,7 +2,10 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     BookIcon,
+    CalendarClock,
     CalendarDays,
+    ChartLine,
+    Clock,
     Database,
     ExternalLink,
     FileText,
@@ -47,6 +50,7 @@ import inventory from '@/routes/admin/inventory';
 import payroll from '@/routes/admin/payroll';
 import leads from '@/routes/admin/leads';
 import pages from '@/routes/admin/pages';
+import traffic from '@/routes/admin/traffic';
 import pos from '@/routes/admin/pos';
 import settings from '@/routes/admin/settings/clinic';
 import setup from '@/routes/admin/setup';
@@ -131,6 +135,16 @@ export function AppSidebar() {
                       icon: UsersIcon,
                   },
                   {
+                      title: 'Schedule',
+                      href: hr.schedule(),
+                      icon: CalendarClock,
+                  },
+                  {
+                      title: 'Time record',
+                      href: hr.attendance(),
+                      icon: Clock,
+                  },
+                  {
                       title: 'Payroll',
                       href: payroll.index(),
                       icon: WalletIcon,
@@ -152,6 +166,15 @@ export function AppSidebar() {
                       title: 'Audit log',
                       href: audit.index(),
                       icon: ScrollText,
+                  },
+              ]
+            : []),
+        ...(can('content.view')
+            ? [
+                  {
+                      title: 'Website traffic',
+                      href: traffic.index(),
+                      icon: ChartLine,
                   },
               ]
             : []),

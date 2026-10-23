@@ -92,7 +92,13 @@ export default function Dashboard({
                             })}
                         </p>
                         <h1 className="mt-1 font-display text-3xl md:text-4xl">
-                            {greeting()}, {auth.user.name.split(' ')[0]}
+                            {greeting()},{' '}
+                            {/* "Dr. Camille Rivera" is greeted as Camille, not "Dr." */}
+                            {
+                                auth.user.name
+                                    .replace(/^(Dr|Dra|Mr|Ms|Mrs)\.?\s+/i, '')
+                                    .split(' ')[0]
+                            }
                         </h1>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">

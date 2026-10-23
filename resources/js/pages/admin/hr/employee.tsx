@@ -21,6 +21,7 @@ type Props = {
         id: number;
         name: string;
         employee_no: string;
+        has_kiosk_pin: boolean;
         position: string;
         department: string;
         branch: string | null;
@@ -748,6 +749,14 @@ export default function HrEmployee(props: Props) {
                     />
                 </section>
 
+                {can('hr.create') && (
+                    <KioskPin
+                        id={employee.id}
+                        employeeNo={employee.employee_no}
+                        hasPin={employee.has_kiosk_pin}
+                    />
+                )}
+
                 <div className="grid gap-6 lg:grid-cols-2">
                     <section>
                         <h2 className="font-display text-xl">Recent hours</h2>
@@ -1089,6 +1098,72 @@ export default function HrEmployee(props: Props) {
                 </div>
             </div>
         </>
+    );
+}
+
+/** The PIN typed at the branch kiosk. HR can set a new one, never read the old one. */
+function KioskPin({
+    id,
+    employeeNo,
+    hasPin,
+}: {
+    id: number;
+    employeeNo: string;
+    hasPin: boolean;
+}) {
+    const form = useForm({ pin: '' });
+
+    return (
+        <section className="flex flex-wrap items-end justify-between gap-4 border border-border bg-background px-4 py-4">
+            <div>
+                <h2 className="font-display text-xl">Kiosk PIN</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    {hasPin
+                        ? `Set. Clocks in at the branch tablet with ${employeeNo} and their PIN.`
+                        : 'Not set yet, so this person cannot use the branch kiosk.'}
+                </p>
+            </div>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.patch(hr.kioskPin(id).url, {
+                        preserveScroll: true,
+                        onSuccess: () => form.reset(),
+                    });
+                }}
+                className="flex flex-wrap items-start gap-2"
+            >
+                <div className="grid gap-1">
+                    <Input
+                        aria-label="New kiosk PIN"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        maxLength={6}
+                        placeholder="4 to 6 digits"
+                        value={form.data.pin}
+                        onChange={(e) =>
+                            form.setData(
+                                'pin',
+                                e.target.value.replace(/\D/g, ''),
+                            )
+                        }
+                        className="h-10 w-40 tracking-[0.3em]"
+                    />
+                    {form.errors.pin && (
+                        <p className="text-sm text-destructive">
+                            {form.errors.pin}
+                        </p>
+                    )}
+                </div>
+                <Button
+                    type="submit"
+                    className="h-10"
+                    disabled={form.processing}
+                >
+                    {hasPin ? 'Reset PIN' : 'Set PIN'}
+                </Button>
+            </form>
+        </section>
     );
 }
 
