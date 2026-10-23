@@ -27,18 +27,19 @@ class PostPayroll
         $philhealth = round((float) $payslips->sum('philhealth'), 2);
         $pagibig = round((float) $payslips->sum('pagibig'), 2);
         $tax = round((float) $payslips->sum('withholding_tax'), 2);
-        $other = round((float) $payslips->sum('unpaid_deduction') + (float) $payslips->sum('other_deductions'), 2);
+        // Pay not earned (unpaid leave, lateness, absence) was never an expense,
+        // so it comes off wages rather than being booked as a deduction.
+        $notEarned = round((float) $payslips->sum('unpaid_deduction') + (float) $payslips->sum('tardiness_deduction') + (float) $payslips->sum('absence_deduction'), 2);
+        // Loan and advance repayments reduce what staff owe the clinic.
+        $other = round((float) $payslips->sum('other_deductions'), 2);
 
-        $lines = [['account' => '5100', 'debit' => $gross, 'memo' => $run->label]];
+        // Dr wages earned = Cr contributions + Cr repayments + Cr net pay owed.
+        $lines = [['account' => '5100', 'debit' => round($gross - $notEarned, 2), 'memo' => $run->label]];
 
-        foreach ([['2100', $sss], ['2110', $philhealth], ['2120', $pagibig], ['2130', $tax]] as [$code, $amount]) {
+        foreach ([['2100', $sss], ['2110', $philhealth], ['2120', $pagibig], ['2130', $tax], ['1200', $other]] as [$code, $amount]) {
             if ($amount > 0.01) {
-                $lines[] = ['account' => $code, 'credit' => $amount, 'memo' => $run->label];
+                $lines[] = ['account' => $code, 'credit' => $amount, 'memo' => $code === '1200' ? 'Staff loans and advances repaid, '.$run->label : $run->label];
             }
-        }
-
-        if ($other > 0.01) {
-            $lines[] = ['account' => '2200', 'debit' => $other, 'memo' => 'Leave and other deductions, '.$run->label];
         }
 
         $lines[] = ['account' => '2200', 'credit' => $net, 'memo' => $run->label];

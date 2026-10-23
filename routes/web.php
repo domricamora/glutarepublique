@@ -177,6 +177,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('payroll', [PayrollController::class, 'index'])->middleware('can:payroll.view')->name('payroll.index');
         Route::get('payroll/settings', [PayrollController::class, 'settings'])->middleware('can:payroll.view')->name('payroll.settings');
         Route::patch('payroll/settings', [PayrollController::class, 'updateSettings'])->middleware('can:payroll.create')->name('payroll.settings.update');
+        Route::post('payroll/holidays', [PayrollController::class, 'storeHoliday'])->middleware('can:payroll.create')->name('payroll.holidays.store');
+        Route::delete('payroll/holidays/{holiday}', [PayrollController::class, 'destroyHoliday'])->middleware('can:payroll.create')->name('payroll.holidays.destroy');
         Route::post('payroll/adjustments', [PayrollController::class, 'storeAdjustment'])->middleware('can:payroll.create')->name('payroll.adjustments.store');
         Route::post('payroll/adjustments/{adjustment}/clear', [PayrollController::class, 'clearAdjustment'])->middleware('can:payroll.create')->name('payroll.adjustments.clear');
         Route::post('payroll', [PayrollController::class, 'store'])->middleware('can:payroll.create')->name('payroll.store');

@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MarketingContentSeeder::class);
         $this->call(PosDemoSeeder::class);
         $this->call(HrDemoSeeder::class);
+        $this->call(HolidaySeeder::class);
         $this->call(AccountingSeeder::class);
 
         if (! app()->runningUnitTests()) {

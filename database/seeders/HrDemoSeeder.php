@@ -144,11 +144,16 @@ class HrDemoSeeder extends Seeder
 
     /**
      * A plain rota from four weeks back to the end of next week: 09:00 to 18:00
-     * Monday to Saturday, Sunday off. A day already planned in the office is
-     * left as it is.
+     * on weekdays, weekends off, matching the demo clock-ins above. A day
+     * already planned in the office is left as it is. Not in tests, whose
+     * payroll figures are worked out without a rota.
      */
     private function schedule(Employee $employee): void
     {
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
         $end = CarbonImmutable::today()->startOfWeek(CarbonImmutable::MONDAY)->addDays(13);
 
         for ($day = CarbonImmutable::today()->subWeeks(4)->startOfWeek(CarbonImmutable::MONDAY); $day->lte($end); $day = $day->addDay()) {
@@ -157,9 +162,9 @@ class HrDemoSeeder extends Seeder
                 [
                     'organization_id' => $employee->organization_id,
                     'branch_id' => $employee->branch_id,
-                    'is_rest_day' => $day->isSunday(),
-                    'starts_at' => $day->isSunday() ? null : '09:00',
-                    'ends_at' => $day->isSunday() ? null : '18:00',
+                    'is_rest_day' => $day->isWeekend(),
+                    'starts_at' => $day->isWeekend() ? null : '09:00',
+                    'ends_at' => $day->isWeekend() ? null : '18:00',
                 ],
             );
         }

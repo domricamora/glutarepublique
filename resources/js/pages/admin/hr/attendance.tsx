@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import hr from '@/routes/admin/hr';
 import kiosk from '@/routes/kiosk';
 
-type Status = 'present' | 'late' | 'absent' | 'rest' | 'expected';
+type Status = 'present' | 'late' | 'absent' | 'rest' | 'expected' | 'holiday';
 
 type Row = {
     id: number;
@@ -51,6 +51,7 @@ const STATUS: Record<Status, [string, string]> = {
     absent: ['Absent', 'text-destructive font-medium'],
     rest: ['Rest day', 'text-muted-foreground'],
     expected: ['Not in yet', 'text-muted-foreground'],
+    holiday: ['Holiday', 'text-muted-foreground'],
 };
 
 export default function HrAttendance({

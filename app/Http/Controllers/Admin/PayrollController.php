@@ -7,6 +7,7 @@ use App\Actions\Payroll\CalculatePayslip;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\PayrollAdjustment;
 use App\Models\PayrollRun;
 use App\Models\PayrollSetting;
@@ -72,9 +73,15 @@ class PayrollController extends Controller
                 'pagibig_rate' => $settings->pagibig_rate,
                 'pagibig_ceiling' => $settings->pagibig_ceiling,
                 'pagibig_max' => $settings->pagibig_max,
+                'overtime_multiplier' => $settings->overtime_multiplier,
+                'regular_holiday_multiplier' => $settings->regular_holiday_multiplier,
+                'special_holiday_multiplier' => $settings->special_holiday_multiplier,
+                'late_grace_minutes' => $settings->late_grace_minutes,
                 'effective_from' => $settings->effective_from?->toDateString(),
                 'configured' => PayrollSetting::query()->exists(),
             ],
+            'holidays' => Holiday::whereYear('date', '>=', now()->year - 1)->orderBy('date')->get(['id', 'date', 'name', 'type']),
+            'holidayTypes' => Holiday::TYPES,
             'defaults' => [
                 'sss_rate' => (float) config('payroll.sss.employee_rate'),
                 'philhealth_rate' => (float) config('payroll.philhealth.employee_rate'),
@@ -96,6 +103,10 @@ class PayrollController extends Controller
             'pagibig_rate' => ['required', 'numeric', 'between:0,1'],
             'pagibig_ceiling' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'pagibig_max' => ['required', 'numeric', 'min:0', 'max:1000000'],
+            'overtime_multiplier' => ['sometimes', 'numeric', 'between:1,5'],
+            'regular_holiday_multiplier' => ['sometimes', 'numeric', 'between:1,5'],
+            'special_holiday_multiplier' => ['sometimes', 'numeric', 'between:1,5'],
+            'late_grace_minutes' => ['sometimes', 'integer', 'between:0,60'],
             'effective_from' => ['nullable', 'date'],
         ], [
             '*.rate.between' => 'A rate is a share of the salary, so between 0 and 1 (5% is 0.05).',
@@ -106,7 +117,28 @@ class PayrollController extends Controller
             $data,
         );
 
-        return back()->with('success', 'Contribution rates updated. Payslips already paid keep the figures they were paid.');
+        return back()->with('success', 'Rates updated. Payslips already paid keep the figures they were paid.');
+    }
+
+    /** A holiday on the payroll calendar: never an absence, paid at a premium when worked. */
+    public function storeHoliday(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'name' => ['required', 'string', 'max:120'],
+            'type' => ['required', Rule::in(array_keys(Holiday::TYPES))],
+        ]);
+
+        Holiday::updateOrCreate(['date' => $data['date']], $data);
+
+        return back()->with('success', "{$data['name']} is on the calendar.");
+    }
+
+    public function destroyHoliday(Holiday $holiday): RedirectResponse
+    {
+        $holiday->delete();
+
+        return back()->with('success', "{$holiday->name} removed from the calendar.");
     }
 
     /**
@@ -288,6 +320,12 @@ class PayrollController extends Controller
                 'allowance' => $payslip->allowance,
                 'commission' => $payslip->commission,
                 'overtime' => $payslip->overtime,
+                'overtime_minutes' => (int) $payslip->overtime_minutes,
+                'holiday_pay' => (float) $payslip->holiday_pay,
+                'late_minutes' => (int) $payslip->late_minutes,
+                'tardiness_deduction' => (float) $payslip->tardiness_deduction,
+                'absent_days' => (float) $payslip->absent_days,
+                'absence_deduction' => (float) $payslip->absence_deduction,
                 'gross' => $payslip->gross,
                 'sss' => $payslip->sss,
                 'philhealth' => $payslip->philhealth,

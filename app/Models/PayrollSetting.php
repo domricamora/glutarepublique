@@ -31,6 +31,10 @@ class PayrollSetting extends Model
             'pagibig_rate' => 'float',
             'pagibig_ceiling' => 'float',
             'pagibig_max' => 'float',
+            'overtime_multiplier' => 'float',
+            'regular_holiday_multiplier' => 'float',
+            'special_holiday_multiplier' => 'float',
+            'late_grace_minutes' => 'integer',
             'effective_from' => 'date:Y-m-d',
         ];
     }
@@ -75,6 +79,11 @@ class PayrollSetting extends Model
         $defaults->pagibig_rate = config('payroll.pagibig.employee_rate');
         $defaults->pagibig_ceiling = config('payroll.pagibig.monthly_salary_ceiling');
         $defaults->pagibig_max = config('payroll.pagibig.maximum_contribution');
+        // Labor Code premiums: overtime 125%, a regular holiday worked 200%, a special day worked 130%.
+        $defaults->overtime_multiplier = 1.25;
+        $defaults->regular_holiday_multiplier = 2.0;
+        $defaults->special_holiday_multiplier = 1.3;
+        $defaults->late_grace_minutes = 5;
 
         return $defaults;
     }

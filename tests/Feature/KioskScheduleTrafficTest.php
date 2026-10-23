@@ -55,10 +55,10 @@ it('clocks a person in with a photo and out again at the branch kiosk', function
     // Planned nine hours, worked ten: one hour of overtime.
     expect($day->fresh()->time_out)->not->toBeNull()->and($day->fresh()->overtime_minutes)->toBe(60);
 
-    // The time record marks them late, past the five-minute grace.
+    // Past the five-minute grace, every minute from the shift start counts.
     $this->actingAs(kioskOwner())->get('/admin/hr/attendance')->assertInertia(fn ($p) => $p
         ->where('rows', fn ($rows) => collect($rows)->firstWhere('id', $person->id)['status'] === 'late'
-            && collect($rows)->firstWhere('id', $person->id)['late_minutes'] === 7));
+            && collect($rows)->firstWhere('id', $person->id)['late_minutes'] === 12));
 });
 
 it('refuses a wrong PIN and locks out after five tries', function () {

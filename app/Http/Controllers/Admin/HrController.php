@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Hr\ClockPunch;
+use App\Actions\Hr\TimeRecord;
 use App\Actions\Media\UploadPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\Organization;
 use App\Models\PayrollAdjustment;
@@ -27,9 +29,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /** Who works here, when they were in, and their time off (plan.md §28). */
 class HrController extends Controller
 {
-    /** Minutes after the shift start before a clock-in counts as late. */
-    public const GRACE_MINUTES = 5;
-
     public function index(Request $request): Response
     {
         $filters = $request->validate([
@@ -337,18 +336,19 @@ class HrController extends Controller
         $attendances = Attendance::whereDate('work_date', $day)->get()->keyBy('employee_id');
         $schedules = WorkSchedule::whereDate('work_date', $day)->get()->keyBy('employee_id');
         $past = $day->lt(today());
+        $grace = TimeRecord::grace();
+        $holiday = Holiday::whereDate('date', $day)->exists();
 
         return Employee::active()
             ->whereIn('id', $attendances->keys()->merge($schedules->keys())->unique())
             ->orderBy('name')
             ->get(['id', 'name', 'position'])
-            ->map(function (Employee $e) use ($attendances, $schedules, $past) {
+            ->map(function (Employee $e) use ($attendances, $schedules, $past, $grace, $holiday) {
                 $a = $attendances->get($e->id);
                 $s = $schedules->get($e->id);
                 $shiftStart = $s && ! $s->is_rest_day ? $s->starts_at : null;
-                $late = $a?->time_in && $shiftStart
-                    ? max(0, intdiv((int) strtotime($a->time_in) - (int) strtotime($shiftStart), 60) - self::GRACE_MINUTES)
-                    : 0;
+                // The same rule payroll deducts on, so HR and the payslip never disagree.
+                $late = TimeRecord::lateMinutes($a?->time_in, $s, $grace);
                 $started = $shiftStart && ($past || now()->format('H:i:s') > $shiftStart);
 
                 return [
@@ -362,6 +362,7 @@ class HrController extends Controller
                     'overtime_minutes' => $a->overtime_minutes ?? 0,
                     'late_minutes' => $late,
                     'status' => match (true) {
+                        $holiday && ! $a => 'holiday',
                         $s?->is_rest_day && ! $a => 'rest',
                         (bool) $a => $late > 0 ? 'late' : 'present',
                         $started => 'absent',

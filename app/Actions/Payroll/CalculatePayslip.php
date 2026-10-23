@@ -2,6 +2,7 @@
 
 namespace App\Actions\Payroll;
 
+use App\Actions\Hr\TimeRecord;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\PayrollAdjustment;
@@ -37,10 +38,22 @@ class CalculatePayslip
             : round($employee->base_salary * $prorated, 2);
         $allowance = round($employee->monthly_allowance * $prorated, 2);
 
+        $settings = PayrollSetting::current();
         $overtimeMinutes = (int) $employee->attendances()
             ->whereBetween('work_date', [$from->toDateString(), $to->toDateString()])
             ->sum('overtime_minutes');
-        $overtime = round($overtimeMinutes / 60 * $employee->hourlyRate(), 2);
+        // Overtime is paid at a premium (125% on an ordinary day under the Labor Code).
+        $overtime = round($overtimeMinutes / 60 * $employee->hourlyRate() * (float) ($settings->overtime_multiplier ?? 1.25), 2);
+
+        // Tardiness, absences and holidays worked, straight off the time record.
+        $record = app(TimeRecord::class)->period($employee, $from, $to);
+        $tardiness = round($record['late_minutes'] / 60 * $employee->hourlyRate(), 2);
+        $absence = round($record['absent_days'] * $employee->dailyRate(), 2);
+        // A monthly salary already pays the holiday itself; working it earns the premium on top.
+        $holidayPay = round($employee->dailyRate() * (
+            $record['regular_holidays_worked'] * ((float) ($settings->regular_holiday_multiplier ?? 2.0) - 1)
+            + $record['special_holidays_worked'] * ((float) ($settings->special_holiday_multiplier ?? 1.3) - 1)
+        ), 2);
 
         $commission = round((float) ($adjustments['commission'] ?? 0), 2);
         // Loans, advances and the rest come off the employee's own record, so
@@ -49,8 +62,8 @@ class CalculatePayslip
         $otherDeductions = round((float) ($adjustments['other_deductions'] ?? 0) + $standing['total'], 2);
         $unpaidDeduction = round($unpaidLeave * $employee->dailyRate(), 2);
 
-        $gross = round($base + $allowance + $overtime + $commission, 2);
-        $taxable = max(0, $gross - $unpaidDeduction);
+        $gross = round($base + $allowance + $overtime + $holidayPay + $commission, 2);
+        $taxable = max(0, $gross - $unpaidDeduction - $tardiness - $absence);
         $monthlyEquivalent = $this->monthlyEquivalent($employee, $base, $from, $to);
         $this->employeeRates = $employee->statutoryRates();
 
@@ -59,15 +72,21 @@ class CalculatePayslip
         $pagibig = $this->contribution('pagibig', $monthlyEquivalent);
         $withholding = $this->withholding($employee, $employee->pay_schedule === 'semi_monthly' ? $taxable * 2 : $taxable);
 
-        $deductions = round($sss + $philhealth + $pagibig + $withholding + $unpaidDeduction + $otherDeductions, 2);
+        $deductions = round($sss + $philhealth + $pagibig + $withholding + $unpaidDeduction + $tardiness + $absence + $otherDeductions, 2);
 
         return [
-            'days_paid' => $daysPaid,
+            'days_paid' => max(0, round($daysPaid - $record['absent_days'], 2)),
             'basic' => $base,
             'allowance' => $allowance,
             'commission' => $commission,
             'overtime' => $overtime,
+            'overtime_minutes' => $overtimeMinutes,
+            'holiday_pay' => $holidayPay,
             'unpaid_deduction' => $unpaidDeduction,
+            'late_minutes' => $record['late_minutes'],
+            'tardiness_deduction' => $tardiness,
+            'absent_days' => (float) $record['absent_days'],
+            'absence_deduction' => $absence,
             'gross' => $gross,
             'sss' => $sss,
             'philhealth' => $philhealth,

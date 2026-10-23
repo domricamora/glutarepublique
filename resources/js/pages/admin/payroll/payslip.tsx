@@ -19,6 +19,12 @@ type Props = {
         allowance: number;
         commission: number;
         overtime: number;
+        overtime_minutes: number;
+        holiday_pay: number;
+        late_minutes: number;
+        tardiness_deduction: number;
+        absent_days: number;
+        absence_deduction: number;
         gross: number;
         sss: number;
         philhealth: number;
@@ -38,7 +44,11 @@ export default function Payslip({ payslip }: Props) {
             value: payslip.basic,
         },
         { label: 'Allowance', value: payslip.allowance },
-        { label: 'Overtime', value: payslip.overtime },
+        {
+            label: `Overtime (${(payslip.overtime_minutes / 60).toFixed(1)} h)`,
+            value: payslip.overtime,
+        },
+        { label: 'Holiday pay', value: payslip.holiday_pay },
         { label: 'Commission', value: payslip.commission },
     ].filter((line) => line.value > 0);
 
@@ -47,6 +57,14 @@ export default function Payslip({ payslip }: Props) {
         { label: 'PhilHealth', value: payslip.philhealth },
         { label: 'Pag-IBIG', value: payslip.pagibig },
         { label: 'Withholding tax', value: payslip.withholding_tax },
+        {
+            label: `Tardiness (${payslip.late_minutes} min)`,
+            value: payslip.tardiness_deduction,
+        },
+        {
+            label: `Absences (${payslip.absent_days} days)`,
+            value: payslip.absence_deduction,
+        },
         { label: 'Unpaid leave', value: payslip.unpaid_deduction },
         { label: 'Other deductions', value: payslip.other_deductions },
     ].filter((line) => line.value > 0);
