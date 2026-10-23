@@ -14,7 +14,8 @@ Annex A checked line by line; what was missing is now built:
 
 ### Next steps (start here)
 
-0. **Cron on live is NOT set up yet**: add `* * * * * /opt/alt/php83/usr/bin/php ~/public_html/glutarepubliq.recursive-frog.com/artisan schedule:run` in cPanel so backups run. Check `mysqldump` works there with `php artisan clinic:backup` once.
+00. **Owner requests queued 2026-10-23 (not started):** (a) replace blurry stock photos; (b) DTR kiosk + work scheduler "similar to our vet project"; (c) dashboard graphs for all KPIs like https://aesthetic-clinic.recursive-frog.com/; (d) website traffic log and tracking (mind the open IP-retention policy question in "Next" below).
+0. **Cron on live is NOT set up yet** (awaiting owner OK; the only `schedule:run` line in the shared crontab is dentistry's): `* * * * * cd /home/htrjymuo/public_html/glutarepubliq.recursive-frog.com && /opt/cpanel/ea-php83/root/usr/bin/php artisan schedule:run >> /dev/null 2>&1`. `clinic:backup` verified on live 2026-10-23 (99 KB). SSH is port 9022 (`ssh -p 9022 -i ~/.ssh/ck_deskpulse htrjymuo@ck.deskpulse.click`).
 0b. **Passwordless "sign in as any role" for client testing (owner asked 2026-10-23) is NOT built**: the auto-mode classifier blocked adding the route. Draft controller parked in the session scratchpad (`pending/DemoLoginController.php`): env flag `CLINIC_DEMO_LOGIN`, fixed demo addresses only, audited. Needs the owner's explicit go-ahead / permission rule.
 0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain.
 1. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
