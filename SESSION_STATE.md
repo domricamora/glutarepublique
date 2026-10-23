@@ -22,6 +22,19 @@ Annex A checked line by line; what was missing is now built:
 - **Blurry photos** replaced: 85px doctor crops, 455px branch photo, mockup crops removed; branches use `clinic-interior.jpg` unless the office chose another.
 - **Cron on live added 2026-10-23** (crontab backed up to `~/crontab.bak-*`). `clinic:backup` verified on live (99 KB).
 
+## Owner must-have list, third pass (2026-10-24) — IN PROGRESS
+
+Owner's list: website + on-site booking + chat; financial reports monthly/quarterly/yearly; POS with packages and services; CRM/leads/client records; inventory automated reconciliation; payroll automation (tardiness, absences, OT, holiday, SSS, PhilHealth, Pag-IBIG); RBAC + everything money/refund/override/payroll/leave through Karla (owner) with audit trail. Nice to have: conflict-of-interest safeguards; webhooks/notifications. Also asked: SEO + AI visibility for the marketing site; light theme only; demo password change.
+
+Done and deployed (commits 5a9ec8f, 64f94ad):
+- **A. Payroll automation**: `App\Actions\Hr\TimeRecord` (late minutes past grace, absences = scheduled past day with no clock-in and no leave/holiday, holidays worked) feeds `CalculatePayslip` (tardiness and absence deductions, OT at `overtime_multiplier` 1.25, holiday premium regular 2.00 / special 1.30 minus the day already in salary). New `holidays` table + `HolidaySeeder` (PH 2026, Eid dates left for HR), managed in Payroll > Deductions. Payslip shows the new lines. Time record uses the same rule (full late minutes once past grace) and shows "Holiday". **Fixed a pre-existing bug**: `PostPayroll` journal was unbalanced whenever unpaid/other deductions existed; now Dr wages earned / Cr contributions, staff receivables (1200) and net pay. Demo rota = weekdays only (migration `2026_10_24_110000` rested seeded Saturdays).
+- **B. Owner approvals**: `approvals` table + `Approval::ask()`, `App\Actions\Approvals\DecideApproval` (approve carries out the action as the requester, in one transaction; reject needs a note), `/admin/approvals` inbox (owner decides; staff see their own) with sidebar badge (`approvalsWaiting` shared prop). Staff refunds and discounts over `ClinicSetting approvals.discount_limit` (default 10%) wait for the owner; payroll approve route and leave review are `can:approvals.decide` (Organization Owner only; Clinic Administrator no longer has it); every pay run auto-requests approval; any employee files their own leave from the Approvals page (`admin.my-leave.store`). Audit group "Owner approvals".
+- **Light theme only**: `use-appearance.tsx` always light, blade has no dark class, Settings > Appearance removed.
+- **Demo password** now comes from `CLINIC_DEMO_PASSWORD` in each `.env` (never committed; the classifier blocks committing it). Live `.env` set (backup `.env.bak-*`), config cached, all 3 live accounts reset and verified. Tests use `test-demo-password` from phpunit.xml.
+- **staging.glutarepubliq.com** 301-redirects every path to glutarepubliq.recursive-frog.com (root `.htaccess` over FTPS; old one backed up in the session scratchpad).
+
+Still to do, in order: **SEO + AI visibility** (owner asked: use the SEO skills), C financial reports monthly/quarterly/yearly presets + comparison, D POS packages (treatment `price_list` lines sellable), E inventory automated reconciliation (stock count sessions + nightly ledger/batch check), F client records view (visits, purchases, spend per lead), G conflict-of-interest safeguards (masked client contacts for non-owners, audited reveal, owner-only export) + notifications/webhooks.
+
 ### Next steps (start here)
 
 0. **Still blocked by the auto-mode classifier** (needs a permission rule from the owner, not just chat approval): passwordless "sign in as any role" (draft was `app/Http/Controllers/DemoLoginController.php`, removed) and per-role demo accounts with the shared password. The owner said staging allows it; ask them to add an allow rule, then rebuild.
