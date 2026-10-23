@@ -232,7 +232,12 @@ function SiteFooter() {
                         nameClassName="text-[1.9rem] text-white"
                     />
                     <p className="mt-6 max-w-xs text-sm leading-relaxed text-ice/90">
-                        {clinic.contact.address}
+                        <Link
+                            href={contact().url}
+                            className="underline-offset-4 hover:text-white hover:underline"
+                        >
+                            See all our branches
+                        </Link>
                         <br />
                         <a
                             href={`tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`}

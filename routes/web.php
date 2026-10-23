@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\SetupController;
 use App\Http\Controllers\Admin\StaffAccountController;
@@ -102,6 +104,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('pages', [LegalPageController::class, 'index'])->middleware('can:content.edit')->name('pages.index');
         Route::patch('pages/{page}', [LegalPageController::class, 'update'])->middleware('can:content.edit')->name('pages.update');
+        // POST for updates too: the forms carry a photo, and PHP only parses multipart bodies on POST.
+        Route::get('promotions', [PromotionController::class, 'index'])->middleware('can:content.edit')->name('promotions.index');
+        Route::post('promotions', [PromotionController::class, 'store'])->middleware('can:content.edit')->name('promotions.store');
+        Route::post('promotions/{promotion}', [PromotionController::class, 'update'])->middleware('can:content.edit')->name('promotions.update');
+        Route::get('journal', [PostController::class, 'index'])->middleware('can:content.edit')->name('posts.index');
+        Route::post('journal', [PostController::class, 'store'])->middleware('can:content.edit')->name('posts.store');
+        Route::post('journal/{post}', [PostController::class, 'update'])->middleware('can:content.edit')->name('posts.update');
 
         Route::get('setup', [SetupController::class, 'index'])->middleware('can:settings.edit')->name('setup.index');
         Route::post('setup/load', [SetupController::class, 'store'])->middleware('can:settings.edit')->name('setup.store');

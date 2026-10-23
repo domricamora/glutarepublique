@@ -80,7 +80,7 @@ it('keeps each employee on their own rate', function () {
     $this->seed(DatabaseSeeder::class);
 
     $nurse = theNurse();
-    $doctor = Employee::where('name', 'Dr. Adrian Santos')->firstOrFail();
+    $doctor = Employee::where('name', 'Ivy Neri')->firstOrFail();
     $doctor->update(['sss_rate' => 0.01, 'philhealth_rate' => 0.01]);
 
     expect($nurse->fresh()->statutoryRates()['sss'])->not->toBe(0.01)

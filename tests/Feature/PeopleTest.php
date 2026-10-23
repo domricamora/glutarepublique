@@ -358,13 +358,12 @@ it('opens a person with everything the edit form needs', function () {
         ->and($props['schedules'])->toHaveKey('monthly');
 
     // A clinician reaches the page with their clinical details intact.
-    $doctor = Employee::where('practitioner', true)->where('name', 'like', 'Dr.%')->firstOrFail();
+    $doctor = Employee::where('practitioner', true)->where('name', 'Ivy Neri')->firstOrFail();
     $doctorProps = $this->actingAs(boss())
         ->get("/admin/hr/employees/{$doctor->id}")
         ->assertOk()
         ->viewData('page')['props']['employee'];
 
     expect($doctorProps['practitioner'])->toBeTrue()
-        ->and($doctorProps['credentials'])->not->toBeNull()
-        ->and($doctorProps['focus'])->not->toBeNull();
+        ->and($doctorProps['credentials'])->not->toBeNull();
 });

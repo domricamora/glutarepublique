@@ -22,8 +22,8 @@ class HrDemoSeeder extends Seeder
     /**
      * The clinic's own roster (payroll intake sheet, 2026-10-23); TBA vacancies
      * left out. The sheet has no pay data yet, so salary, allowance and hire
-     * date are placeholders by position until the client fills it in. The
-     * three doctors are not on the sheet and stay as before.
+     * date are placeholders by position until the client fills it in. Only real
+     * staff: the demo doctors were removed at the owner's request.
      *
      * email, name, position, department, salary, allowance, hired, branch
      *
@@ -43,16 +43,10 @@ class HrDemoSeeder extends Seeder
         [null, 'Tesha Tolentino Emaas', 'Senior Facialist', 'Clinic', 26000, 1200, '2025-11-03', 'southwoods'],
         [null, 'Marinel Bombaes', 'Facialist', 'Clinic', 22000, 1000, '2023-02-01', 'bacoor'],
         [null, 'Nenet Canilas', 'Facialist', 'Clinic', 22000, 1000, '2023-02-01', 'bacoor'],
-        [null, 'Dr. Adrian Santos', 'Aesthetic Physician', 'Clinic', 145000, 12000, '2018-05-07', 'cebu'],
-        [null, 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'Clinic', 128000, 10000, '2020-10-12', 'san-pedro'],
-        [null, 'Dr. Camille Rivera', 'Medical Director', 'Clinic', 165000, 15000, '2017-01-23', 'cebu'],
     ];
 
     /** Everyone who treats clients, doctors included (plan.md §28). */
     private const CLINICIANS = [
-        'Dr. Adrian Santos',
-        'Dr. Rhea Kapoor',
-        'Dr. Camille Rivera',
         'Ivy Neri',
         'Jermaine Ramirez',
         'Mery Joy Legita',
@@ -67,9 +61,6 @@ class HrDemoSeeder extends Seeder
 
     /** @var array<string, string> */
     private const CREDENTIALS = [
-        'Dr. Adrian Santos' => 'MD, Lic. 18000',
-        'Dr. Rhea Kapoor' => 'MD Dermatology, Lic. 18411',
-        'Dr. Camille Rivera' => 'MD, FAAD, Lic. 17976',
         'Ivy Neri' => 'RN',
         'Jermaine Ramirez' => 'RN',
         'Mery Joy Legita' => 'RN',
@@ -102,9 +93,6 @@ class HrDemoSeeder extends Seeder
                         ? ($credentials[$name] ?? null)
                         : null,
                     'focus' => match ($name) {
-                        'Dr. Adrian Santos' => 'Injectables and laser',
-                        'Dr. Rhea Kapoor' => 'HydraGlow and skin rejuvenation',
-                        'Dr. Camille Rivera' => 'Medical dermatology',
                         default => null,
                     },
                 ]

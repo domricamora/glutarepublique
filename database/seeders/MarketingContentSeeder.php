@@ -154,7 +154,7 @@ class MarketingContentSeeder extends Seeder
                 'Bring your current routine, including prescriptions, to the consultation',
             ],
             '/media/photos/facial.jpg',
-            'Dr. Camille Rivera',
+            'Gluta RepubliQ clinical team',
             4,
             5,
         ],
@@ -169,7 +169,7 @@ class MarketingContentSeeder extends Seeder
                 'No treatment is booked on the day unless you ask for it',
             ],
             '/media/photos/consultation.jpg',
-            'Dr. Adrian Santos',
+            'Gluta RepubliQ clinical team',
             3,
             9,
         ],
@@ -184,7 +184,7 @@ class MarketingContentSeeder extends Seeder
                 'Call the clinic the same day about anything that worries you',
             ],
             '/media/photos/botox.jpg',
-            'Dr. Adrian Santos',
+            'Gluta RepubliQ clinical team',
             4,
             13,
         ],
@@ -199,7 +199,7 @@ class MarketingContentSeeder extends Seeder
                 'After a treatment, sun protection protects the result',
             ],
             '/media/photos/skin-closeup.jpg',
-            'Dr. Camille Rivera',
+            'Gluta RepubliQ clinical team',
             3,
             18,
         ],
@@ -214,7 +214,7 @@ class MarketingContentSeeder extends Seeder
                 'Weekly photos in the same light show progress that memory misses',
             ],
             '/media/photos/laser.jpg',
-            'Dr. Rhea Kapoor',
+            'Gluta RepubliQ clinical team',
             4,
             22,
         ],
@@ -229,7 +229,7 @@ class MarketingContentSeeder extends Seeder
                 'Judge hair progress at three and six months, with photos',
             ],
             '/media/photos/prp.jpg',
-            'Dr. Rhea Kapoor',
+            'Gluta RepubliQ clinical team',
             3,
             27,
         ],
@@ -388,7 +388,7 @@ class MarketingContentSeeder extends Seeder
 
         $sort = 0;
         foreach (self::PROMOTIONS as $slug => [$title, $summary, $description, $details, $badge, $endsOn, $treatment, $image]) {
-            Promotion::withoutGlobalScopes()->updateOrCreate($org + ['slug' => $slug], [
+            Promotion::withoutGlobalScopes()->firstOrCreate($org + ['slug' => $slug], [
                 'title' => $title,
                 'summary' => $summary,
                 'description' => $description,
@@ -402,10 +402,8 @@ class MarketingContentSeeder extends Seeder
             ]);
         }
 
-        Promotion::withoutGlobalScopes()->where($org)->whereIn('slug', self::RETIRED_PROMOTIONS)->update(['is_active' => false]);
-
         foreach (self::POSTS as $slug => [$title, $category, $excerpt, $body, $takeaways, $image, $author, $minutes, $daysAgo]) {
-            Post::withoutGlobalScopes()->updateOrCreate($org + ['slug' => $slug], [
+            Post::withoutGlobalScopes()->firstOrCreate($org + ['slug' => $slug], [
                 'title' => $title,
                 'category' => $category,
                 'excerpt' => $excerpt,

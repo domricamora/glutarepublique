@@ -106,6 +106,8 @@ it('removes a photo when it is no longer wanted', function () {
 });
 
 it('keeps staff off the website until someone says otherwise', function () {
+    // The clinicians are also bookable specialists; switched off here so only the staff flag is tested.
+    Specialist::query()->update(['is_active' => false]);
     $this->actingAs(User::factory()->create([
         'organization_id' => supervisor()->organization_id,
     ]));
@@ -168,7 +170,7 @@ it('shows a receptionist on the about page but not on a treatment page', functio
 });
 
 it('never lists the same person twice when a doctor is both specialist and staff', function () {
-    $doctor = Employee::where('name', 'Dr. Adrian Santos')->firstOrFail();
+    $doctor = Employee::where('name', 'Ivy Neri')->firstOrFail();
     expect(Specialist::where('name', $doctor->name)->exists())->toBeTrue();
 
     $this->actingAs(supervisor())->patch("/admin/hr/employees/{$doctor->id}", staffPayload([
@@ -185,10 +187,12 @@ it('never lists the same person twice when a doctor is both specialist and staff
     $names = collect($this->get('/about')->viewData('page')['props']['specialists'])
         ->pluck('name');
 
-    expect($names->filter(fn ($n) => $n === 'Dr. Adrian Santos'))->toHaveCount(1);
+    expect($names->filter(fn ($n) => $n === 'Ivy Neri'))->toHaveCount(1);
 });
 
 it('takes a stood-down person off the website', function () {
+    // The clinicians are also bookable specialists; switched off here so only the staff flag is tested.
+    Specialist::query()->update(['is_active' => false]);
     $employee = clinicNurse();
 
     $this->actingAs(supervisor())

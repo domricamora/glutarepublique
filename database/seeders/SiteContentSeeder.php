@@ -138,20 +138,30 @@ class SiteContentSeeder extends Seeder
 
         Treatment::withoutGlobalScopes()->where($org)->whereIn('slug', self::RETIRED)->update(['is_active' => false, 'is_featured' => false]);
 
+        // The clinicians who take appointments, from the clinic's staff roster.
+        // San Pedro has nobody on the roster yet, so it cannot be booked online until someone is added.
         $specialists = [
-            ['dr-camille-rivera', 'Dr. Camille Rivera', 'Medical Director, Aesthetic Dermatology', 'MD, Aesthetic & Laser Specialist', 'Dr. Rivera specializes in advanced laser aesthetics, pigmentation clearance, and medical-grade glutathione protocols with over 10 years of clinical practice.', 'asian-dermatologist-consultation.jpg', ['Laser rejuvenation', 'Glutathione protocols', 'Melasma treatment'], ['cebu', 'san-pedro']],
-            ['dr-adrian-santos', 'Dr. Adrian Santos', 'Aesthetic Physician', 'MD, Aesthetic Medicine & Trichology', 'Dr. Santos focuses on non-invasive facial sculpting, HIFU, and anti-aging therapies with tailored protocols.', 'asian-doctor-male.jpg', ['HIFU lifting', 'Facial contouring', 'Skin tightening'], ['cebu', 'bacoor', 'san-pedro']],
-            ['dr-rhea-kapoor', 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'MD Dermatology', 'Dr. Kapoor brings 8+ years of dedicated expertise in delicate acne scar treatments, dermal peels, and glass-skin facial rejuvenation.', 'doctor-sofia.jpg', ['HydraGlow', 'Acne scar revision', 'Skin rejuvenation'], ['san-pedro', 'cebu']],
+            ['ivy-neri', 'Ivy Neri', 'Registered Nurse / Branch Manager', 'RN', 'Registered nurse and branch manager at our Cebu clinic.', ['cebu']],
+            ['janet-culango', 'Janet Culango', 'Medical Aesthetician', null, 'Medical aesthetician at our Cebu clinic.', ['cebu']],
+            ['suzette-jacalan', 'Suzette Jacalan', 'Senior Facialist', null, 'Senior facialist at our Cebu clinic.', ['cebu']],
+            ['jenrose-rosacena', 'Jenrose Rosacena', 'Junior Facialist', null, 'Facialist at our Cebu clinic.', ['cebu']],
+            ['jamaica-dupilas', 'Jamaica Dupilas', 'Junior Facialist', null, 'Facialist at our Cebu clinic.', ['cebu']],
+            ['jermaine-ramirez', 'Jermaine Ramirez', 'Registered Nurse', 'RN', 'Registered nurse at our SOMO A Vista Mall clinic in Bacoor.', ['bacoor']],
+            ['marinel-bombaes', 'Marinel Bombaes', 'Facialist', null, 'Facialist at our SOMO A Vista Mall clinic in Bacoor.', ['bacoor']],
+            ['nenet-canilas', 'Nenet Canilas', 'Facialist', null, 'Facialist at our SOMO A Vista Mall clinic in Bacoor.', ['bacoor']],
+            ['mery-joy-legita', 'Mery Joy Legita', 'Registered Nurse', 'RN', 'Registered nurse at our Southwoods Mall clinic, opening January 2027.', ['southwoods']],
+            ['tesha-tolentino-emaas', 'Tesha Tolentino Emaas', 'Senior Facialist', null, 'Senior facialist at our Southwoods Mall clinic, opening January 2027.', ['southwoods']],
         ];
 
         $branches = Branch::withoutGlobalScopes()->where($org)->pluck('id', 'slug');
-        foreach ($specialists as $i => [$slug, $name, $title, $credentials, $bio, $photo, $focus, $at]) {
+        foreach ($specialists as $i => [$slug, $name, $title, $credentials, $bio, $at]) {
             $specialist = Specialist::withoutGlobalScopes()->updateOrCreate($org + ['slug' => $slug], [
                 'name' => $name, 'title' => $title, 'credentials' => $credentials, 'bio' => $bio,
-                'photo' => "/media/photos/$photo", 'focus' => $focus, 'sort' => $i,
+                'photo' => null, 'focus' => [], 'sort' => $i, 'is_active' => true,
             ]);
             $specialist->branches()->sync($branches->only($at)->values());
         }
+        Specialist::withoutGlobalScopes()->where($org)->whereNotIn('slug', array_column($specialists, 0))->update(['is_active' => false]);
 
         $treatments = Treatment::withoutGlobalScopes()->where($org)->pluck('id', 'slug');
         Testimonial::withoutGlobalScopes()->where($org)->delete();

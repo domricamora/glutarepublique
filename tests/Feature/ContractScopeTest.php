@@ -95,7 +95,7 @@ it('will not let the owner switch off or demote themselves', function () {
 });
 
 it('books inside the hours saved on the branch', function () {
-    $branch = Branch::where('slug', 'san-pedro')->firstOrFail();
+    $branch = Branch::where('slug', 'bacoor')->firstOrFail();
     $treatment = Treatment::where('is_active', true)->orderBy('duration_minutes')->firstOrFail();
     $sunday = CarbonImmutable::now()->next(CarbonImmutable::SUNDAY)->toDateString();
     $slots = fn () => $this->getJson(route('book.slots', ['treatment_id' => $treatment->id, 'branch_id' => $branch->id, 'date' => $sunday]))->json();

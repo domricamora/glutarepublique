@@ -14,7 +14,7 @@ it('shows the marketing pages from the seeded content', function () {
             // The roster is the staff roll now, filtered to the clinicians the
             // seeder ticked for the website, rather than the three seeded
             // specialist rows the office cannot edit.
-            ->has('specialists', 13)
+            ->has('specialists', 10)
             ->has('branches', 4)
             ->has('testimonials', 3)
             ->has('faqs', 4));
@@ -122,7 +122,7 @@ it('shows nobody who has been stood down', function () {
 it('publishes the title the office set rather than the seeded copy', function () {
     Employee::query()->update(['show_on_site' => true]);
 
-    Employee::where('name', 'Dr. Adrian Santos')->firstOrFail()->update([
+    Employee::where('name', 'Ivy Neri')->firstOrFail()->update([
         'position' => 'Medical Director and Founder',
     ]);
 

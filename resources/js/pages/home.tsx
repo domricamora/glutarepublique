@@ -30,26 +30,6 @@ type Props = {
 
 const stagger = (i: number) => ({ '--i': i }) as CSSProperties;
 
-// Staff records carry no photos yet, so the home roster keeps its own
-// portraits. The full team, with credentials, lives on the About page.
-const doctors = [
-    {
-        name: 'Dr. Camille Rivera',
-        role: 'Medical Director, Dermatology',
-        photo: 'doctor-maya.jpg',
-    },
-    {
-        name: 'Dr. Adrian Santos',
-        role: 'Aesthetic Physician',
-        photo: 'asian-doctor-male.jpg',
-    },
-    {
-        name: 'Dr. Rhea Kapoor',
-        role: 'Cosmetic Dermatologist',
-        photo: 'doctor-sofia.jpg',
-    },
-];
-
 export default function Home({
     featured,
     bookable,
@@ -392,47 +372,6 @@ export default function Home({
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                </div>
-            </section>
-
-            {/* Specialists: portrait cards. */}
-            <section
-                id="doctors"
-                className="scroll-mt-20 bg-white py-20 lg:py-28"
-            >
-                <div className="gutter">
-                    <h2 className="text-center text-ocean">Our specialists</h2>
-                    <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {doctors.map((doc, i) => (
-                            <article
-                                key={doc.name}
-                                data-reveal
-                                style={stagger(i)}
-                                className="group border border-ice bg-gradient-to-b from-ice/70 to-white text-center"
-                            >
-                                <div className="aspect-[4/5] overflow-hidden">
-                                    <img
-                                        src={media(doc.photo)}
-                                        alt={doc.name}
-                                        loading="lazy"
-                                        className="h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-                                    />
-                                </div>
-                                <div className="px-6 py-7">
-                                    <h3 className="text-ocean">{doc.name}</h3>
-                                    <p className="mt-1 text-sm text-royal-ink">
-                                        {doc.role}
-                                    </p>
-                                    <Link
-                                        href={about().url}
-                                        className="btn btn-royal mt-5"
-                                    >
-                                        View profile
-                                    </Link>
-                                </div>
-                            </article>
-                        ))}
                     </div>
                 </div>
             </section>

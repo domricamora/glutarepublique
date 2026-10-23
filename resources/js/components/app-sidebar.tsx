@@ -13,7 +13,9 @@ import {
     LayoutGrid,
     ShieldCheck,
     MapPin,
+    Megaphone,
     MessageCircle,
+    Newspaper,
     ScrollText,
     Settings,
     ShoppingCart,
@@ -52,6 +54,8 @@ import inventory from '@/routes/admin/inventory';
 import payroll from '@/routes/admin/payroll';
 import leads from '@/routes/admin/leads';
 import pages from '@/routes/admin/pages';
+import posts from '@/routes/admin/posts';
+import promotions from '@/routes/admin/promotions';
 import traffic from '@/routes/admin/traffic';
 import pos from '@/routes/admin/pos';
 import settings from '@/routes/admin/settings/clinic';
@@ -188,6 +192,16 @@ export function AppSidebar() {
             : []),
         ...(can('content.edit')
             ? [
+                  {
+                      title: 'Promotions & packages',
+                      href: promotions.index(),
+                      icon: Megaphone,
+                  },
+                  {
+                      title: 'Journal',
+                      href: posts.index(),
+                      icon: Newspaper,
+                  },
                   {
                       title: 'Website pages',
                       href: pages.index(),
