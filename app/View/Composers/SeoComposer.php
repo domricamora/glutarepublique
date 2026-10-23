@@ -146,7 +146,7 @@ class SeoComposer
 
         return [
             'canonical' => url()->current(),
-            'image' => $this->card($card) ?? $seo['image'] ?? $this->card('home') ?? asset('media/photos/clinic-interior.jpg'),
+            'image' => $this->card($card) ?? $seo['image'] ?? $this->card('home') ?? asset('media/photos/clinic/cebu-storefront.jpg'),
             'type' => $seo['type'] ?? 'website',
             'site_name' => $name,
         ] + $seo;
@@ -283,7 +283,7 @@ class SeoComposer
             'description' => config('clinic.tagline').' Physician-led glutathione, laser and aesthetic skin clinic in the Philippines.',
             'url' => route('home'),
             'logo' => asset(config('clinic.logo')),
-            'image' => asset('media/photos/clinic-interior.jpg'),
+            'image' => asset('media/photos/clinic/cebu-storefront.jpg'),
             'telephone' => $contact['phone'] ?? null,
             'email' => $contact['email'] ?? null,
             'priceRange' => '₱₱',

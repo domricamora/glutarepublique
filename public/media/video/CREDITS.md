@@ -12,3 +12,5 @@ removed and re-encoded for the web.
   (applying cream to the cheeks, same set as above)
 - hero-12322630.mp4: RDNE Stock project, https://www.pexels.com/video/12322630/
   (headband and prep routine in a bright room)
+
+- clinic-emsculpt.mp4: Gluta RepubliQ Aesthetics, an Emsculpt session at the clinic. Supplied by the owner (2026-10-23); cropped to remove a social media handle and stickers, muted, 640px wide.

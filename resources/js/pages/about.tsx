@@ -152,21 +152,21 @@ export default function About({
                 </div>
                 <div className="lg:col-span-6">
                     <img
-                        src={media('clinic-interior.jpg')}
-                        alt="Treatment room at the clinic"
+                        src={media('clinic/cebu-reception-wide.jpg')}
+                        alt="Reception and treatment rooms at Robinsons Galleria Cebu"
                         loading="lazy"
                         className="aspect-[4/3] w-full object-cover"
                     />
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <img
-                            src={media('reception.jpg')}
-                            alt="Reception area"
+                            src={media('clinic/cebu-corridor.jpg')}
+                            alt="Treatment room corridor"
                             loading="lazy"
                             className="aspect-square w-full object-cover"
                         />
                         <img
-                            src={media('technology.jpg')}
-                            alt="Treatment technology"
+                            src={media('clinic/cebu-facial.jpg')}
+                            alt="Facial treatment technology"
                             loading="lazy"
                             className="aspect-square w-full object-cover"
                         />

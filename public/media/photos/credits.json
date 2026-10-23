@@ -76,5 +76,75 @@
         "license": "Owned by Gluta RepubliQ",
         "source": "https://www.youtube.com/watch?v=biS2tzFkq8E",
         "description": "Thumbnail of a video on the clinic's YouTube channel"
+    },
+    "clinic/cebu-carbon-laser": {
+        "file": "clinic/cebu-carbon-laser.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-carbon-peel": {
+        "file": "clinic/cebu-carbon-peel.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-corridor": {
+        "file": "clinic/cebu-corridor.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-drip-lounge": {
+        "file": "clinic/cebu-drip-lounge.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-facial-closeup": {
+        "file": "clinic/cebu-facial-closeup.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-facial": {
+        "file": "clinic/cebu-facial.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-iv-drip": {
+        "file": "clinic/cebu-iv-drip.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-laser-hair-removal": {
+        "file": "clinic/cebu-laser-hair-removal.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-lounge": {
+        "file": "clinic/cebu-lounge.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-reception-arches": {
+        "file": "clinic/cebu-reception-arches.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-reception-desk": {
+        "file": "clinic/cebu-reception-desk.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-reception-wide": {
+        "file": "clinic/cebu-reception-wide.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-reception": {
+        "file": "clinic/cebu-reception.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
+    },
+    "clinic/cebu-storefront": {
+        "file": "clinic/cebu-storefront.jpg",
+        "source": "Gluta RepubliQ Aesthetics, Robinsons Galleria Cebu",
+        "license": "Owned by the clinic, supplied by the owner 2026-10-23"
     }
 }

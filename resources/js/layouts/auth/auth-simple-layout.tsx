@@ -18,7 +18,7 @@ export default function AuthSimpleLayout({
         <div className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
             <aside className="relative hidden overflow-hidden bg-ocean lg:sticky lg:top-0 lg:block lg:h-svh">
                 <img
-                    src={`${mediaUrl}/reception.jpg`}
+                    src={`${mediaUrl}/clinic/cebu-reception.jpg`}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                 />

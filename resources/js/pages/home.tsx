@@ -71,22 +71,26 @@ export default function Home({
 
     const strip = [
         {
-            file: 'asian-hydraglow-facial.jpg',
-            alt: 'HydraGlow facial in progress',
+            file: 'clinic/cebu-facial.jpg',
+            alt: 'Facial treatment at the Cebu clinic',
             h: 'lg:h-[19rem]',
         },
         {
-            file: 'laser.jpg',
-            alt: 'Laser treatment at the clinic',
+            file: 'clinic/cebu-carbon-laser.jpg',
+            alt: 'Carbon laser treatment at the Cebu clinic',
             h: 'lg:h-[16rem]',
         },
         { video: true, h: 'lg:h-[22rem]' },
         {
-            file: 'asian-gluta-drip.jpg',
-            alt: 'Client relaxing during a glutathione drip',
+            file: 'clinic/cebu-iv-drip.jpg',
+            alt: 'Gluta drip being set up at the Cebu clinic',
             h: 'lg:h-[16rem]',
         },
-        { file: 'facial.jpg', alt: 'Facial mask treatment', h: 'lg:h-[19rem]' },
+        {
+            file: 'clinic/cebu-reception.jpg',
+            alt: 'Reception at Robinsons Galleria Cebu',
+            h: 'lg:h-[19rem]',
+        },
     ];
 
     return (
@@ -286,16 +290,16 @@ export default function Home({
                     <div className="grid items-center gap-12 lg:grid-cols-12">
                         <div className="grid grid-cols-2 gap-3 lg:col-span-6">
                             {[
-                                ['reception.jpg', 'Gluta RepubliQ reception'],
+                                ['clinic/cebu-reception-desk.jpg', 'Gluta RepubliQ reception, Cebu'],
                                 [
-                                    'asian-dermatologist-consultation.jpg',
-                                    'Doctor in a consultation room',
+                                    'clinic/cebu-drip-lounge.jpg',
+                                    'Clients in the drip lounge',
                                 ],
                                 [
-                                    'asian-laser-treatment.jpg',
-                                    'Laser treatment in progress',
+                                    'clinic/cebu-laser-hair-removal.jpg',
+                                    'Laser hair removal in progress',
                                 ],
-                                ['reception.jpg', 'Clinic lounge'],
+                                ['clinic/cebu-lounge.jpg', 'Clinic lounge'],
                             ].map(([file, alt], i) => (
                                 <img
                                     key={file}
