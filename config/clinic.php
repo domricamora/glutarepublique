@@ -63,7 +63,12 @@ return [
     'timezone' => env('CLINIC_TIMEZONE', 'Asia/Manila'),
 
     // Used by `php artisan clinic:backup`; give the full path when it is not on PATH (WAMP).
-    'mysqldump' => env('MYSQLDUMP_PATH', 'mysqldump'),    'hours' => [
+    'mysqldump' => env('MYSQLDUMP_PATH', 'mysqldump'),
+
+    // Password for newly seeded demo accounts. Kept in each server's .env, never in git.
+    'demo_password' => env('CLINIC_DEMO_PASSWORD'),
+
+    'hours' => [
         'mon-fri' => '10:00-20:00',
         'sat' => '10:00-19:00',
         'sun' => '11:00-18:00',

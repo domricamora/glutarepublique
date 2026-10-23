@@ -251,7 +251,7 @@ export default function HrLeave({
                                         </span>
                                     </td>
                                     <td className="px-4 py-3">
-                                        {can('hr.create') &&
+                                        {can('approvals.decide') &&
                                         row.status === 'pending' ? (
                                             <div className="flex gap-2">
                                                 <Button

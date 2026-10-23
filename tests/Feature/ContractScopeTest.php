@@ -162,7 +162,7 @@ it('writes sign-ins and failed attempts to the audit log', function () {
     $this->post(route('login.store'), ['email' => 'owner@glutarepubliq.com', 'password' => 'wrong-password']);
     expect(AuditLog::where('action', 'auth.failed')->where('description', 'like', '%owner@glutarepubliq.com%')->exists())->toBeTrue();
 
-    $this->post(route('login.store'), ['email' => 'owner@glutarepubliq.com', 'password' => 'ThEsEcReT1126']);
+    $this->post(route('login.store'), ['email' => 'owner@glutarepubliq.com', 'password' => config('clinic.demo_password')]);
     expect(AuditLog::where('action', 'auth.login')->exists())->toBeTrue();
 });
 

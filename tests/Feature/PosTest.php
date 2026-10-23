@@ -19,6 +19,12 @@ function till(): User
     return User::where('email', 'reception@glutarepubliq.com')->firstOrFail();
 }
 
+/** Refunds and big discounts are the owner's to give (see ApprovalsTest for the staff side). */
+function counterOwner(): User
+{
+    return User::where('email', 'owner@glutarepubliq.com')->firstOrFail();
+}
+
 function facial(): Treatment
 {
     return Treatment::where('slug', 'hydra-facial')->firstOrFail();
@@ -107,7 +113,7 @@ it('applies a percentage discount and never goes below zero', function () {
     expect($sale->discount_amount)->toBe(round(facialPrice() * 0.1, 2))
         ->and($sale->total)->toBe($expected);
 
-    $this->actingAs(till())->post('/admin/pos', ringUp([
+    $this->actingAs(counterOwner())->post('/admin/pos', ringUp([
         'discount_type' => 'fixed',
         'discount_value' => 999999,
     ]))->assertRedirect();
@@ -171,7 +177,7 @@ it('refunds part of a sale, returns the stock and shows the balance', function (
     $stockAfterSale = onHandAtCebu($product);
     $outstanding = round($sale->total - 2000, 2);
 
-    $this->actingAs(till())
+    $this->actingAs(counterOwner())
         ->post("/admin/pos/sales/{$sale->id}/refund", [
             'amount' => 1000,
             'method' => 'cash',
@@ -188,7 +194,7 @@ it('refunds part of a sale, returns the stock and shows the balance', function (
 
     // A refund can never exceed the money that was actually taken, so a deposit
     // left behind cannot be refunded into the negative.
-    $this->actingAs(till())->post("/admin/pos/sales/{$sale->id}/refund", [
+    $this->actingAs(counterOwner())->post("/admin/pos/sales/{$sale->id}/refund", [
         'amount' => $outstanding + 100000,
         'method' => 'cash',
         'reason' => 'Over the top.',
@@ -207,7 +213,7 @@ it('refunds a fully paid sale, which is the common case at the counter', functio
     $product = balm();
     $stockAfterSale = onHandAtCebu($product);
 
-    $this->actingAs(till())
+    $this->actingAs(counterOwner())
         ->post("/admin/pos/sales/{$sale->id}/refund", [
             'amount' => 1000,
             'method' => 'gcash',
@@ -221,7 +227,7 @@ it('refunds a fully paid sale, which is the common case at the counter', functio
         ->and(onHandAtCebu($product))->toBe($stockAfterSale + 1);
 
     // Handing back the rest of a paid sale leaves it settled and marked refunded.
-    $this->actingAs(till())
+    $this->actingAs(counterOwner())
         ->post("/admin/pos/sales/{$sale->id}/refund", [
             'amount' => 1000,
             'method' => 'gcash',
@@ -232,7 +238,7 @@ it('refunds a fully paid sale, which is the common case at the counter', functio
         ->and($sale->fresh()->status)->toBe('refunded');
 
     // A second refund finds nothing left to give back.
-    $this->actingAs(till())
+    $this->actingAs(counterOwner())
         ->post("/admin/pos/sales/{$sale->id}/refund", [
             'amount' => 100,
             'method' => 'gcash',

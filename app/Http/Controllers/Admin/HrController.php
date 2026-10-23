@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Approvals\DecideApproval;
 use App\Actions\Hr\ClockPunch;
 use App\Actions\Hr\TimeRecord;
 use App\Actions\Media\UploadPhoto;
 use App\Http\Controllers\Controller;
+use App\Models\Approval;
 use App\Models\Attendance;
 use App\Models\Branch;
 use App\Models\Employee;
@@ -13,6 +15,7 @@ use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\Organization;
 use App\Models\PayrollAdjustment;
+use App\Models\User;
 use App\Models\WorkSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -443,24 +446,51 @@ class HrController extends Controller
             'reason' => ['nullable', 'string', 'max:200'],
         ]);
 
-        LeaveRequest::create($data + ['status' => 'pending']);
+        $this->fileLeave($data, $request->user());
 
-        return back()->with('success', 'Leave request filed.');
+        return back()->with('success', 'Leave request filed and sent to the owner for approval.');
     }
 
-    public function reviewLeave(Request $request, LeaveRequest $leave): RedirectResponse
+    /** Any member of staff files their own leave; only the owner grants it. */
+    public function fileOwnLeave(Request $request): RedirectResponse
+    {
+        $employee = Employee::active()->where('user_id', $request->user()->id)->first();
+        abort_unless($employee, 403, 'You are not on the staff roll yet. Ask HR to add you.');
+
+        $data = $request->validate([
+            'type' => ['required', Rule::in(array_keys(LeaveRequest::TYPES))],
+            'from_date' => ['required', 'date', 'after_or_equal:today'],
+            'to_date' => ['required', 'date', 'after_or_equal:from_date'],
+            'days' => ['required', 'numeric', 'min:0.5', 'max:60'],
+            'reason' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $this->fileLeave($data + ['employee_id' => $employee->id], $request->user());
+
+        return back()->with('success', 'Leave request sent to the owner for approval.');
+    }
+
+    /** @param  array<string, mixed>  $data */
+    private function fileLeave(array $data, User $by): LeaveRequest
+    {
+        $leave = LeaveRequest::create($data + ['status' => 'pending']);
+        $name = Employee::find($data['employee_id'])?->name;
+        Approval::ask('leave', sprintf('%s: %s, %s to %s (%s days)', $name, LeaveRequest::TYPES[$data['type']], $data['from_date'], $data['to_date'], $data['days']), $by, $leave);
+
+        return $leave;
+    }
+
+    /** Owner only (route gate); goes through the same decision as the approvals inbox. */
+    public function reviewLeave(Request $request, LeaveRequest $leave, DecideApproval $decide): RedirectResponse
     {
         $data = $request->validate([
             'status' => ['required', Rule::in(['approved', 'declined'])],
             'review_note' => ['nullable', 'string', 'max:200'],
         ]);
 
-        $leave->update([
-            'status' => $data['status'],
-            'review_note' => $data['review_note'] ?? null,
-            'reviewed_by' => $request->user()->id,
-            'reviewed_at' => now(),
-        ]);
+        $approval = Approval::pending()->where('type', 'leave')->where('subject_type', LeaveRequest::class)->where('subject_id', $leave->id)->first()
+            ?? Approval::ask('leave', "Leave #{$leave->id}", $request->user(), $leave);
+        $decide($approval, $data['status'] === 'approved', $data['review_note'] ?? null, $request->user());
 
         return back()->with('success', 'Leave '.($data['status'] === 'approved' ? 'approved' : 'declined').'.');
     }

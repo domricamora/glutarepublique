@@ -27,6 +27,7 @@ class AuditLog extends Model
         'payroll' => 'Payroll',
         'accounting' => 'Accounting',
         'settings' => 'Settings and permissions',
+        'approval' => 'Owner approvals',
     ];
 
     public const UPDATED_AT = null;

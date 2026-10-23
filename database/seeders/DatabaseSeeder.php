@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 /**
  * Gluta RepubliQ Aesthetics Database Seeder.
@@ -47,7 +48,8 @@ class DatabaseSeeder extends Seeder
                 'name' => $name,
                 'organization_id' => $organizationId,
                 'email_verified_at' => now(),
-            ] + ($user->exists ? [] : ['password' => 'ThEsEcReT1126']))->save();
+                // A new demo login gets the password from CLINIC_DEMO_PASSWORD (.env); without one it is unguessable.
+            ] + ($user->exists ? [] : ['password' => config('clinic.demo_password') ?: Str::random(32)]))->save();
             $user->syncRoles($role);
         }
 

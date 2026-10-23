@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Approval;
 use App\Models\ClinicSetting;
 use Illuminate\Foundation\Vite;
 use Illuminate\Http\Request;
@@ -78,6 +79,8 @@ class HandleInertiaRequests extends Middleware
                     default => $request->user()->getAllPermissions()->pluck('name'),
                 },
             ],
+            // The owner's count of requests waiting, for the badge on Approvals.
+            'approvalsWaiting' => fn () => $request->user()?->can('approvals.decide') ? Approval::pending()->count() : 0,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

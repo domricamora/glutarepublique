@@ -23,12 +23,27 @@ class RolesAndPermissionsSeeder extends Seeder
         'accounting.view', 'accounting.create',
         'content.view', 'content.edit',
         'settings.view', 'settings.edit',
+        // Refunds, discounts over the limit, payroll approval and leave: the owner's alone.
+        'approvals.decide',
+    ];
+
+    /** Everything an administrator runs, short of the owner's sign-off. */
+    private const ADMINISTRATOR = [
+        'leads.view', 'leads.create', 'leads.edit', 'leads.delete',
+        'appointments.view', 'appointments.create', 'appointments.edit', 'appointments.delete',
+        'pos.view', 'pos.create', 'pos.refund',
+        'inventory.view', 'inventory.create',
+        'hr.view', 'hr.create',
+        'payroll.view', 'payroll.create',
+        'accounting.view', 'accounting.create',
+        'content.view', 'content.edit',
+        'settings.view', 'settings.edit',
     ];
 
     public const ROLES = [
         'Super Admin' => [],
         'Organization Owner' => self::PERMISSIONS,
-        'Clinic Administrator' => self::PERMISSIONS,
+        'Clinic Administrator' => self::ADMINISTRATOR,
         'Branch Manager' => ['leads.view', 'leads.create', 'leads.edit', 'appointments.view', 'appointments.create', 'appointments.edit', 'pos.view', 'pos.create', 'inventory.view', 'inventory.create', 'content.view'],
         'Doctor' => ['appointments.view'],
         'Nurse' => ['appointments.view'],

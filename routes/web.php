@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CatalogController;
@@ -89,6 +90,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('branches', [BranchController::class, 'store'])->middleware('can:settings.edit')->name('branches.store');
         Route::patch('branches/{branch}', [BranchController::class, 'update'])->middleware('can:settings.edit')->name('branches.update');
 
+        // Requests only the owner grants. Everyone sees their own; deciding is owner only.
+        Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+        Route::post('approvals/{approval}', [ApprovalController::class, 'decide'])->middleware('can:approvals.decide')->name('approvals.decide');
+
+        // Any member of staff on the roll files their own leave; the owner grants it.
+        Route::post('my-leave', [HrController::class, 'fileOwnLeave'])->middleware('throttle:20,1')->name('my-leave.store');
+
         Route::get('traffic', [TrafficController::class, 'index'])->middleware('can:content.view')->name('traffic.index');
 
         Route::get('pages', [LegalPageController::class, 'index'])->middleware('can:content.edit')->name('pages.index');
@@ -159,7 +167,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('hr/attendance', [HrController::class, 'clock'])->middleware('can:hr.create')->name('hr.clock');
         Route::get('hr/leave', [HrController::class, 'leave'])->middleware('can:hr.view')->name('hr.leave');
         Route::post('hr/leave', [HrController::class, 'requestLeave'])->middleware('can:hr.create')->name('hr.leave.store');
-        Route::patch('hr/leave/{leave}', [HrController::class, 'reviewLeave'])->middleware('can:hr.create')->name('hr.leave.review');
+        Route::patch('hr/leave/{leave}', [HrController::class, 'reviewLeave'])->middleware('can:approvals.decide')->name('hr.leave.review');
         Route::patch('hr/employees/{employee}', [HrController::class, 'update'])->middleware('can:hr.create')->name('hr.update');
         Route::post('hr/employees/{employee}/resign', [HrController::class, 'resign'])->middleware('can:hr.create')->name('hr.resign');
         Route::post('hr/employees/{employee}/reinstate', [HrController::class, 'reinstate'])->middleware('can:hr.create')->name('hr.reinstate');
@@ -183,7 +191,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('payroll/adjustments/{adjustment}/clear', [PayrollController::class, 'clearAdjustment'])->middleware('can:payroll.create')->name('payroll.adjustments.clear');
         Route::post('payroll', [PayrollController::class, 'store'])->middleware('can:payroll.create')->name('payroll.store');
         Route::get('payroll/runs/{run}', [PayrollController::class, 'show'])->middleware('can:payroll.view')->name('payroll.show');
-        Route::post('payroll/runs/{run}/approve', [PayrollController::class, 'approve'])->middleware('can:payroll.create')->name('payroll.approve');
+        Route::post('payroll/runs/{run}/approve', [PayrollController::class, 'approve'])->middleware('can:approvals.decide')->name('payroll.approve');
         Route::post('payroll/runs/{run}/pay', [PayrollController::class, 'pay'])->middleware('can:payroll.create')->name('payroll.pay');
         Route::get('payroll/payslips/{payslip}', [PayrollController::class, 'payslip'])->middleware('can:payroll.view')->name('payroll.payslip');
 

@@ -25,11 +25,11 @@ Annex A checked line by line; what was missing is now built:
 ### Next steps (start here)
 
 0. **Still blocked by the auto-mode classifier** (needs a permission rule from the owner, not just chat approval): passwordless "sign in as any role" (draft was `app/Http/Controllers/DemoLoginController.php`, removed) and per-role demo accounts with the shared password. The owner said staging allows it; ask them to add an allow rule, then rebuild.
-0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain. Privacy notice should mention the cookieless traffic count (client's lawyer to word it).
+   0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain. Privacy notice should mention the cookieless traffic count (client's lawyer to word it).
 1. SSH is port 9022: `ssh -p 9022 -i ~/.ssh/ck_deskpulse htrjymuo@ck.deskpulse.click`.
 2. Ask the owner how the hero feels: lens follow speed (`ease` 0.14 / 0.035 in `useSkinLens`, `pages/home.tsx`), lens size (`--s` in `.skin-lens`, app.css), glitter count/size/tint (`glitter.tsx`, `.glint`).
 3. Real content still missing: Facebook page needs a login, so the SOMO branch address/hours/offers are best guesses; staff rows have no photos, so the home specialist portraits are hard-coded.
-5. Then the older backlog below (settings/auth screens on the stock layout, untouched plan.md sections).
+4. Then the older backlog below (settings/auth screens on the stock layout, untouched plan.md sections).
 
 ### Gotchas
 
@@ -85,7 +85,7 @@ Annex A checked line by line; what was missing is now built:
 - The remote `.env` had an invalid unquoted `APP_NAME` (`\ Gluta RepubliQ Aesthetics\`); it was corrected to `APP_NAME="Gluta RepubliQ Aesthetics"`. The owner updated the database password; `php artisan db:show` then connected successfully. Never copy the password into this handoff.
 - A pre-deploy database dump was created at `~/backups/predeploy-glutarepubliq-20261007-<time>.sql`; deploy also made its normal backups.
 - Deployment's focused `ExampleTest` checks passed (2 tests). A full local `php artisan test` run reported 236 passed, 6 failures, and 1 error (243 tests total), involving booking concurrency, clinic setup, inventory/site-page seeded expectations, and an employee lookup in `PeopleTest`. These were not fixed in this session; investigate before treating the full suite as green.
-- Current demo login emails are `admin@glutarepubliq.com`, `owner@glutarepubliq.com`, and `reception@glutarepubliq.com`; the shared demo password is `ThEsEcReT1126`. The live login is `/login`.
+- Current demo login emails are `admin@glutarepubliq.com`, `owner@glutarepubliq.com`, and `reception@glutarepubliq.com`; the shared demo password is set by CLINIC_DEMO_PASSWORD in each .env (the owner has it). The live login is `/login`.
 - Local worktree was already dirty before this handoff update: `scripts/deploy.ps1` modified and `ctx-test.ps1`, `deploy.err`, `deploy.log`, `deploy.pid` untracked. Preserve and inspect before cleanup; do not assume these are disposable.
 
 ## Where things are
@@ -139,7 +139,7 @@ Annex A checked line by line; what was missing is now built:
 - Local dev URL for this repo is `http://localhost/glutarepubliq/public`.
 - `DB_PREFIX` is supported in `config/database.php` for running inside a shared database, but it is **unset** here because the host grants this site its own database.
 
-## Demo logins (password `ThEsEcReT1126`)
+## Demo logins (password: CLINIC_DEMO_PASSWORD in .env)
 
 admin@glutarepubliq.com (Super Admin), owner@glutarepubliq.com, reception@glutarepubliq.com. Local: http://localhost/glutarepubliq/public
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Pos\RingUpSale;
 use App\Http\Controllers\Controller;
+use App\Models\Approval;
 use App\Models\AuditLog;
 use App\Models\Branch;
+use App\Models\ClinicSetting;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Product;
@@ -89,6 +91,23 @@ class PosController extends Controller
             'promotion_id' => ['nullable', 'integer'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
+
+        // A discount past the clinic's limit is the owner's call: the cart waits
+        // in her inbox and is rung up, as this cashier, when she approves.
+        $quote = $ring->quote($data);
+        $limit = (float) ClinicSetting::get('approvals.discount_limit', 10);
+        $share = $quote['subtotal'] > 0 ? $quote['discount'] / $quote['subtotal'] * 100 : 0;
+        if ($share > $limit + 0.001 && ! $request->user()->can('approvals.decide')) {
+            Approval::ask('discount', sprintf(
+                'Discount of %s (%s%%) on a %s sale%s',
+                number_format($quote['discount'], 2),
+                round($share, 1),
+                number_format($quote['subtotal'], 2),
+                filled($data['client_name'] ?? null) ? ' for '.$data['client_name'] : '',
+            ), $request->user(), null, $quote['discount'], $data);
+
+            return back()->with('success', 'That discount is over the '.rtrim(rtrim(number_format($limit, 1), '0'), '.').'% limit, so the sale was sent to the owner. It is rung up as soon as she approves.');
+        }
 
         $completed = $ring($data, $request->user());
 
@@ -248,6 +267,13 @@ class PosController extends Controller
             'method' => ['required', Rule::in(array_keys(Payment::METHODS))],
             'reason' => ['required', 'string', 'max:200'],
         ], ['reason.required' => 'Say why the refund is being given.']);
+
+        // Money going back out is the owner's decision.
+        if (! $request->user()->can('approvals.decide')) {
+            Approval::ask('refund', sprintf('Refund %s on %s: %s', number_format((float) $data['amount'], 2), $sale->reference, $data['reason']), $request->user(), $sale, (float) $data['amount'], $data);
+
+            return back()->with('success', 'Refund request sent to the owner. Nothing is paid out until she approves.');
+        }
 
         $ring->refund($sale, (float) $data['amount'], $data['method'], $data['reason'], $request->user());
 

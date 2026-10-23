@@ -195,7 +195,7 @@ it('puts a refunded sale back on the shelf as a new lot', function () {
     $sale = Sale::withoutGlobalScopes()->sole();
     expect(onHand($product, cebu()))->toBe($before - 2);
 
-    $this->actingAs($this->till)->post("/admin/pos/sales/{$sale->id}/refund", [
+    $this->actingAs(counterOwner())->post("/admin/pos/sales/{$sale->id}/refund", [
         'amount' => 1000,
         'method' => 'cash',
         'reason' => 'Client returned both bottles.',

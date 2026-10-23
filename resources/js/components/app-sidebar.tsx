@@ -11,6 +11,7 @@ import {
     FileText,
     KeyRound,
     LayoutGrid,
+    ShieldCheck,
     MapPin,
     MessageCircle,
     ScrollText,
@@ -39,6 +40,7 @@ import { usePoll } from '@/hooks/use-poll';
 import { useCan } from '@/lib/admin';
 import { dashboard, home } from '@/routes';
 import accounts from '@/routes/admin/accounts';
+import approvals from '@/routes/admin/approvals';
 import appointments from '@/routes/admin/appointments';
 import accounting from '@/routes/admin/accounting';
 import audit from '@/routes/admin/audit';
@@ -57,7 +59,7 @@ import setup from '@/routes/admin/setup';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
-    const { clinic, build } = usePage().props;
+    const { clinic, build, approvalsWaiting } = usePage().props;
     const can = useCan();
     const [waiting, setWaiting] = useState(0);
 
@@ -76,6 +78,12 @@ export function AppSidebar() {
     // Anything used once a week sits below anything used every hour.
     const mainNavItems: NavItem[] = [
         { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+        {
+            title: 'Approvals',
+            href: approvals.index(),
+            icon: ShieldCheck,
+            badge: approvalsWaiting || null,
+        },
         ...(can('appointments.view')
             ? [
                   {

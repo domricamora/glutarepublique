@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Accounting\PostPayroll;
+use App\Actions\Payroll\ApprovePayrollRun;
 use App\Actions\Payroll\CalculatePayslip;
 use App\Http\Controllers\Controller;
+use App\Models\Approval;
 use App\Models\AuditLog;
 use App\Models\Employee;
 use App\Models\Holiday;
@@ -199,9 +201,10 @@ class PayrollController extends Controller
         }
 
         $run->recalculate();
+        Approval::ask('payroll', "Approve {$run->label}: net pay ".number_format((float) $run->total_net, 2).' for '.$run->payslips()->count().' people', $request->user(), $run, (float) $run->total_net);
 
         return redirect()->to(route('admin.payroll.show', $run))
-            ->with('success', $run->payslips()->count().' payslips calculated.');
+            ->with('success', $run->payslips()->count().' payslips calculated and sent to the owner for approval.');
     }
 
     public function show(PayrollRun $run): Response
@@ -252,29 +255,11 @@ class PayrollController extends Controller
     }
 
     /** Approval is the gate: only an approved run is posted to the books. */
-    public function approve(PayrollRun $run, PostPayroll $post): RedirectResponse
+    /** Owner only (route gate): the last moment somebody could still stop the money. */
+    public function approve(PayrollRun $run, ApprovePayrollRun $approve): RedirectResponse
     {
-        if ($run->status !== 'draft') {
-            throw ValidationException::withMessages(['status' => 'Only a draft run can be approved.']);
-        }
-
-        $post($run, request()->user());
-
-        $run->update(['status' => 'approved', 'approved_at' => now(), 'posted_at' => now()]);
-
-        // The gate before real money leaves the books, and the last moment
-        // somebody could still have stopped it.
-        AuditLog::record(
-            'payroll.approve',
-            $run->label.' approved and posted to the books.',
-            $run,
-            [
-                'gross' => $run->gross,
-                'deductions' => $run->total_deductions,
-                'net' => $run->net,
-                'payslips' => $run->payslips()->count(),
-            ],
-        );
+        $approve($run, request()->user());
+        ApprovePayrollRun::closeRequest($run, request()->user());
 
         return back()->with('success', $run->label.' approved and posted to the books.');
     }

@@ -45,6 +45,20 @@ class RingUpSale
      *
      * @throws ValidationException
      */
+    /**
+     * The cart priced from the catalogue without selling anything, for
+     * checking a discount against the limit before the sale is rung up.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{subtotal: float, discount: float}
+     */
+    public function quote(array $data): array
+    {
+        [$subtotal, $discount] = $this->totals($this->resolveLines($data['items'] ?? []), $data);
+
+        return ['subtotal' => $subtotal, 'discount' => $discount];
+    }
+
     public function __invoke(array $data, User $cashier): CompletedSale
     {
         $lines = $this->resolveLines($data['items'] ?? []);

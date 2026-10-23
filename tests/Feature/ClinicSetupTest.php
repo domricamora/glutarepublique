@@ -128,7 +128,7 @@ it('gives a new demo account the demo password', function () {
 
     $this->post(route('admin.setup.store'));
 
-    expect(Hash::check('ThEsEcReT1126', User::where('email', 'owner@glutarepubliq.com')->firstOrFail()->password))
+    expect(Hash::check(config('clinic.demo_password'), User::where('email', 'owner@glutarepubliq.com')->firstOrFail()->password))
         ->toBeTrue();
 });
 
