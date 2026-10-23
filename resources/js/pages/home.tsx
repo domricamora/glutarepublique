@@ -91,7 +91,7 @@ export default function Home({
 
     return (
         <>
-            <Head title="Gluta RepubliQ Aesthetics | Advanced Care. Radiant You.">
+            <Head title="Glutathione, laser and skin clinic in Cebu and Laguna">
                 <meta
                     name="description"
                     content="Gluta RepubliQ Aesthetics: gluta drips, 9D HIFU, Fotona laser, Hydrafacial, fillers and hair removal at clinics in San Pedro, Sta. Rosa, Bacoor and Cebu City."
