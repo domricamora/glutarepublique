@@ -92,7 +92,7 @@ const bars = (rows: Group[]) =>
             rows={rows.map((r) => ({
                 label: r.label,
                 value: r.views,
-                note: `${n(r.visitors)} visitors`,
+                note: `${n(r.visitors)} ${r.visitors === 1 ? 'visitor' : 'visitors'}`,
             }))}
             format={n}
         />
