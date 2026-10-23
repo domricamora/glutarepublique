@@ -1,6 +1,6 @@
 # SESSION_STATE.md — HAND-OFF, START HERE
 
-Updated 2026-10-23: contract gap pass (Annex A of `~/Downloads/glutarepubliq/Software-Development-Agreement-Recursive-Frog- GlutaRepubliQ.pdf`) built, tested and deployed to https://glutarepubliq.recursive-frog.com together with the 2026-10-21 real-content import.
+Updated 2026-10-23 late (see the 2026-10-23 evening/late notes below). Earlier: contract gap pass (Annex A of `~/Downloads/glutarepubliq/Software-Development-Agreement-Recursive-Frog- GlutaRepubliQ.pdf`) built, tested and deployed to https://glutarepubliq.recursive-frog.com together with the 2026-10-21 real-content import.
 
 ## Contract gap pass (2026-10-23)
 
@@ -50,6 +50,8 @@ Done and deployed (commits 5a9ec8f, 64f94ad):
 **ON HOLD by the owner ("hold on the list first")** until they say resume. Still to do, in order: C financial reports monthly/quarterly/yearly presets + comparison, D POS packages (treatment `price_list` lines sellable), E inventory automated reconciliation (stock count sessions + nightly ledger/batch check), F client records view (visits, purchases, spend per lead), G conflict-of-interest safeguards (masked client contacts for non-owners, audited reveal, owner-only export) + notifications/webhooks.
 
 ### Next steps (start here)
+
+**Open as of 2026-10-23 late:** (a) San Pedro staff (none on the roster, so no online booking there); (b) real pay data and the payroll-rules tab of the intake sheet; (c) visitor location for traffic: owner approved a local GeoIP database (in progress, see below); (d) rewriting the 24 old commits to author domricamora needs a force-push, only on the owner's say-so; (e) must-have list C-G still on hold.
 
 0. **Still blocked by the auto-mode classifier** (needs a permission rule from the owner, not just chat approval): passwordless "sign in as any role" (draft was `app/Http/Controllers/DemoLoginController.php`, removed) and per-role demo accounts with the shared password. The owner said staging allows it; ask them to add an allow rule, then rebuild.
    0c. Not software, still open in the contract: recorded role training (A.10), migration of the client's real records (waits on their CSV export), staging on the client's own domain. Privacy notice should mention the cookieless traffic count (client's lawyer to word it).
