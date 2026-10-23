@@ -137,7 +137,7 @@ class SiteContentSeeder extends Seeder
         $specialists = [
             ['dr-camille-rivera', 'Dr. Camille Rivera', 'Medical Director, Aesthetic Dermatology', 'MD, Aesthetic & Laser Specialist', 'Dr. Rivera specializes in advanced laser aesthetics, pigmentation clearance, and medical-grade glutathione protocols with over 10 years of clinical practice.', 'asian-dermatologist-consultation.jpg', ['Laser rejuvenation', 'Glutathione protocols', 'Melasma treatment'], ['cebu', 'san-pedro']],
             ['dr-adrian-santos', 'Dr. Adrian Santos', 'Aesthetic Physician', 'MD, Aesthetic Medicine & Trichology', 'Dr. Santos focuses on non-invasive facial sculpting, HIFU, and anti-aging therapies with tailored protocols.', 'asian-doctor-male.jpg', ['HIFU lifting', 'Facial contouring', 'Skin tightening'], ['cebu', 'bacoor', 'san-pedro']],
-            ['dr-rhea-kapoor', 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'MD Dermatology', 'Dr. Kapoor brings 8+ years of dedicated expertise in delicate acne scar treatments, dermal peels, and glass-skin facial rejuvenation.', 'doctor-sofia.jpg', ['HydraGlow', 'Acne scar revision', 'Skin rejuvenation'], ['sta-rosa', 'cebu']],
+            ['dr-rhea-kapoor', 'Dr. Rhea Kapoor', 'Cosmetic Dermatologist', 'MD Dermatology', 'Dr. Kapoor brings 8+ years of dedicated expertise in delicate acne scar treatments, dermal peels, and glass-skin facial rejuvenation.', 'doctor-sofia.jpg', ['HydraGlow', 'Acne scar revision', 'Skin rejuvenation'], ['san-pedro', 'cebu']],
         ];
 
         $branches = Branch::withoutGlobalScopes()->where($org)->pluck('id', 'slug');
@@ -166,7 +166,7 @@ class SiteContentSeeder extends Seeder
             ['How many sessions are required?', 'Visible radiance is often noticed after 1–2 sessions. For sustained brightening and collagen remodeling, a customized series of 4–8 sessions is typically recommended.'],
             ['Is there any downtime?', 'Most treatments, including our signature glutathione drips and HydraGlow facials, have zero downtime. Gentle laser sessions may have mild rosy flushing for 1–2 hours.'],
             ['Do you offer customized treatment plans?', 'Every client begins with a thorough skin assessment. Your physician customizes the protocol, active concentrations, and schedule for your unique skin profile.'],
-            ['Which branches can I visit?', 'We have four clinics: San Pedro and Sta. Rosa in Laguna, SOMO A Vista Mall in Bacoor, Cavite, and Robinsons Galleria in Cebu City.'],
+            ['Which branches can I visit?', 'We have three clinics: San Pedro, Laguna (Esperanza Bldg., Pacita Ave.), SOMO A Vista Mall in Bacoor, Cavite, and Robinsons Galleria in Cebu City.'],
             ['How can I pay?', 'Cash, Visa, Mastercard, GCash and Maya are accepted at every branch.'],
             ['Are prices fixed?', 'Prices on this site are our current rates and are subject to change without prior notice. Your plan and its price are confirmed at your consultation, before any treatment.'],
         ] as $i => [$question, $answer]) {

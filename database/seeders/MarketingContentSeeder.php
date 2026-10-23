@@ -243,7 +243,7 @@ class MarketingContentSeeder extends Seeder
             0,
             [
                 ['heading' => 'Who we are', 'paragraphs' => [
-                    'Gluta RepubliQ Aesthetics operates aesthetic and wellness clinics in Cebu, San Pedro, Sta. Rosa and Bacoor. We are the personal information controller for the information described in this policy.',
+                    'Gluta RepubliQ Aesthetics operates aesthetic and wellness clinics in Cebu, San Pedro and Bacoor. We are the personal information controller for the information described in this policy.',
                     'Questions about privacy, or a request to exercise your rights, can be sent to the clinic email address on our contact page or raised at the branch where you are treated. We aim to respond within fifteen working days.',
                 ]],
                 ['heading' => 'What we collect', 'paragraphs' => [

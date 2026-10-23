@@ -18,7 +18,7 @@ function office(): User
 
 it('starts with the configured social links on the footer', function () {
     expect(ClinicSetting::socials())->toBe([
-        'facebook' => 'https://facebook.com/Gluta-RepubliQ-566381640410768',
+        'facebook' => 'https://facebook.com/profile.php?id=61584019485763',
         'instagram' => 'https://instagram.com/gluta_republiq',
     ]);
 });

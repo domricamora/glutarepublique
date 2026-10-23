@@ -73,7 +73,7 @@ export default function About({
             <Head title="About the clinic">
                 <meta
                     name="description"
-                    content={`How ${clinic.name} works: physician-led assessments, written plans, honest pricing and clinics in Cebu, San Pedro, Sta. Rosa and Bacoor.`}
+                    content={`How ${clinic.name} works: physician-led assessments, written plans, honest pricing and clinics in Cebu, San Pedro and Bacoor.`}
                 />
             </Head>
 

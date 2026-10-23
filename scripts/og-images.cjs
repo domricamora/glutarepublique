@@ -43,7 +43,7 @@ p { margin-top: 22px; font: 400 28px/1.35 'GR Body'; color: #cde7e5; max-width: 
 <div class="inner">
   <div class="brand"><img src="${logo}" alt=""> Gluta RepubliQ Aesthetics</div>
   <div><h1>${escape(card.title)}</h1><p>${escape(card.subtitle)}</p></div>
-  <div class="foot"><span class="bar"></span><span>Cebu · San Pedro · Sta. Rosa · Bacoor</span></div>
+  <div class="foot"><span class="bar"></span><span>Cebu · San Pedro · Bacoor</span></div>
 </div></body></html>`;
 
 (async () => {

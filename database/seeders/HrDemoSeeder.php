@@ -26,7 +26,7 @@ class HrDemoSeeder extends Seeder
      */
     private const STAFF = [
         ['admin@glutarepubliq.com', 'Isabel Montenegro', 'Clinic Director', 'Management', 95000, 8000, '2019-03-04'],
-        ['owner@glutarepubliq.com', 'Rafael Santiago', 'Owner', 'Management', 120000, 10000, '2018-01-15'],
+        ['owner@glutarepubliq.com', 'Karla Ugalino Velasco', 'Owner', 'Management', 120000, 10000, '2018-01-15'],
         ['reception@glutarepubliq.com', 'Joanna Dizon', 'Front Desk Supervisor', 'Front Desk', 38000, 2500, '2021-06-01'],
         [null, 'Camille Rivera', 'Registered Nurse', 'Clinic', 34000, 1500, '2022-02-14'],
         [null, 'Trisha Navarro', 'Aesthetician', 'Clinic', 32000, 1200, '2023-09-01'],

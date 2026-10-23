@@ -15,7 +15,7 @@ it('shows the marketing pages from the seeded content', function () {
             // seeder ticked for the website, rather than the three seeded
             // specialist rows the office cannot edit.
             ->has('specialists', 7)
-            ->has('branches', 4)
+            ->has('branches', 3)
             ->has('testimonials', 3)
             ->has('faqs', 4));
 
@@ -34,7 +34,7 @@ it('shows the marketing pages from the seeded content', function () {
 
     $this->get('/contact')->assertOk()
         ->assertInertia(fn ($page) => $page->component('contact')
-            ->has('branches', 4)
+            ->has('branches', 3)
             ->has('treatments', count(\Database\Seeders\SiteContentSeeder::TREATMENTS)));
 });
 

@@ -41,7 +41,7 @@ export default function Contact({ branches, treatments }: Props) {
             <Head title="Contact">
                 <meta
                     name="description"
-                    content={`Call, message or visit ${clinic.name} in Cebu, San Pedro, Sta. Rosa or Bacoor. Branch addresses, hours and an enquiry form that reaches the clinic team.`}
+                    content={`Call, message or visit ${clinic.name} in Cebu, San Pedro or Bacoor. Branch addresses, hours and an enquiry form that reaches the clinic team.`}
                 />
             </Head>
 

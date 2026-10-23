@@ -14,10 +14,10 @@ use Illuminate\Support\Str;
 class DatabaseSeeder extends Seeder
 {
     public const BRANCHES = [
-        ['name' => 'Robinsons Galleria Cebu II', 'slug' => 'cebu', 'city' => 'Cebu City', 'address' => '2nd Floor, Robinsons Galleria, General Maxilom Ave corner Sergio Osmeña Blvd, Brgy. Tejero, Cebu City', 'phone' => '+63 995 510 9095'],
-        ['name' => 'San Pedro', 'slug' => 'san-pedro', 'city' => 'San Pedro', 'address' => 'Ground Floor, Esperanza Bldg., 39 Pacita Ave, San Pedro, Laguna', 'phone' => '+63 995 510 9095'],
-        ['name' => 'Sta. Rosa', 'slug' => 'sta-rosa', 'city' => 'Sta. Rosa', 'address' => '2nd Floor, Carvajal Commercial Bldg. 1, Balibago, Sta. Rosa, Laguna', 'phone' => '+63 995 510 9095'],
-        ['name' => 'Bacoor', 'slug' => 'bacoor', 'city' => 'Bacoor', 'address' => 'SOMO A Vista Mall, Daang Hari Vista City corner Molino, Bacoor, Cavite', 'phone' => '+63 995 510 9095'],
+        ['name' => 'Robinsons Galleria Cebu II', 'slug' => 'cebu', 'city' => 'Cebu City', 'address' => '2nd Floor, Robinsons Galleria, General Maxilom Avenue corner Sergio Osmeña Boulevard, Brgy. Tejero', 'phone' => '+63 995 510 9095'],
+        ['name' => 'San Pedro', 'slug' => 'san-pedro', 'city' => 'San Pedro, Laguna', 'address' => 'Ground Floor, Esperanza Bldg., 39 Pacita Ave.', 'phone' => '+63 995 510 9095'],
+        ['name' => 'Sta. Rosa', 'slug' => 'sta-rosa', 'city' => 'Sta. Rosa', 'address' => '2nd Floor, Carvajal Commercial Bldg. 1, Balibago, Sta. Rosa, Laguna', 'phone' => '+63 995 510 9095', 'is_active' => false],
+        ['name' => 'Bacoor', 'slug' => 'bacoor', 'city' => 'Bacoor, Cavite', 'address' => 'SOMO A Vista Mall, Molino - Paliparan Rd, Molino IV', 'phone' => '+63 995 510 9095'],
     ];
 
     public function run(): void
@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
 
         $users = [
             ['admin@glutarepubliq.com', 'Admin Gluta Republiq', null, 'Super Admin'],
-            ['owner@glutarepubliq.com', 'Dr. Camille Rivera', $organization->id, 'Organization Owner'],
+            ['owner@glutarepubliq.com', 'Karla Ugalino Velasco', $organization->id, 'Organization Owner'],
             ['reception@glutarepubliq.com', 'Receptionist', $organization->id, 'Receptionist'],
         ];
 

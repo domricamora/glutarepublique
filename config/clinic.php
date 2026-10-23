@@ -53,7 +53,7 @@ return [
 
     // As linked from glutarepubliq.com. No TikTok account is published there.
     'social' => [
-        'facebook' => env('CLINIC_FACEBOOK', 'https://www.facebook.com/Gluta-RepubliQ-566381640410768'),
+        'facebook' => env('CLINIC_FACEBOOK', 'https://www.facebook.com/profile.php?id=61584019485763'),
         'instagram' => env('CLINIC_INSTAGRAM', 'https://www.instagram.com/gluta_republiq'),
         'tiktok' => env('CLINIC_TIKTOK'),
     ],

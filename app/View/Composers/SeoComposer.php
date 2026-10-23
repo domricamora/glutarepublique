@@ -45,7 +45,7 @@ class SeoComposer
     private function forPage(string $component, array $p): array
     {
         $name = (string) config('clinic.name');
-        $where = 'Cebu, San Pedro, Sta. Rosa and Bacoor';
+        $where = 'Cebu, San Pedro and Bacoor';
 
         $seo = match (true) {
             $component === 'home' => [
@@ -389,7 +389,7 @@ class SeoComposer
                     'url' => $url,
                     'image' => $t['image'] ?? null,
                     'provider' => ['@id' => route('home').'#clinic'],
-                    'areaServed' => ['Cebu City', 'San Pedro, Laguna', 'Santa Rosa, Laguna', 'Bacoor, Cavite'],
+                    'areaServed' => ['Cebu City', 'San Pedro, Laguna', 'Bacoor, Cavite'],
                     'offers' => $prices->count() > 1 ? [
                         '@type' => 'AggregateOffer',
                         'priceCurrency' => 'PHP',
@@ -461,7 +461,7 @@ class SeoComposer
     /** @param  array<string, mixed>  $p */
     private function home(array $p): string
     {
-        $html = '<h1>'.e(config('clinic.name')).'</h1><p>'.e(config('clinic.tagline')).' Physician-led glutathione drips, laser, HIFU, facials, injectables and hair removal at clinics in Cebu, San Pedro, Sta. Rosa and Bacoor.</p>';
+        $html = '<h1>'.e(config('clinic.name')).'</h1><p>'.e(config('clinic.tagline')).' Physician-led glutathione drips, laser, HIFU, facials, injectables and hair removal at clinics in Cebu, San Pedro and Bacoor.</p>';
 
         if (! empty($p['featured'])) {
             $html .= '<h2>Signature treatments</h2><ul>'.collect($p['featured'])->map(fn ($t) => '<li><a href="'.e(route('treatments.show', $t['slug'])).'">'.e($t['name']).'</a>: '.e($t['summary'] ?? '').' From ₱'.number_format((float) ($t['promo_price'] ?? $t['price'])).'.</li>')->implode('').'</ul>';

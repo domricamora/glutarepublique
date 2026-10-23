@@ -104,9 +104,14 @@ class ClinicSetting extends Model
         }
 
         if (preg_match('#^https?://#i', $value)) {
+            parse_str((string) parse_url($value, PHP_URL_QUERY), $query);
             $path = trim((string) parse_url($value, PHP_URL_PATH), '/');
             $segments = explode('/', $path);
             $value = end($segments) ?: '';
+            // A Facebook page without a username lives at profile.php?id=...; the id is the address.
+            if ($value === 'profile.php' && ! empty($query['id'])) {
+                $value = 'profile.php?id='.$query['id'];
+            }
         }
 
         $value = ltrim(trim($value), '/@');

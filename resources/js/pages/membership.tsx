@@ -41,7 +41,7 @@ export default function Membership({ tiers, branches, faqs }: Props) {
             <Head title="Membership">
                 <meta
                     name="description"
-                    content="Monthly membership tiers with treatment allowances, member pricing, priority booking and doctor reviews at Gluta RepubliQ clinics in Cebu, San Pedro, Sta. Rosa and Bacoor."
+                    content="Monthly membership tiers with treatment allowances, member pricing, priority booking and doctor reviews at Gluta RepubliQ clinics in Cebu, San Pedro and Bacoor."
                 />
             </Head>
 
