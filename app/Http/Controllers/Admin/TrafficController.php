@@ -65,6 +65,8 @@ class TrafficController extends Controller
             'sources' => $group('source'),
             'campaigns' => $group('campaign'),
             'devices' => $group('device', 3),
+            'countries' => $group('country'),
+            'cities' => $group('city'),
             'log' => PageView::latest('id')->limit(50)->get(['id', 'path', 'source', 'campaign', 'referrer_host', 'device', 'ip_address', 'country', 'region', 'city', 'created_at'])
                 ->map(fn (PageView $v) => [
                     'id' => $v->id,

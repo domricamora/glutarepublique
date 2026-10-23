@@ -23,6 +23,8 @@ type Props = {
     sources: Group[];
     campaigns: Group[];
     devices: Group[];
+    countries: Group[];
+    cities: Group[];
     log: {
         id: number;
         path: string;
@@ -236,6 +238,18 @@ export default function Traffic(props: Props) {
                     </Panel>
                 </div>
 
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Panel
+                        title="Countries"
+                        note="From the visitor's IP address"
+                    >
+                        {bars(props.countries)}
+                    </Panel>
+                    <Panel title="Cities" note="Approximate, by IP address">
+                        {bars(props.cities)}
+                    </Panel>
+                </div>
+
                 <Panel title="Traffic log" note="The latest 50 page views">
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[48rem] text-sm">
@@ -311,6 +325,19 @@ export default function Traffic(props: Props) {
                             </tbody>
                         </table>
                     </div>
+                    <p className="mt-4 text-xs text-muted-foreground">
+                        Locations are looked up on our own server, a few minutes
+                        after each visit.{' '}
+                        <a
+                            href="https://db-ip.com"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-4"
+                        >
+                            IP Geolocation by DB-IP
+                        </a>
+                        , licensed CC BY 4.0.
+                    </p>
                 </Panel>
             </div>
         </>

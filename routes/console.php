@@ -7,3 +7,7 @@ Schedule::command('clinic:backup')->dailyAt('02:00')->timezone('Asia/Manila')->w
 
 // Website traffic older than 13 months (App\Models\PageView::prunable).
 Schedule::command('model:prune')->dailyAt('03:00')->timezone('Asia/Manila');
+
+// Visitor location from the local DB-IP database (no IP leaves the server); a new edition monthly.
+Schedule::command('traffic:locate')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('traffic:geoip-update')->monthlyOn(3, '04:00')->timezone('Asia/Manila');

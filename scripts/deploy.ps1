@@ -94,6 +94,9 @@ Write-Host "  Database dump size: $dumpSize bytes"
 Write-Host 'Uploading application source...'
 git archive --format=tar HEAD | & ssh @Ssh $Host_ "cd $Remote && tar xf -"
 
+Write-Host 'Installing PHP packages from composer.lock...'
+Invoke-Remote "cd $Remote && composer install --no-interaction --prefer-dist --optimize-autoloader"
+
 Write-Host 'Uploading built frontend assets & public media...'
 tar cf - -C public build media | & ssh @Ssh $Host_ "cd $Remote/public && rm -rf build && tar xf -"
 
