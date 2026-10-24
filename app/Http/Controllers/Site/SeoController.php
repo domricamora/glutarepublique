@@ -74,7 +74,7 @@ class SeoController extends Controller
         $out[] = '## Branches and opening hours';
         foreach (Branch::where('is_active', true)->orderBy('id')->get() as $b) {
             $hours = $b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y') : collect([1, 2, 3, 4, 5, 6, 0])->map(fn ($d) => $days[$d].' '.($b->hours[$d] ? $b->hours[$d][0].'-'.$b->hours[$d][1] : 'closed'))->implode(', ');
-            $out[] = "- {$b->city}: ".trim($b->name.', '.$b->address, ', ').". Phone {$b->phone}. {$hours}.";
+            $out[] = "- {$b->city}: ".rtrim(trim($b->name.', '.$b->address, ', '), '.').". Phone {$b->phone}. {$hours}.";
         }
 
         $out[] = '';

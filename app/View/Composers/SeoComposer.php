@@ -543,7 +543,7 @@ class SeoComposer
         return '<h2>Branches and opening hours</h2><ul>'.Branch::where('is_active', true)->orderBy('id')->get()->map(function (Branch $b) use ($days) {
             $hours = collect([1, 2, 3, 4, 5, 6, 0])->map(fn ($d) => $days[$d].' '.($b->hours[$d] ? $b->hours[$d][0].' to '.$b->hours[$d][1] : 'closed'))->implode(', ');
 
-            return '<li><strong>'.e((string) $b->city).'</strong>: '.e(trim($b->name.', '.$b->address, ', ')).'. '.($b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y').'.' : 'Phone '.e((string) $b->phone).'. Open '.e($hours).'.').'</li>';
+            return '<li><strong>'.e((string) $b->city).'</strong>: '.e(rtrim(trim($b->name.', '.$b->address, ', '), '.')).'. '.($b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y').'.' : 'Phone '.e((string) $b->phone).'. Open '.e($hours).'.').'</li>';
         })->implode('').'</ul>';
     }
 
