@@ -15,6 +15,7 @@ use App\Models\Sale;
 use App\Models\Treatment;
 use App\Payments\PaymentManager;
 use App\Support\BranchAccess;
+use App\Support\ClientContact;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -79,7 +80,7 @@ class PosController extends Controller
     /** @return array<string, mixed>|null */
     private function leadPayload(?Lead $lead): ?array
     {
-        return $lead ? ['id' => $lead->id, 'name' => $lead->fullName(), 'phone' => $lead->phone] : null;
+        return $lead ? ['id' => $lead->id, 'name' => $lead->fullName(), 'phone' => ClientContact::phone($lead->phone)] : null;
     }
 
     public function store(Request $request, RingUpSale $ring): RedirectResponse
@@ -101,6 +102,11 @@ class PosController extends Controller
             'promotion_id' => ['nullable', 'integer'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
+
+        // A masked number prefilled from the client is never saved: the sale keeps the real one.
+        if (! empty($data['lead_id']) && (blank($data['client_phone'] ?? null) || str_contains((string) $data['client_phone'], '•'))) {
+            $data['client_phone'] = Lead::whereKey($data['lead_id'])->value('phone');
+        }
 
         // Staff without branches.all ring up at their own branch only.
         $home = BranchAccess::canSeeAll($request->user()) ? null : BranchAccess::home($request->user());
@@ -239,7 +245,7 @@ class PosController extends Controller
                 'reference' => $sale->reference,
                 'status' => $sale->status,
                 'client_name' => $sale->client_name,
-                'client_phone' => $sale->client_phone,
+                'client_phone' => ClientContact::phone($sale->client_phone),
                 'client' => $sale->client_name ?: $sale->lead?->fullName() ?: 'Walk-in',
                 'branch' => $sale->branch?->name,
                 'receipt' => $sale->branch?->only(['receipt_name', 'receipt_tin', 'receipt_address', 'receipt_footer']),

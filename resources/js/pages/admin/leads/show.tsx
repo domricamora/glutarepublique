@@ -1,5 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CalendarPlus, Mail, Phone, ShoppingBag } from 'lucide-react';
+import { CalendarPlus, Eye, Mail, Phone, ShoppingBag } from 'lucide-react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import StatusSelect from '@/components/admin/status-select';
 import InputError from '@/components/input-error';
@@ -76,6 +77,32 @@ export default function LeadShow({
     const keys = Object.keys(stages);
     const current = keys.indexOf(lead.stage);
     const note = useForm({ note: '' });
+    // Masked contacts are revealed one client at a time, and the reveal is audited.
+    const [contact, setContact] = useState({
+        phone: lead.phone,
+        email: lead.email,
+        masked: Boolean(lead.masked),
+    });
+    const [revealing, setRevealing] = useState(false);
+    const reveal = () => {
+        setRevealing(true);
+        fetch(leads.reveal(lead.id).url, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name=csrf-token]',
+                        ) as HTMLMetaElement
+                    )?.content ?? '',
+            },
+        })
+            .then((response) => response.json())
+            .then((full) => setContact({ ...full, masked: false }))
+            .finally(() => setRevealing(false));
+    };
 
     const addNote = (e: FormEvent) => {
         e.preventDefault();
@@ -156,18 +183,29 @@ export default function LeadShow({
                                 Book a visit
                             </Link>
                         )}
-                        {lead.phone && (
+                        {contact.masked && (contact.phone || contact.email) && (
+                            <button
+                                type="button"
+                                onClick={reveal}
+                                disabled={revealing}
+                                className="inline-flex items-center gap-2 border border-border px-4 py-2 text-sm font-medium transition-[background-color,transform] duration-150 ease-out hover:bg-mist active:scale-[0.97] dark:hover:bg-white/5"
+                            >
+                                <Eye className="size-4" aria-hidden />
+                                Show contact details
+                            </button>
+                        )}
+                        {!contact.masked && contact.phone && (
                             <a
-                                href={`tel:${lead.phone.replace(/\s/g, '')}`}
+                                href={`tel:${contact.phone.replace(/\s/g, '')}`}
                                 className="inline-flex items-center gap-2 bg-plum px-4 py-2 text-sm font-medium text-white transition-[background-color,transform] duration-150 ease-out hover:bg-plum-deep active:scale-[0.97]"
                             >
                                 <Phone className="size-4" aria-hidden /> Call{' '}
-                                {lead.phone}
+                                {contact.phone}
                             </a>
                         )}
-                        {lead.email && (
+                        {!contact.masked && contact.email && (
                             <a
-                                href={`mailto:${lead.email}`}
+                                href={`mailto:${contact.email}`}
                                 className="inline-flex items-center gap-2 border border-plum px-4 py-2 text-sm font-medium text-plum transition-[background-color,transform] duration-150 ease-out hover:bg-lilac/50 active:scale-[0.97] dark:border-lilac dark:text-lilac"
                             >
                                 <Mail className="size-4" aria-hidden /> Email

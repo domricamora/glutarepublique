@@ -11,6 +11,7 @@ use App\Models\Lead;
 use App\Models\Specialist;
 use App\Models\Treatment;
 use App\Support\BranchAccess;
+use App\Support\ClientContact;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,7 @@ class AppointmentController extends Controller
                 'notes' => $a->notes,
                 'lead_id' => $a->lead_id,
                 'client' => $a->lead?->fullName() ?? 'Walk-in',
-                'phone' => $a->lead?->phone,
+                'phone' => ClientContact::phone($a->lead?->phone),
                 // A service removed from the menu leaves its bookings behind.
                 'treatment' => $a->treatment?->name ?? $a->service_name ?? 'Service no longer offered',
                 'specialist' => $a->specialist->name,
@@ -85,7 +86,7 @@ class AppointmentController extends Controller
             'branches' => Branch::where('is_active', true)->bookable()->orderBy('id')->get(['id', 'name']),
             'specialists' => Specialist::where('is_active', true)->orderBy('sort')->with(['branches:id', 'treatments:id'])->get(['id', 'name', 'title'])
                 ->map(fn (Specialist $s) => $s->only(['id', 'name', 'title']) + ['branch_ids' => $s->branches->pluck('id'), 'treatment_ids' => $s->treatments->pluck('id')]),
-            'lead' => $lead ? ['id' => $lead->id, 'name' => $lead->fullName(), 'phone' => $lead->phone] : null,
+            'lead' => $lead ? ['id' => $lead->id, 'name' => $lead->fullName(), 'phone' => ClientContact::phone($lead->phone)] : null,
             'moving' => $moving ? [
                 'id' => $moving->id,
                 'reference' => $moving->reference,

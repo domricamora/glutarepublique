@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
+use App\Support\ClientContact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,7 +93,7 @@ class ChatController extends Controller
         return [
             'id' => $c->id,
             'name' => $c->visitorName(),
-            'phone' => $c->lead?->phone,
+            'phone' => ClientContact::phone($c->lead?->phone),
             'page' => $c->page,
             'preview' => $c->preview(),
             'unread' => $c->unreadCount(),
@@ -134,7 +135,7 @@ class ChatController extends Controller
             'conversation' => [
                 'id' => $conversation->id,
                 'name' => $conversation->visitorName(),
-                'phone' => $conversation->lead?->phone,
+                'phone' => ClientContact::phone($conversation->lead?->phone),
                 'page' => $conversation->page,
                 'lead_id' => $conversation->lead_id,
             ],

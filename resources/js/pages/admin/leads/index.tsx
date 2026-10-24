@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
+import { Download, Plus, Search } from 'lucide-react';
 import type { Labels, LeadRow } from '@/lib/admin';
 import { ago, sourceLabel, useCan } from '@/lib/admin';
 import { cn } from '@/lib/utils';
@@ -61,6 +61,16 @@ export default function LeadsIndex({
                         </p>
                     </div>
                     <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                        {can('clients.contacts') && (
+                            // A file download, so a plain link rather than an Inertia visit.
+                            <a
+                                href={leads.export().url}
+                                className="press inline-flex h-10 shrink-0 items-center gap-2 border border-border px-4 text-sm hover:bg-mist dark:hover:bg-white/5"
+                            >
+                                <Download className="size-4" aria-hidden />{' '}
+                                Export clients
+                            </a>
+                        )}
                         {can('leads.create') && (
                             <Link
                                 href={leads.create().url}

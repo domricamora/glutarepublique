@@ -26,6 +26,8 @@ export type LeadRow = {
     campaign: string | null;
     treatment: string | null;
     created_at: string;
+    /** Phone and email are masked for this viewer (only the owner sees them in full). */
+    masked?: boolean;
 };
 
 export type Labels = Record<string, string>;

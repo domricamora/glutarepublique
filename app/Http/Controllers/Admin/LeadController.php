@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\CrmActivity;
 use App\Models\Lead;
@@ -12,6 +13,7 @@ use App\Models\Payment;
 use App\Models\Sale;
 use App\Models\Treatment;
 use App\Support\BranchAccess;
+use App\Support\ClientContact;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +22,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** CRM leads: list by pipeline stage, open a profile, move the stage, log notes. */
 class LeadController extends Controller
@@ -30,8 +33,9 @@ class LeadController extends Controller
         return [
             'id' => $lead->id,
             'name' => $lead->fullName(),
-            'email' => $lead->email,
-            'phone' => $lead->phone,
+            'email' => ClientContact::email($lead->email),
+            'phone' => ClientContact::phone($lead->phone),
+            'masked' => ! ClientContact::canSee(),
             'stage' => $lead->stage,
             'source' => $lead->source,
             'form' => $lead->form,
@@ -130,7 +134,7 @@ class LeadController extends Controller
             ->latest()
             ->limit(6)
             ->get()
-            ->map(fn (Lead $l) => ['id' => $l->id, 'name' => $l->fullName(), 'phone' => $l->phone, 'stage' => Lead::STAGES[$l->stage] ?? $l->stage]));
+            ->map(fn (Lead $l) => ['id' => $l->id, 'name' => $l->fullName(), 'phone' => ClientContact::phone($l->phone), 'stage' => Lead::STAGES[$l->stage] ?? $l->stage]));
     }
 
     public function show(Request $request, Lead $lead): Response
@@ -162,6 +166,49 @@ class LeadController extends Controller
             'stages' => Lead::STAGES,
             'statuses' => Appointment::STATUSES,
         ]);
+    }
+
+    /**
+     * Every client with full contact details, as CSV. The owner's alone
+     * (clients.contacts), and audited: a client list is what walks out of the
+     * door when someone leaves to set up on their own.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $count = Lead::count();
+        AuditLog::record('clients.export', "Exported the client list ({$count} clients)");
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'Phone', 'Email', 'Stage', 'Source', 'Interested in', 'Branch', 'Marketing consent', 'Since']);
+            Lead::with(['treatment:id,name', 'branch:id,name'])->orderBy('id')->chunk(500, function ($chunk) use ($out) {
+                foreach ($chunk as $lead) {
+                    fputcsv($out, [
+                        $lead->fullName(),
+                        $lead->phone,
+                        $lead->email,
+                        Lead::STAGES[$lead->stage] ?? $lead->stage,
+                        $lead->source,
+                        $lead->treatment?->name,
+                        $lead->branch?->name,
+                        $lead->marketing_consent ? 'yes' : 'no',
+                        $lead->created_at?->toDateString(),
+                    ]);
+                }
+            });
+            fclose($out);
+        }, 'clients-'.now()->toDateString().'.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Shows one client's phone and email in full to someone who sees them
+     * masked, and writes it to the audit log.
+     */
+    public function reveal(Lead $lead): JsonResponse
+    {
+        AuditLog::record('clients.reveal', "Revealed the contact details of {$lead->fullName()}", $lead);
+
+        return response()->json(['email' => $lead->email, 'phone' => $lead->phone]);
     }
 
     /**

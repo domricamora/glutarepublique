@@ -27,6 +27,8 @@ class RolesAndPermissionsSeeder extends Seeder
         'branches.all',
         // Refunds, discounts over the limit, payroll approval and leave: the owner's alone.
         'approvals.decide',
+        // Client phone numbers and emails in full, and client exports; everyone else sees them masked.
+        'clients.contacts',
     ];
 
     /** Everything an administrator runs, short of the owner's sign-off. */
