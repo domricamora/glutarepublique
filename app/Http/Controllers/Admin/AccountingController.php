@@ -132,13 +132,14 @@ class AccountingController extends Controller
             }
             fputcsv($out, ['', 'Total', $r['trial_totals']['debit'], $r['trial_totals']['credit']]);
             fputcsv($out, []);
-            fputcsv($out, ['Income statement', 'Year to '.$r['to']]);
+            fputcsv($out, ['Income statement', $r['from'].' to '.$r['to'], 'Compared with '.$r['compare']['label'].' ('.$r['compare']['from'].' to '.$r['compare']['to'].')']);
+            fputcsv($out, ['Code', 'Account', 'Type', 'This period', 'Compared period', 'Change']);
             foreach (['revenue' => 'Revenue', 'expenses' => 'Expenses'] as $key => $label) {
                 foreach ($r['income_statement'][$key] as $b) {
-                    fputcsv($out, [$b['code'], $b['name'], $label, $b['year']]);
+                    fputcsv($out, [$b['code'], $b['name'], $label, $b['period'], $b['previous'], round($b['period'] - $b['previous'], 2)]);
                 }
             }
-            fputcsv($out, ['', 'Net income', '', $r['income_statement']['net']]);
+            fputcsv($out, ['', 'Net income', '', $r['income_statement']['net'], $r['income_statement']['previous_net'], round($r['income_statement']['net'] - $r['income_statement']['previous_net'], 2)]);
             fputcsv($out, []);
             fputcsv($out, ['Balance sheet', 'As at '.$r['to']]);
             foreach (['assets' => 'Asset', 'liabilities' => 'Liability', 'equity' => 'Equity'] as $key => $label) {
@@ -148,14 +149,38 @@ class AccountingController extends Controller
             }
             fputcsv($out, ['', 'Current year earnings', 'Equity', $r['balance_sheet']['retained']]);
             fclose($out);
-        }, "financial-reports-{$r['to']}.csv", ['Content-Type' => 'text/csv']);
+        }, 'financial-reports-'.($r['preset'] ? "{$r['preset']}-" : '')."{$r['from']}-to-{$r['to']}.csv", ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * The report window and the one it is compared with. A preset (month,
+     * quarter, year) covers the whole period around `to` and is set against
+     * the period before it; a custom range is set against the same dates a
+     * year earlier.
+     *
+     * @return array{0: string|null, 1: CarbonImmutable, 2: CarbonImmutable, 3: CarbonImmutable, 4: CarbonImmutable, 5: string}
+     */
+    private function window(Request $request): array
+    {
+        $preset = in_array($request->query('preset'), ['month', 'quarter', 'year'], true) ? (string) $request->query('preset') : null;
+        $at = CarbonImmutable::parse($request->date('to') ?? now()->toDateString());
+
+        return match ($preset) {
+            'month' => [$preset, $at->startOfMonth(), $at->endOfMonth()->startOfDay(), $at->startOfMonth()->subMonthNoOverflow(), $at->startOfMonth()->subDay(), 'previous month'],
+            'quarter' => [$preset, $at->startOfQuarter(), $at->endOfQuarter()->startOfDay(), $at->startOfQuarter()->subMonthsNoOverflow(3), $at->startOfQuarter()->subDay(), 'previous quarter'],
+            'year' => [$preset, $at->startOfYear(), $at->endOfYear()->startOfDay(), $at->startOfYear()->subYear(), $at->startOfYear()->subDay(), 'previous year'],
+            default => (function () use ($request, $at) {
+                $from = CarbonImmutable::parse($request->date('from') ?? $at->startOfYear()->toDateString());
+
+                return [null, $from, $at, $from->subYearNoOverflow(), $at->subYearNoOverflow(), 'same dates last year'];
+            })(),
+        };
     }
 
     /** @return array<string, mixed> */
     private function reportData(Request $request): array
     {
-        $to = CarbonImmutable::parse($request->date('to') ?? now()->toDateString());
-        $from = CarbonImmutable::parse($request->date('from') ?? CarbonImmutable::createFromDate($to->year, 1, 1)->toDateString());
+        [$preset, $from, $to, $previousFrom, $previousTo, $compareLabel] = $this->window($request);
         $since = CarbonImmutable::createFromDate($to->year, 1, 1);
 
         $balances = Account::orderBy('sort')->get()
@@ -165,12 +190,15 @@ class AccountingController extends Controller
                 'type' => $a->type,
                 'normal_balance' => $a->normal_balance,
                 'period' => $this->signedBetween($a, $from, $to),
+                'previous' => in_array($a->type, ['revenue', 'expense'], true) ? $this->signedBetween($a, $previousFrom, $previousTo) : 0.0,
                 'year' => $this->signedBetween($a, $since, $to),
             ]);
 
-        $withMoney = fn (string $type) => $balances->filter(fn ($b) => $b['type'] === $type && abs($b['year']) > 0.005);
-        $revenue = round((float) $withMoney('revenue')->sum('year'), 2);
-        $expenses = round((float) $withMoney('expense')->sum('year'), 2);
+        // The income statement covers the window; the balance sheet stands at its end.
+        $withMoney = fn (string $type) => $balances->filter(fn ($b) => $b['type'] === $type && (abs($b['period']) > 0.005 || abs($b['previous']) > 0.005));
+        $sum = fn (string $type, string $column) => round((float) $balances->where('type', $type)->sum($column), 2);
+        $revenue = $sum('revenue', 'year');
+        $expenses = $sum('expense', 'year');
 
         $assets = round((float) $balances->where('type', 'asset')->sum('year'), 2);
         $liabilities = round((float) $balances->where('type', 'liability')->sum('year'), 2);
@@ -181,6 +209,12 @@ class AccountingController extends Controller
         return [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
+            'preset' => $preset,
+            'compare' => [
+                'label' => $compareLabel,
+                'from' => $previousFrom->toDateString(),
+                'to' => $previousTo->toDateString(),
+            ],
             'trial_balance' => $trial,
             'trial_totals' => [
                 'debit' => round((float) $trial->sum('debit'), 2),
@@ -189,9 +223,12 @@ class AccountingController extends Controller
             'income_statement' => [
                 'revenue' => $withMoney('revenue')->values(),
                 'expenses' => $withMoney('expense')->values(),
-                'total_revenue' => $revenue,
-                'total_expenses' => $expenses,
-                'net' => round($revenue - $expenses, 2),
+                'total_revenue' => $sum('revenue', 'period'),
+                'total_expenses' => $sum('expense', 'period'),
+                'net' => round($sum('revenue', 'period') - $sum('expense', 'period'), 2),
+                'previous_revenue' => $sum('revenue', 'previous'),
+                'previous_expenses' => $sum('expense', 'previous'),
+                'previous_net' => round($sum('revenue', 'previous') - $sum('expense', 'previous'), 2),
             ],
             'balance_sheet' => [
                 'assets' => $balances->where('type', 'asset')->filter(fn ($b) => abs($b['year']) > 0.005)->values(),
@@ -306,6 +343,7 @@ class AccountingController extends Controller
 
         $balance = round((float) $lines->sum('debit') - (float) $lines->sum('credit'), 2);
 
-        return $account->normal_balance === 'debit' ? $balance : round(-$balance, 2);
+        // + 0.0 turns a negated zero into a plain one, so nothing prints as -0.00.
+        return ($account->normal_balance === 'debit' ? $balance : round(-$balance, 2)) + 0.0;
     }
 }

@@ -222,3 +222,28 @@ it('keeps the books behind the permission', function () {
     $this->actingAs(bookkeeper())->get('/admin/accounting/accounts')->assertOk();
     $this->actingAs(bookkeeper())->get('/admin/payroll')->assertOk();
 });
+
+it('reports a month, a quarter or a year against the period before it', function () {
+    takings();
+    $today = now()->toImmutable();
+
+    $this->actingAs(bookkeeper())->get('/admin/accounting/reports?preset=month&to='.$today->toDateString())
+        ->assertInertia(fn ($page) => $page
+            ->where('preset', 'month')
+            ->where('from', $today->startOfMonth()->toDateString())
+            ->where('to', $today->endOfMonth()->toDateString())
+            ->where('compare.from', $today->startOfMonth()->subMonthNoOverflow()->toDateString())
+            ->where('income_statement.total_revenue', fn ($v) => $v > 0)
+            ->where('income_statement.previous_revenue', 0));
+
+    $this->get('/admin/accounting/reports?preset=quarter&to='.$today->toDateString())
+        ->assertInertia(fn ($page) => $page->where('from', $today->startOfQuarter()->toDateString())->where('compare.label', 'previous quarter'));
+
+    // Last year, the takings are the comparison and the period itself is empty.
+    $this->get('/admin/accounting/reports?preset=year&to='.$today->addYear()->toDateString())
+        ->assertInertia(fn ($page) => $page->where('income_statement.total_revenue', 0)
+            ->where('income_statement.previous_revenue', fn ($v) => $v > 0));
+
+    expect($this->get(route('admin.accounting.reports.export', ['preset' => 'month']))->streamedContent())
+        ->toContain('Compared with previous month');
+});
