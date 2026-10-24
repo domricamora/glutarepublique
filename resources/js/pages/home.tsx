@@ -4,7 +4,7 @@ import type { CSSProperties, FormEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import Glitter from '@/components/site/glitter';
 import HeroVideo from '@/components/site/hero-video';
-import { formatPrice, openingLabel, useReveal } from '@/lib/site';
+import { formatTreatmentPrice, openingLabel, useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { about, beforeAfter, book, promotions } from '@/routes';
 import leads from '@/routes/leads';
@@ -42,11 +42,8 @@ export default function Home({
     useReveal();
     useSkinLens(hero);
 
-    // Three signature treatments for the numbered row: a facial, a drip and a
-    // laser protocol, so the row does not show the same service twice.
-    const signature = [featured[0], featured[1], featured[3] ?? featured[2]]
-        .filter(Boolean)
-        .slice(0, 3);
+    // The services the office marks as featured on the menu (up to four).
+    const signature = featured.slice(0, 4);
 
     const strip = [
         {
@@ -191,7 +188,7 @@ export default function Home({
                 </div>
             </section>
 
-            {/* Signature treatments: numbered cards, one carrying a figure. */}
+            {/* Signature treatments: the featured services from the live menu, each with its photo and price. */}
             {signature.length > 0 && (
                 <section className="bg-ice/45 py-20 lg:py-28">
                     <div className="gutter">
@@ -208,54 +205,53 @@ export default function Home({
                             </Link>
                         </div>
 
-                        <div className="mt-12 grid gap-4 md:grid-cols-3">
+                        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             {signature.map((t, i) => (
                                 <Link
                                     key={t.id}
                                     href={treatmentRoutes.show(t.slug).url}
                                     data-reveal
                                     style={stagger(i)}
-                                    className="group flex flex-col border border-white bg-white/70 p-7 transition-colors duration-200 ease-out hover:border-royal/30 hover:bg-white md:min-h-[26rem]"
+                                    className="group flex flex-col border border-white bg-white/70 transition-colors duration-200 ease-out hover:border-royal/30 hover:bg-white"
                                 >
-                                    <div className="flex gap-4">
-                                        <span className="font-display text-3xl font-light text-royal">
-                                            {i + 1}
-                                        </span>
-                                        <div>
-                                            <h3 className="text-ocean">
-                                                {t.name}
-                                            </h3>
-                                            <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
-                                                {t.summary}
+                                    <div className="aspect-[4/3] overflow-hidden bg-ice">
+                                        {t.image && (
+                                            <img
+                                                src={t.image}
+                                                alt={t.name}
+                                                loading="lazy"
+                                                className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-1 flex-col p-6">
+                                        {t.category && (
+                                            <p className="text-xs text-royal-ink">
+                                                {t.category.name}
                                             </p>
+                                        )}
+                                        <h3 className="mt-1 text-ocean">
+                                            {t.name}
+                                        </h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                                            {t.summary}
+                                        </p>
+                                        <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+                                            <p className="text-sm text-charcoal/70">
+                                                {t.price > 0 && 'From '}
+                                                <span className="font-display text-2xl text-ocean">
+                                                    {formatTreatmentPrice(
+                                                        t.promo_price ??
+                                                            t.price,
+                                                    )}
+                                                </span>
+                                            </p>
+                                            <span className="inline-flex items-center gap-1 text-sm font-medium text-royal-ink">
+                                                View
+                                                <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                                            </span>
                                         </div>
                                     </div>
-
-                                    {i === 1 ? (
-                                        <div className="mt-auto pt-10 text-center">
-                                            <p className="font-display text-6xl font-light tracking-tight text-ocean lg:text-7xl">
-                                                {formatPrice(
-                                                    t.promo_price ?? t.price,
-                                                )}
-                                            </p>
-                                            <p className="mt-3 text-sm text-charcoal/65">
-                                                per session,{' '}
-                                                {t.duration_minutes} minutes
-                                                with a nurse on hand
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="relative mt-auto aspect-[4/3] overflow-hidden bg-ice">
-                                            {t.image && (
-                                                <img
-                                                    src={t.image}
-                                                    alt=""
-                                                    loading="lazy"
-                                                    className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
-                                                />
-                                            )}
-                                        </div>
-                                    )}
                                 </Link>
                             ))}
                         </div>
