@@ -11,12 +11,15 @@ use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
 use App\Models\SaleItem;
+use App\Models\StockDiscrepancy;
 use App\Models\Supplier;
 use App\Support\BranchAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -83,6 +86,17 @@ class InventoryController extends Controller
             'movements' => self::movements(12),
             'movement_types' => InventoryMovement::TYPES,
             'shortfalls' => self::shortfalls($branch),
+            // From the nightly check (stock:reconcile): records that disagree, waiting on a count.
+            'discrepancies' => StockDiscrepancy::where('branch_id', $branch->id)->whereNull('resolved_at')->with('product:id,name')->get()
+                ->map(fn (StockDiscrepancy $d) => [
+                    'id' => $d->id,
+                    'product_id' => $d->product_id,
+                    'product' => $d->product?->name,
+                    'on_hand' => $d->on_hand,
+                    'lots' => $d->lots,
+                    'ledger' => $d->ledger,
+                    'found' => $d->found_at->toDateString(),
+                ])->values(),
         ]);
     }
 
@@ -113,6 +127,65 @@ class InventoryController extends Controller
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * A count session: every product the branch stocks on one sheet, with
+     * what the records say. Staff fill in what they count; blanks are left
+     * alone.
+     */
+    public function count(Request $request): Response
+    {
+        $branch = BranchAccess::single($request, $request->integer('branch') ?: null);
+        $onHand = ProductStock::where('branch_id', $branch->id)->pluck('on_hand', 'product_id');
+
+        return Inertia::render('admin/inventory/count', [
+            'branch' => $branch->only(['id', 'name']),
+            'branches' => BranchAccess::options($request->user()),
+            'products' => Product::where('is_active', true)->orderBy('category')->orderBy('name')->get(['id', 'name', 'sku', 'category'])
+                ->map(fn (Product $p) => [...$p->only(['id', 'name', 'sku', 'category']), 'on_hand' => (int) ($onHand[$p->id] ?? 0)])
+                ->values(),
+        ]);
+    }
+
+    /**
+     * Applies a count session: each product counted differently from the
+     * records gets a stocktake correction, all under one reference, then the
+     * nightly check runs straight away so its flags clear.
+     */
+    public function saveCount(Request $request, ManageStock $stock): RedirectResponse
+    {
+        $data = $request->validate([
+            'branch_id' => ['required', 'integer', Rule::exists('branches', 'id')],
+            'counts' => ['required', 'array', 'min:1'],
+            'counts.*' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'note' => ['nullable', 'string', 'max:160'],
+        ]);
+        $branch = BranchAccess::single($request, $data['branch_id']);
+        abort_unless($branch->id === (int) $data['branch_id'], 403);
+
+        $counted = array_filter($data['counts'], fn ($v) => $v !== null);
+        $reference = 'COUNT-'.now()->format('Ymd-Hi');
+        $note = trim("Stocktake {$reference}. ".($data['note'] ?? ''));
+        $changed = [];
+
+        DB::transaction(function () use ($counted, $branch, $stock, $note, $request, &$changed) {
+            foreach (Product::whereIn('id', array_keys($counted))->get() as $product) {
+                $stock->realign($product, $branch, $request->user());
+                $difference = (int) $counted[$product->id] - $product->onHandAt($branch);
+                if ($difference !== 0) {
+                    $stock->adjust($product, $branch, 'adjustment', $difference, $note, $request->user());
+                    $changed[] = sprintf('%s %+d', $product->name, $difference);
+                }
+            }
+        });
+
+        AuditLog::record('inventory.count', sprintf('Stocktake at %s: %d counted, %d corrected. %s', $branch->name, count($counted), count($changed), implode('; ', $changed)));
+        Artisan::call('stock:reconcile');
+
+        return redirect()->route('admin.inventory.index', ['branch' => $branch->id])->with('success', $changed === []
+            ? 'Count saved. Every product matched the records.'
+            : sprintf('Count saved. %d product(s) corrected: %s.', count($changed), implode(', ', $changed)));
     }
 
     /**
@@ -316,6 +389,9 @@ class InventoryController extends Controller
         $branch = Branch::findOrFail($data['branch_id']);
         $kind = $data['kind'];
         $note = $data['note'] ?? 'Recorded at the counter.';
+        if ($kind === 'adjustment' && $request->input('mode') === 'count') {
+            $stock->realign($product, $branch, $request->user());
+        }
         $quantity = $this->changeFor($request, $product, $branch, $kind, (int) $data['quantity']);
 
         // A count that matches what the system already says is a real outcome,

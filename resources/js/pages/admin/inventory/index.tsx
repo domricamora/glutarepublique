@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
+    ClipboardList,
     Package,
     PackagePlus,
     Search,
@@ -39,6 +40,15 @@ type Props = {
         service: string;
         products: { id: number; label: string }[];
     }[];
+    discrepancies: {
+        id: number;
+        product_id: number;
+        product: string | null;
+        on_hand: number;
+        lots: number;
+        ledger: number;
+        found: string;
+    }[];
     total_value: number;
     movements: Movement[];
     movement_types: Labels;
@@ -55,6 +65,7 @@ export default function InventoryIndex({
     alerts,
     total_value,
     shortfalls,
+    discrepancies,
     movements,
 }: Props) {
     const can = useCan();
@@ -154,6 +165,17 @@ export default function InventoryIndex({
                                 </Link>
                                 <Link
                                     href={
+                                        inventory.count({
+                                            query: { branch: branch.id },
+                                        }).url
+                                    }
+                                    className="press inline-flex h-10 items-center gap-2 border border-border bg-background px-4 text-sm hover:bg-mist dark:hover:bg-white/5"
+                                >
+                                    <ClipboardList className="h-4 w-4" />
+                                    Count stock
+                                </Link>
+                                <Link
+                                    href={
                                         inventory.receive({
                                             query: { branch: branch.id },
                                         }).url
@@ -209,6 +231,55 @@ export default function InventoryIndex({
                         </p>
                     </div>
                 </div>
+
+                {discrepancies.length > 0 && (
+                    <section className="border border-destructive/40 bg-destructive/5 px-4 py-3">
+                        <h2 className="text-sm font-semibold">
+                            Records disagree: count these
+                        </h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            The nightly check found the shelf count, the lots
+                            and the stock ledger out of step. Count the product
+                            and save the real number; the flag clears on the
+                            next check.
+                        </p>
+                        <ul className="mt-3 divide-y divide-border text-sm">
+                            {discrepancies.map((d) => (
+                                <li
+                                    key={d.id}
+                                    className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-2"
+                                >
+                                    <span>
+                                        {d.product}{' '}
+                                        <span className="text-muted-foreground">
+                                            (since {d.found})
+                                        </span>
+                                    </span>
+                                    <span className="flex items-center gap-4 text-muted-foreground tabular-nums">
+                                        Shelf {d.on_hand}, lots {d.lots}, ledger{' '}
+                                        {d.ledger}
+                                        {can('inventory.create') && (
+                                            <Link
+                                                href={
+                                                    inventory.adjust({
+                                                        query: {
+                                                            branch: branch.id,
+                                                            product:
+                                                                d.product_id,
+                                                        },
+                                                    }).url
+                                                }
+                                                className="text-foreground underline underline-offset-2"
+                                            >
+                                                Count
+                                            </Link>
+                                        )}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
 
                 {shortfalls.length > 0 && (
                     <section className="border border-gold/50 bg-gold/10 px-4 py-3">

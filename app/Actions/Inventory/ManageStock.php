@@ -143,6 +143,25 @@ class ManageStock
         $this->consume($product, $branch, abs($quantity), $type, $user, null, $note);
     }
 
+    /**
+     * Before a count, puts the three records back in step: the shelf count
+     * becomes the lots summed (the lots are what stock is drawn from), and a
+     * ledger line closes any gap between the ledger and the lots. The count
+     * that follows is then measured against records that agree.
+     */
+    public function realign(Product $product, Branch $branch, User $user): void
+    {
+        DB::transaction(function () use ($product, $branch, $user) {
+            $this->resync($product, $branch);
+            $lots = (int) ProductBatch::where('product_id', $product->id)->where('branch_id', $branch->id)->sum('quantity');
+            $ledger = (int) InventoryMovement::where('product_id', $product->id)->where('branch_id', $branch->id)->sum('quantity');
+
+            if ($lots !== $ledger) {
+                $this->writeLedger($product, $branch, null, $lots - $ledger, 'adjustment', $user, 'Ledger brought in line with the lots before a count');
+            }
+        });
+    }
+
     /** Moves stock from one branch to another without changing the total held. */
     public function transfer(Product $product, Branch $from, Branch $to, int $quantity, User $user): void
     {

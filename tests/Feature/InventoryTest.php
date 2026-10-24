@@ -430,3 +430,31 @@ it('will not touch stock belonging to another organization', function () {
     $this->actingAs($this->supervisor)->get('/admin/inventory?q=rival')
         ->assertInertia(fn ($page) => $page->has('rows', 0));
 });
+
+it('flags records that disagree overnight, and a count session puts them right', function () {
+    $product = serum();
+    $records = onHand($product, cebu());
+    $this->artisan('stock:reconcile')->expectsOutputToContain('agree everywhere');
+
+    // Someone edits the shelf count by hand, outside the system.
+    ProductStock::where('product_id', $product->id)->where('branch_id', cebu()->id)->update(['on_hand' => $records + 5]);
+    $this->artisan('stock:reconcile')->expectsOutputToContain('1 product(s) need a count');
+
+    $this->actingAs($this->supervisor)->get('/admin/inventory?branch='.cebu()->id)
+        ->assertInertia(fn ($page) => $page->where('discrepancies.0.product_id', $product->id)
+            ->where('discrepancies.0.on_hand', $records + 5)
+            ->where('discrepancies.0.lots', $records));
+
+    // The shelf really holds two fewer than the lots say.
+    $this->post(route('admin.inventory.count.store'), ['branch_id' => cebu()->id, 'counts' => [$product->id => $records - 2, sunscreen()->id => null]])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $lots = (int) $product->batches()->where('branch_id', cebu()->id)->sum('quantity');
+    $ledger = (int) InventoryMovement::where('product_id', $product->id)->where('branch_id', cebu()->id)->sum('quantity');
+    expect(onHand($product, cebu()))->toBe($records - 2)
+        ->and($lots)->toBe($records - 2)
+        ->and($ledger)->toBe($records - 2);
+
+    $this->get('/admin/inventory?branch='.cebu()->id)->assertInertia(fn ($page) => $page->has('discrepancies', 0));
+});
