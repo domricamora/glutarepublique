@@ -19,6 +19,7 @@ import { money } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import catalog from '@/routes/admin/catalog';
 import type { RecipeProduct, StaffOption } from './recipe-editor';
+import { ConfirmDelete } from './confirm-delete';
 import { ServiceCatalogue } from './services';
 import inventory from '@/routes/admin/inventory';
 
@@ -766,6 +767,19 @@ export default function CatalogIndex(props: Props) {
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </Button>
+                                                        <ConfirmDelete
+                                                            name={row.name}
+                                                            url={
+                                                                catalog.destroy(
+                                                                    row.id,
+                                                                ).url
+                                                            }
+                                                            note={
+                                                                row.on_hand > 0
+                                                                    ? `Receipts keep its name. Its ${row.on_hand} units on this shelf, its stock history and its place on recipes go with it.`
+                                                                    : 'Receipts keep its name. Its stock history and its place on recipes go with it.'
+                                                            }
+                                                        />
                                                         <Button
                                                             type="button"
                                                             size="sm"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Media\UploadPhoto;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\Organization;
 use App\Models\Product;
@@ -111,32 +112,44 @@ class CatalogController extends Controller
     }
 
     /**
-     * A service that has been sold or booked cannot be deleted: a receipt and a
-     * booked client both have to keep naming it. Retiring it takes it off the
-     * register and the website and leaves the history readable, so that is the
-     * normal way to stop offering something. A real delete is only for a
-     * service that was never used.
+     * Deletes a service. Receipts keep its name, price and cost (they are
+     * snapshots), and its bookings keep its name; its recipe and staff list go
+     * with it. Retiring (switching it off the menu) is still there for a
+     * service that may come back.
      */
     public function destroyService(Request $request, Treatment $treatment): RedirectResponse
     {
-        $booked = $treatment->appointments()->count();
         $sold = $treatment->saleItems()->count();
+        $booked = $treatment->appointments()->count();
 
-        if ($booked > 0 || $sold > 0) {
-            return back()->with(
-                'error',
-                sprintf(
-                    '%s has %s and %s. Retire it instead so the history stays readable.',
-                    $treatment->name,
-                    $this->plural($sold, 'sale', 'sales'),
-                    $this->plural($booked, 'booking', 'bookings'),
-                ),
-            );
-        }
-
+        // Older bookings may predate the saved name.
+        $treatment->appointments()->whereNull('service_name')->update(['service_name' => $treatment->name]);
         $treatment->delete();
+        AuditLog::record('catalog.service.delete', "Deleted the service {$treatment->name} ({$sold} sold, {$booked} booked)");
 
-        return back()->with('success', $treatment->name.' deleted.');
+        return back()->with('success', $sold + $booked > 0
+            ? sprintf('%s deleted. Its %s and %s keep its name.', $treatment->name, $this->plural($sold, 'sale', 'sales'), $this->plural($booked, 'booking', 'bookings'))
+            : $treatment->name.' deleted.');
+    }
+
+    /**
+     * Deletes a product. Receipts keep its name, price and cost. Its stock lots,
+     * shelf counts and stock ledger go with it, and it comes off every recipe.
+     */
+    public function destroy(Request $request, Product $product): RedirectResponse
+    {
+        $onHand = (int) $product->stocks()->sum('on_hand');
+        $recipes = $product->belongsToMany(Treatment::class, 'treatment_products')->count();
+
+        $product->delete();
+        AuditLog::record('catalog.product.delete', "Deleted the product {$product->name} ({$onHand} on the shelves, on {$recipes} recipes)");
+
+        return back()->with('success', trim(sprintf(
+            '%s deleted.%s%s',
+            $product->name,
+            $onHand > 0 ? " {$onHand} units on the shelves were removed with it." : '',
+            $recipes > 0 ? ' It was taken off '.$this->plural($recipes, 'recipe', 'recipes').'.' : '',
+        )));
     }
 
     /**

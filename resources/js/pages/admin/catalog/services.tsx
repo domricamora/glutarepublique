@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Check, Plus, Trash2, X } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { money } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import catalog from '@/routes/admin/catalog';
+import { ConfirmDelete } from './confirm-delete';
 import { RecipeEditor } from './recipe-editor';
 import type { RecipeProduct, StaffOption } from './recipe-editor';
 
@@ -666,28 +667,19 @@ export function ServiceCatalogue({
                                                     >
                                                         Recipe & staff
                                                     </Button>
-                                                    {!used(row) && (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() =>
-                                                                useForm(
-                                                                    {},
-                                                                ).delete(
-                                                                    catalog.services.destroy(
-                                                                        row.id,
-                                                                    ).url,
-                                                                    {
-                                                                        preserveScroll: true,
-                                                                    },
-                                                                )
-                                                            }
-                                                            aria-label={`Delete ${row.name}`}
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                                        </Button>
-                                                    )}
+                                                    <ConfirmDelete
+                                                        name={row.name}
+                                                        url={
+                                                            catalog.services.destroy(
+                                                                row.id,
+                                                            ).url
+                                                        }
+                                                        note={
+                                                            used(row)
+                                                                ? `Its ${row.sold} sales and ${row.booked} bookings keep its name. To stop offering it but keep it, use Edit and switch it off the menu.`
+                                                                : 'Its recipe and staff list go with it.'
+                                                        }
+                                                    />
                                                 </div>
                                             </td>
                                         )}

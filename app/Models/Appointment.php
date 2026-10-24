@@ -29,6 +29,16 @@ class Appointment extends Model
 
     protected $guarded = ['id'];
 
+    protected static function booted(): void
+    {
+        // The booking keeps the service's name, so it still reads if the service is deleted later.
+        static::saving(function (Appointment $appointment) {
+            if ($appointment->treatment_id && ($appointment->isDirty('treatment_id') || ! $appointment->service_name)) {
+                $appointment->service_name = Treatment::withoutGlobalScopes()->whereKey($appointment->treatment_id)->value('name');
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return ['starts_at' => 'datetime', 'ends_at' => 'datetime'];

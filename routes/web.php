@@ -162,6 +162,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('catalog', [CatalogController::class, 'index'])->middleware('can:inventory.view')->name('catalog.index');
         Route::post('catalog', [CatalogController::class, 'store'])->middleware('can:inventory.create')->name('catalog.store');
         Route::patch('catalog/{product}', [CatalogController::class, 'update'])->middleware('can:inventory.create')->name('catalog.update');
+        Route::delete('catalog/{product}', [CatalogController::class, 'destroy'])->middleware('can:inventory.create')->name('catalog.destroy');
         Route::post('catalog/products/{product}/photo', [CatalogController::class, 'productPhoto'])->middleware('can:inventory.create')->name('catalog.products.photo');
         Route::delete('catalog/products/{product}/photo', [CatalogController::class, 'removeProductPhoto'])->middleware('can:inventory.create')->name('catalog.products.photo.destroy');
         Route::post('catalog/services', [CatalogController::class, 'storeService'])->middleware('can:inventory.create')->name('catalog.services.store');

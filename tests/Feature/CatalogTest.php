@@ -278,8 +278,7 @@ it('adjusts a service price and the register follows, receipts do not', function
         ->and($was)->toBe(1500.0);
 });
 
-it('retires a service instead of deleting one that has been used', function () {
-    // Sell one first, so there is a receipt that has to keep naming it.
+it('deletes a service that has been used, and its receipts and bookings keep its name', function () {
     $sold = Treatment::where('slug', 'hydra-facial')->firstOrFail();
     app(RingUpSale::class)([
         'branch_id' => shop()->id,
@@ -287,35 +286,50 @@ it('retires a service instead of deleting one that has been used', function () {
         'method' => 'cash',
         'amount' => $sold->currentPrice(),
     ], desk());
-
-    expect($sold->saleItems()->count())->toBe(1);
-
-    $this->actingAs(boss())
-        ->delete("/admin/catalog/services/{$sold->id}")
-        ->assertRedirect()
-        ->assertSessionHas('error');
-
-    expect(Treatment::whereKey($sold->id)->exists())->toBeTrue();
-
-    // A booking pins the service too: the foreign key would refuse a delete.
-    $booked = Treatment::where('slug', 'signature-facial')->firstOrFail();
-    Appointment::create([
+    $appointment = Appointment::create([
         'organization_id' => boss()->organization_id,
         'reference' => 'APT-TEST-1',
         'branch_id' => shop()->id,
-        'treatment_id' => $booked->id,
+        'treatment_id' => $sold->id,
         'specialist_id' => Specialist::value('id'),
         'starts_at' => now()->addDay(),
         'ends_at' => now()->addDay()->addHour(),
         'status' => 'confirmed',
     ]);
+    $line = $sold->saleItems()->sole();
 
-    expect($booked->appointments()->count())->toBe(1);
     $this->actingAs(boss())
-        ->delete("/admin/catalog/services/{$booked->id}")
-        ->assertSessionHas('error');
+        ->delete("/admin/catalog/services/{$sold->id}")
+        ->assertRedirect()
+        ->assertSessionHas('success');
 
-    expect(Treatment::whereKey($booked->id)->exists())->toBeTrue();
+    expect(Treatment::whereKey($sold->id)->exists())->toBeFalse()
+        ->and($line->fresh()->description)->toBe('Hydrafacial')
+        ->and($line->fresh()->treatment_id)->toBeNull()
+        ->and($appointment->fresh()->service_name)->toBe('Hydrafacial')
+        ->and($appointment->fresh()->treatment_id)->toBeNull();
+});
+
+it('deletes a product, and its receipts keep its name', function () {
+    $product = Product::where('slug', 'cleansing-balm-100ml')->firstOrFail();
+    app(RingUpSale::class)([
+        'branch_id' => shop()->id,
+        'items' => [['kind' => 'product', 'id' => $product->id, 'quantity' => 1]],
+        'method' => 'cash',
+        'amount' => (float) $product->price,
+    ], desk());
+    $line = $product->saleItems()->sole();
+
+    $this->actingAs(boss())
+        ->delete("/admin/catalog/{$product->id}")
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect(Product::whereKey($product->id)->exists())->toBeFalse()
+        ->and($line->fresh()->description)->toBe($product->name)
+        ->and($line->fresh()->product_id)->toBeNull();
+
+    $this->actingAs(desk())->delete('/admin/catalog/'.Product::value('id'))->assertForbidden();
 });
 
 it('deletes a service that was never sold or booked', function () {

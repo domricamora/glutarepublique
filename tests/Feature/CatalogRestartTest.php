@@ -63,5 +63,5 @@ it('keeps a booking in the diary when its service is removed from the menu', fun
     $diary = $this->actingAs(User::where('email', 'owner@glutarepubliq.com')->firstOrFail())
         ->get(route('admin.appointments.index', ['date' => now()->addDay()->toDateString()]))
         ->assertOk()->viewData('page')['props']['appointments'];
-    expect(collect($diary)->firstWhere('reference', 'APT-RESTART')['treatment'])->toBe('Service no longer offered');
+    expect(collect($diary)->firstWhere('reference', 'APT-RESTART')['treatment'])->toBe('Teen Facial');
 });
