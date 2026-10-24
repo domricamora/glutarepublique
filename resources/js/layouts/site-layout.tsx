@@ -307,7 +307,16 @@ function SiteFooter() {
                 <div className="gutter flex flex-col gap-4 py-6 text-xs text-ice/90 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         © {new Date().getFullYear()} {clinic.name}. All rights
-                        reserved.
+                        reserved. Developed by{' '}
+                        <a
+                            href="https://recursive-frog.com"
+                            target="_blank"
+                            rel="noopener"
+                            className="underline-offset-4 hover:text-white hover:underline"
+                        >
+                            Recursive Frog
+                        </a>
+                        .
                     </p>
                     <ul className="flex flex-wrap gap-5">
                         <li>
