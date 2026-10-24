@@ -35,7 +35,8 @@ Route::get('treatments', [PageController::class, 'treatments'])->name('treatment
 Route::get('treatments/{slug}', [PageController::class, 'treatment'])->name('treatments.show');
 
 Route::get('about', [PageController::class, 'about'])->name('about');
-Route::get('doctors', [PageController::class, 'doctors'])->name('doctors');
+// The team page was folded into About (2026-10-24); old links still land there.
+Route::permanentRedirect('doctors', 'about');
 Route::get('membership', [PageController::class, 'membership'])->name('membership');
 Route::get('promotions', [PageController::class, 'promotions'])->name('promotions');
 Route::get('before-after', [PageController::class, 'beforeAfter'])->name('before-after');

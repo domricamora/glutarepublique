@@ -6,7 +6,6 @@ const SITE_PAGES = [
     'book',
     'book-confirmed',
     'about',
-    'doctors',
     'contact',
     'membership',
     'promotions',

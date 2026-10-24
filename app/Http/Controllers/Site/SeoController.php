@@ -22,7 +22,6 @@ class SeoController extends Controller
             ['loc' => route('treatments.index'), 'priority' => '0.9'],
             ['loc' => route('book'), 'priority' => '0.9'],
             ['loc' => route('about'), 'priority' => '0.7'],
-            ['loc' => route('doctors'), 'priority' => '0.7'],
             ['loc' => route('promotions'), 'priority' => '0.6'],
             ...(MembershipTier::where('is_active', true)->exists() ? [['loc' => route('membership'), 'priority' => '0.7']] : []),
             ['loc' => route('before-after'), 'priority' => '0.6'],
@@ -94,7 +93,6 @@ class SeoController extends Controller
         foreach ([
             'Book a consultation online (no account needed)' => route('book'),
             'All treatments and prices' => route('treatments.index'),
-            'Our team (nurses, aestheticians and facialists)' => route('doctors'),
             'Promotions and packages' => route('promotions'),
             'Before and after (labelled illustrative)' => route('before-after'),
             'Contact and branches' => route('contact'),

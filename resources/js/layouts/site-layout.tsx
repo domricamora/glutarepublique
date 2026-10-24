@@ -11,7 +11,6 @@ import {
     beforeAfter,
     book,
     contact,
-    doctors,
     home,
     legal,
     login,
@@ -25,7 +24,6 @@ import treatments from '@/routes/treatments';
 const nav = [
     { label: 'Home', href: home().url },
     { label: 'About Us', href: about().url },
-    { label: 'Our Team', href: doctors().url },
     { label: 'Treatments', href: treatments.index().url },
     { label: 'Before & After', href: beforeAfter().url },
     { label: 'Promotions', href: promotions().url },
@@ -219,7 +217,6 @@ function SiteFooter() {
             'Clinic',
             [
                 ['About us', about().url],
-                ['Our team', doctors().url],
                 ['Blog', blog.index().url],
                 ['Contact', contact().url],
                 ['Staff login', login().url],

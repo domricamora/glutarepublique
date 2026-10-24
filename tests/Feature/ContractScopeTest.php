@@ -141,8 +141,9 @@ it('publishes a legal page edited in the office', function () {
         ->where('page.sections.0.paragraphs.1', 'Cancel a day ahead.'));
 });
 
-it('shows the doctors page', function () {
-    $this->get('/doctors')->assertOk()->assertInertia(fn ($p) => $p->component('doctors')->has('specialists'));
+it('sends the old team page to About, which shows the team', function () {
+    $this->get('/doctors')->assertRedirect('/about');
+    expect($this->get('/sitemap.xml')->getContent())->not->toContain('/doctors');
 });
 
 it('exports the financial reports and the sales as CSV', function () {

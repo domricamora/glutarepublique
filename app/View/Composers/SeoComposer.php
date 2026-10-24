@@ -67,12 +67,6 @@ class SeoComposer
                 'jsonld' => [$this->clinic(), $this->faqs($p['faqs'] ?? [])],
                 'body' => $this->people('Who looks after you', $p['specialists'] ?? []).$this->branchesHtml(),
             ],
-            $component === 'doctors' => [
-                'title' => "Our team | {$name}",
-                'description' => "Meet the nurses, aestheticians and facialists at {$name}: who they are and which branch they work from.",
-                'jsonld' => [$this->doctors($p['specialists'] ?? [])],
-                'body' => $this->people('Our team', $p['specialists'] ?? []),
-            ],
             $component === 'contact' => [
                 'title' => "Contact, branches and opening hours | {$name}",
                 'description' => "Addresses, phone numbers and opening hours for {$name} in {$where}, with an enquiry form that reaches the clinic team.",
@@ -494,31 +488,6 @@ class SeoComposer
             .(! empty($s['credentials']) ? ' ('.e($s['credentials']).')' : '')
             .(! empty($s['bio']) ? ': '.e($s['bio']) : '')
             .(! empty($s['branches']) ? ' Branches: '.e(implode(', ', (array) $s['branches'])).'.' : '').'</li>')->implode('').'</ul>';
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $people
-     * @return array<string, mixed>
-     */
-    private function doctors(array $people): array
-    {
-        return [
-            '@context' => 'https://schema.org',
-            '@type' => 'ItemList',
-            'name' => 'The team at '.config('clinic.name'),
-            'itemListElement' => collect($people)->values()->map(fn ($s, $i) => [
-                '@type' => 'ListItem',
-                'position' => $i + 1,
-                'item' => array_filter([
-                    '@type' => 'Person',
-                    'name' => $s['name'],
-                    'jobTitle' => $s['title'] ?? null,
-                    'description' => $s['bio'] ?? null,
-                    'image' => $s['photo'] ?? null,
-                    'worksFor' => ['@id' => route('home').'#clinic'],
-                ]),
-            ])->all(),
-        ];
     }
 
     /** @param  list<array<string, mixed>>  $tiers */
