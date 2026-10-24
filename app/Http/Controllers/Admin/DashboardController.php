@@ -7,6 +7,7 @@ use App\Actions\Setup\LoadClinicData;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Lead;
+use App\Support\BranchAccess;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,12 +27,16 @@ class DashboardController extends Controller
 
     private int $days = 30;
 
+    private ?int $branch = null;
+
     public function __invoke(Request $request): Response
     {
         $user = $request->user();
         $canAppointments = $user->can('appointments.view');
         $canLeads = $user->can('leads.view');
-        $today = fn () => Appointment::whereBetween('starts_at', [now()->startOfDay(), now()->endOfDay()]);
+        $this->branch = BranchAccess::current($request);
+        $at = fn ($q) => $q->when($this->branch, fn ($q) => $q->where('branch_id', $this->branch));
+        $today = fn () => $at(Appointment::whereBetween('starts_at', [now()->startOfDay(), now()->endOfDay()]));
 
         $this->days = in_array((int) $request->integer('days', 30), self::WINDOWS, true)
             ? (int) $request->integer('days', 30)
@@ -42,16 +47,16 @@ class DashboardController extends Controller
             'content' => $user->can('content.view') ? LoadClinicData::counts() : null,
             'stats' => [
                 'today' => $canAppointments ? $today()->whereNotIn('status', ['cancelled', 'rescheduled'])->count() : null,
-                'to_confirm' => $canAppointments ? Appointment::where('status', 'pending')->where('starts_at', '>=', now())->count() : null,
-                'new_leads' => $canLeads ? Lead::where('stage', 'new')->count() : null,
-                'leads_week' => $canLeads ? Lead::where('created_at', '>=', now()->subDays(7))->count() : null,
+                'to_confirm' => $canAppointments ? $at(Appointment::where('status', 'pending'))->where('starts_at', '>=', now())->count() : null,
+                'new_leads' => $canLeads ? $at(Lead::where('stage', 'new'))->count() : null,
+                'leads_week' => $canLeads ? $at(Lead::where('created_at', '>=', now()->subDays(7)))->count() : null,
             ],
             // Money and margin are not on a screen for a Doctor, and the
             // counter's takings are not on a receptionist's. Each part of the
             // analytics block is gated on its own permission so a user with
             // leads but not accounting still gets their charts.
             'analytics' => $this->analytics($user->can('accounting.view'), $user->can('pos.view'), $canAppointments, $canLeads),
-            'leads' => $canLeads ? Lead::latest()->limit(6)->with('treatment:id,name')->get()->map(LeadController::row(...)) : null,
+            'leads' => $canLeads ? $at(Lead::latest())->limit(6)->with('treatment:id,name')->get()->map(LeadController::row(...)) : null,
             'statuses' => Appointment::STATUSES,
             'stages' => Lead::STAGES,
         ]);
@@ -67,7 +72,7 @@ class DashboardController extends Controller
      */
     private function analytics(bool $money, bool $pos, bool $diary, bool $leads): array
     {
-        $figures = (new ClinicAnalytics($this->days))->toArray();
+        $figures = (new ClinicAnalytics($this->days, $this->branch))->toArray();
 
         return [
             'window' => $figures['window'],

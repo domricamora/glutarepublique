@@ -9,6 +9,7 @@ use App\Models\CrmActivity;
 use App\Models\Lead;
 use App\Models\Organization;
 use App\Models\Treatment;
+use App\Support\BranchAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -45,7 +46,13 @@ class LeadController extends Controller
             'q' => ['nullable', 'string', 'max:80'],
         ]);
 
+        // A branch's enquiries, plus those that have not named a branch yet
+        // (website forms often do not), so a branch desk still follows them up.
+        $branch = BranchAccess::current($request);
+        $here = fn (Builder $q) => $q->when($branch, fn (Builder $q) => $q->where(fn (Builder $q) => $q->where('branch_id', $branch)->orWhereNull('branch_id')));
+
         $leads = Lead::query()
+            ->tap($here)
             ->with('treatment:id,name')
             ->when($filters['stage'] ?? null, fn (Builder $q, string $stage) => $q->where('stage', $stage))
             ->when($filters['q'] ?? null, fn (Builder $q, string $term) => $q->where(fn (Builder $q) => $q
@@ -62,7 +69,7 @@ class LeadController extends Controller
             'leads' => $leads,
             'filters' => $filters,
             'stages' => Lead::STAGES,
-            'counts' => Lead::query()->selectRaw('stage, count(*) as total')->groupBy('stage')->pluck('total', 'stage'),
+            'counts' => Lead::query()->tap($here)->selectRaw('stage, count(*) as total')->groupBy('stage')->pluck('total', 'stage'),
         ]);
     }
 

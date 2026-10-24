@@ -32,10 +32,28 @@ use Illuminate\Support\Facades\DB;
  *
  * 3. Days with nothing on them come back as zero rather than missing, so a
  *    gap in the data reads as a quiet day and not as a broken chart.
+ *
+ * With a branch, every figure is that branch's: sales, refunds and visits by
+ * where they happened, enquiries by the branch they asked about, capacity by
+ * the staff working there. Chat conversations name no branch, so they stay
+ * clinic-wide.
  */
 class ClinicAnalytics
 {
-    public function __construct(private readonly int $days = 30) {}
+    public function __construct(private readonly int $days = 30, private readonly ?int $branch = null) {}
+
+    /** Narrows a query to the branch, when there is one. */
+    private function at(mixed $query, string $column = 'branch_id'): mixed
+    {
+        return $query->when($this->branch, fn ($q) => $q->where($column, $this->branch));
+    }
+
+    /** Payments carry no branch of their own; they belong to the sale's. */
+    private function payments(): mixed
+    {
+        return Payment::query()
+            ->when($this->branch, fn ($q) => $q->whereIn('sale_id', Sale::where('branch_id', $this->branch)->select('id')));
+    }
 
     public function toArray(): array
     {
@@ -83,13 +101,13 @@ class ClinicAnalytics
      */
     private function patientSplit(CarbonImmutable $start, CarbonImmutable $end): array
     {
-        $seen = Appointment::where('status', 'completed')
+        $seen = $this->at(Appointment::where('status', 'completed'))
             ->whereBetween('starts_at', [$start, $end])
             ->whereNotNull('lead_id')
             ->distinct()
             ->pluck('lead_id');
 
-        $returning = $seen->isEmpty() ? 0 : Appointment::where('status', 'completed')
+        $returning = $seen->isEmpty() ? 0 : $this->at(Appointment::where('status', 'completed'))
             ->where('starts_at', '<', $start)
             ->whereIn('lead_id', $seen)
             ->distinct()
@@ -117,7 +135,9 @@ class ClinicAnalytics
      */
     private function utilisation(CarbonImmutable $start, CarbonImmutable $end): array
     {
-        $practitioners = Specialist::where('is_active', true)->count();
+        $practitioners = Specialist::where('is_active', true)
+            ->when($this->branch, fn ($q) => $q->whereHas('branches', fn ($b) => $b->whereKey($this->branch)))
+            ->count();
         $open = self::openMinutes();
         $capacity = 0;
 
@@ -125,7 +145,7 @@ class ClinicAnalytics
             $capacity += ($open[$day->dayOfWeekIso] ?? 0) * $practitioners;
         }
 
-        $visits = Appointment::whereBetween('starts_at', [$start, $end])
+        $visits = $this->at(Appointment::whereBetween('starts_at', [$start, $end]))
             ->whereNotIn('status', ['cancelled', 'rescheduled'])
             ->get(['starts_at', 'ends_at', 'status']);
 
@@ -177,7 +197,7 @@ class ClinicAnalytics
             ->groupBy('branch_id')
             ->pluck('visits', 'branch_id');
 
-        return Branch::where('is_active', true)->orderBy('id')->get(['id', 'name'])
+        return $this->at(Branch::where('is_active', true), 'id')->orderBy('id')->get(['id', 'name'])
             ->map(fn (Branch $b) => [
                 'name' => $b->name,
                 'revenue' => round((float) ($revenue[$b->id] ?? 0), 2),
@@ -199,6 +219,7 @@ class ClinicAnalytics
             ->leftJoin('treatment_categories', 'treatment_categories.id', '=', 'treatments.treatment_category_id')
             ->whereBetween('sales.created_at', [$from, $today->endOfDay()])
             ->where('sales.organization_id', Organization::current()?->id)
+            ->when($this->branch, fn ($q) => $q->where('sales.branch_id', $this->branch))
             ->selectRaw("CASE WHEN sale_items.kind = 'product' THEN 'Retail products' ELSE COALESCE(treatment_categories.name, 'Other treatments') END AS name")
             ->selectRaw('SUM(sale_items.line_total) AS revenue')
             ->groupBy('name')
@@ -215,6 +236,7 @@ class ClinicAnalytics
             ->join('specialists', 'specialists.id', '=', 'appointments.specialist_id')
             ->leftJoin('treatments', 'treatments.id', '=', 'appointments.treatment_id')
             ->where('appointments.status', 'completed')
+            ->when($this->branch, fn ($q) => $q->where('appointments.branch_id', $this->branch))
             ->whereBetween('appointments.starts_at', [$from, $today->endOfDay()])
             ->selectRaw('specialists.name, specialists.title, COUNT(*) AS visits')
             ->selectRaw('COALESCE(SUM(COALESCE(treatments.promo_price, treatments.price)), 0) AS value')
@@ -234,7 +256,7 @@ class ClinicAnalytics
     /** Enquiries from the window by the stage they have reached, in pipeline order. */
     private function funnel(CarbonImmutable $from): array
     {
-        $counts = Lead::where('created_at', '>=', $from)
+        $counts = $this->at(Lead::where('created_at', '>=', $from))
             ->selectRaw('stage, COUNT(*) AS total')
             ->groupBy('stage')
             ->pluck('total', 'stage');
@@ -248,7 +270,7 @@ class ClinicAnalytics
     /** Where enquiries came from, and how many of each became customers. */
     private function sources(CarbonImmutable $from): array
     {
-        return Lead::where('created_at', '>=', $from)
+        return $this->at(Lead::where('created_at', '>=', $from))
             ->selectRaw('source, COUNT(*) AS total')
             ->selectRaw("SUM(CASE WHEN stage IN ('customer', 'repeat_customer', 'vip') THEN 1 ELSE 0 END) AS won")
             ->groupBy('source')
@@ -272,21 +294,21 @@ class ClinicAnalytics
             $months[$m->format('Y-m')] = ['month' => $m->format('Y-m'), 'revenue' => 0.0, 'visits' => 0];
         }
 
-        foreach (Sale::where('created_at', '>=', $start)->get(['created_at', 'total']) as $sale) {
+        foreach ($this->at(Sale::where('created_at', '>=', $start))->get(['created_at', 'total']) as $sale) {
             $key = $sale->created_at->format('Y-m');
             if (isset($months[$key])) {
                 $months[$key]['revenue'] += (float) $sale->total;
             }
         }
 
-        foreach (Payment::where('type', 'refund')->where('paid_at', '>=', $start)->get(['paid_at', 'amount']) as $refund) {
+        foreach ($this->payments()->where('type', 'refund')->where('paid_at', '>=', $start)->get(['paid_at', 'amount']) as $refund) {
             $key = $refund->paid_at->format('Y-m');
             if (isset($months[$key])) {
                 $months[$key]['revenue'] -= abs((float) $refund->amount);
             }
         }
 
-        foreach (Appointment::where('status', 'completed')->where('starts_at', '>=', $start)->pluck('starts_at') as $at) {
+        foreach ($this->at(Appointment::where('status', 'completed')->where('starts_at', '>=', $start))->pluck('starts_at') as $at) {
             $key = $at->format('Y-m');
             if (isset($months[$key])) {
                 $months[$key]['visits']++;
@@ -312,7 +334,7 @@ class ClinicAnalytics
 
         $net = $revenue - $refunds;
         $priorNet = $priorRevenue - $priorRefunds;
-        $saleCount = Sale::where('created_at', '>=', $from)->count();
+        $saleCount = $this->at(Sale::where('created_at', '>=', $from))->count();
 
         return [
             'revenue' => $net,
@@ -333,13 +355,13 @@ class ClinicAnalytics
         // $until bounds the previous period. Without it the "previous" total ran
         // from the start of the previous window to today, so it included the
         // current window and every comparison read as a decline.
-        $row = Sale::where('created_at', '>=', $from)
+        $row = $this->at(Sale::where('created_at', '>=', $from))
             ->when($until, fn ($q) => $q->where('created_at', '<', $until))
             ->selectRaw('COALESCE(SUM(total), 0) AS revenue')
             ->selectRaw('COALESCE(SUM(discount_amount), 0) AS discount')
             ->first();
 
-        $refunds = (float) Payment::where('type', 'refund')
+        $refunds = (float) $this->payments()->where('type', 'refund')
             ->where('paid_at', '>=', $from)
             ->when($until, fn ($q) => $q->where('paid_at', '<', $until))
             ->sum(DB::raw('ABS(amount)'));
@@ -362,6 +384,7 @@ class ClinicAnalytics
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
             ->where('sales.created_at', '>=', $from)
+            ->when($this->branch, fn ($q) => $q->where('sales.branch_id', $this->branch))
             ->when($until, fn ($q) => $q->where('sales.created_at', '<', $until))
             // The cost saved on the line (a product, or a service's recipe); older lines fall back to the product's cost.
             ->selectRaw('COALESCE(SUM(COALESCE(sale_items.cost, sale_items.quantity * products.cost)), 0) AS cost')
@@ -400,12 +423,12 @@ class ClinicAnalytics
             $day = $day->addDay();
         }
 
-        $refunds = Payment::where('type', 'refund')
+        $refunds = $this->payments()->where('type', 'refund')
             ->where('paid_at', '>=', $from)
             ->get(['paid_at', 'amount'])
             ->groupBy(fn (Payment $p) => $p->paid_at->toDateString());
 
-        $sales = Sale::where('created_at', '>=', $from)
+        $sales = $this->at(Sale::where('created_at', '>=', $from))
             ->get(['created_at', 'total'])
             ->groupBy(fn (Sale $s) => $s->created_at->toDateString());
 
@@ -437,6 +460,7 @@ class ClinicAnalytics
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
             ->where('sales.created_at', '>=', $from)
+            ->when($this->branch, fn ($q) => $q->where('sales.branch_id', $this->branch))
             ->get(['sales.created_at', DB::raw('COALESCE(sale_items.cost, sale_items.quantity * products.cost, 0) AS line_cost')])
             ->groupBy(fn ($row) => CarbonImmutable::parse($row->created_at)->toDateString());
 
@@ -449,7 +473,7 @@ class ClinicAnalytics
             }
         }
 
-        $bookings = Appointment::where('created_at', '>=', $from)
+        $bookings = $this->at(Appointment::where('created_at', '>=', $from))
             ->get(['created_at', 'status'])
             ->groupBy(fn (Appointment $a) => $a->created_at->toDateString());
 
@@ -463,7 +487,7 @@ class ClinicAnalytics
             $keys[$date]['no_show'] = $rows->where('status', 'no_show')->count();
         }
 
-        $leads = Lead::where('created_at', '>=', $from)
+        $leads = $this->at(Lead::where('created_at', '>=', $from))
             ->get(['created_at'])
             ->groupBy(fn (Lead $l) => $l->created_at->toDateString());
 
@@ -477,11 +501,9 @@ class ClinicAnalytics
     }
 
     /** Where the appointments in the window actually ended up. */
-
-    /** Where the appointments in the window actually ended up. */
     private function bookingBreakdown(CarbonImmutable $from, CarbonImmutable $today): array
     {
-        return Appointment::whereBetween('starts_at', [$from, $today->copy()->endOfDay()])
+        return $this->at(Appointment::whereBetween('starts_at', [$from, $today->copy()->endOfDay()]))
             ->whereNotIn('status', ['cancelled', 'rescheduled'])
             ->selectRaw('status, COUNT(*) AS total')
             ->groupBy('status')
@@ -508,6 +530,7 @@ class ClinicAnalytics
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->whereBetween('sales.created_at', [$from, $today->copy()->endOfDay()])
             ->where('sale_items.kind', 'service')
+            ->when($this->branch, fn ($q) => $q->where('sales.branch_id', $this->branch))
             ->selectRaw('sale_items.description, SUM(sale_items.quantity) AS sold, SUM(sale_items.line_total) AS revenue')
             ->groupBy('sale_items.description')
             ->orderByDesc('revenue')
@@ -524,7 +547,7 @@ class ClinicAnalytics
     /** Money actually taken, by how it was taken. Refunds count as negative. */
     private function paymentMix(CarbonImmutable $from, CarbonImmutable $today): array
     {
-        $rows = Payment::whereBetween('paid_at', [$from, $today->copy()->endOfDay()])
+        $rows = $this->payments()->whereBetween('paid_at', [$from, $today->copy()->endOfDay()])
             ->selectRaw('method, type, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount')
             ->groupBy('method', 'type')
             ->get();
@@ -556,8 +579,8 @@ class ClinicAnalytics
     /** Enquiries and conversations, the two things the website produces. */
     private function frontDesk(CarbonImmutable $from): array
     {
-        $newLeads = Lead::where('created_at', '>=', $from)->count();
-        $won = Lead::where('created_at', '>=', $from)
+        $newLeads = $this->at(Lead::where('created_at', '>=', $from))->count();
+        $won = $this->at(Lead::where('created_at', '>=', $from))
             ->whereIn('stage', ['customer', 'repeat_customer', 'vip'])
             ->count();
 
