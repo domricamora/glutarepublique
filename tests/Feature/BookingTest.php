@@ -34,6 +34,13 @@ it('renders the public pages', function () {
     $this->get('/book')->assertOk();
 });
 
+it('gives the booking page each branch\'s opening hours, so its days can be picked', function () {
+    $this->get('/book')->assertInertia(fn ($page) => $page->component('book')
+        ->where('branches', fn ($branches) => collect($branches)->every(
+            fn ($b) => is_array($b['hours'] ?? null) && count($b['hours']) === 7,
+        )));
+});
+
 it('lists open slots for a day', function () {
     $this->getJson('/book/slots?'.http_build_query([
         'treatment_id' => booking()['treatment_id'],
