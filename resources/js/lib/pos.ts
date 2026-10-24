@@ -16,6 +16,8 @@ export type Sellable = {
     name: string;
     price: number;
     stock: number | null;
+    /** A line of the service's price list (an area or a package). */
+    option?: string;
 };
 
 export type CartLine = Sellable & { quantity: number };

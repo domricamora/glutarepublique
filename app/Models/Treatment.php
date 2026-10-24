@@ -96,4 +96,21 @@ class Treatment extends Model
     {
         return $this->getRawOriginal('image');
     }
+
+    /**
+     * The price-list lines the register can sell on their own (an area, a
+     * package, a session count), each at its listed price. A "Per session"
+     * line at the list price is the service itself, so it is left out.
+     *
+     * @return list<array{label: string, price: float}>
+     */
+    public function sellableOptions(): array
+    {
+        return collect($this->price_list ?? [])
+            ->filter(fn ($row) => is_array($row) && filled($row['label'] ?? null) && (float) ($row['price'] ?? 0) > 0)
+            ->reject(fn ($row) => strcasecmp((string) $row['label'], 'Per session') === 0 && (float) $row['price'] === (float) $this->price)
+            ->map(fn ($row) => ['label' => (string) $row['label'], 'price' => (float) $row['price']])
+            ->values()
+            ->all();
+    }
 }

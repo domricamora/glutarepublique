@@ -10,7 +10,7 @@ import { cartTotals, money } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import pos from '@/routes/admin/pos';
 
-const key = (item: Sellable) => `${item.kind}:${item.id}`;
+const key = (item: Sellable) => `${item.kind}:${item.id}:${item.option ?? ''}`;
 
 export default function PosIndex({
     branch_id,
@@ -88,6 +88,7 @@ export default function PosIndex({
                 items: lines.map((line) => ({
                     kind: line.kind,
                     id: line.id,
+                    option: line.option ?? null,
                     quantity: line.quantity,
                 })),
                 discount_type: discountType,

@@ -186,14 +186,15 @@ class RingUpSale
         $quantities = [];
 
         foreach ($items as $item) {
-            $key = $item['kind'].':'.$item['id'];
+            // A service may be sold as one line of its price list (an area or a package).
+            $key = $item['kind'].':'.$item['id'].':'.($item['kind'] === 'service' ? (string) ($item['option'] ?? '') : '');
             $quantities[$key] = ($quantities[$key] ?? 0) + max(1, (int) $item['quantity']);
         }
 
         $lines = [];
 
         foreach ($quantities as $key => $quantity) {
-            [$kind, $id] = explode(':', $key);
+            [$kind, $id, $option] = explode(':', $key, 3);
 
             $model = $kind === 'service'
                 ? Treatment::where('is_active', true)->with('products')->find($id)
@@ -205,12 +206,25 @@ class RingUpSale
 
             // A promo price on a treatment wins over the list price.
             $price = (float) ($kind === 'service' ? ($model->promo_price ?: $model->price) : $model->price);
+            $description = $model->name;
+
+            if ($option !== '') {
+                // Priced from the catalogue, never from the request.
+                $line = collect($model->sellableOptions())->firstWhere('label', $option);
+                if (! $line) {
+                    throw ValidationException::withMessages(['items' => "{$model->name} no longer has a \"{$option}\" price. Refresh the register."]);
+                }
+                $price = $line['price'];
+                $description = "{$model->name} ({$option})";
+            } elseif ($kind === 'service' && $price <= 0) {
+                throw ValidationException::withMessages(['items' => "{$model->name} has no price yet. Set one in the catalogue first."]);
+            }
 
             $lines[] = [
                 'kind' => $kind,
                 'treatment' => $kind === 'service' ? $model : null,
                 'product' => $kind === 'product' ? $model : null,
-                'description' => $model->name,
+                'description' => $description,
                 'quantity' => $quantity,
                 'unit_price' => $price,
                 'line_total' => round($price * $quantity, 2),

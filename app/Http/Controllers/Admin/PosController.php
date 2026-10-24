@@ -51,8 +51,14 @@ class PosController extends Controller
             'lead' => isset($filters['lead']) ? $this->leadPayload(Lead::find($filters['lead'])) : null,
             'query' => $filters['q'] ?? '',
             // A service priced on consultation joins the till once the office gives it a price.
-            'services' => Treatment::where('is_active', true)->where('price', '>', 0)->orderBy('sort')->get(['id', 'name', 'price', 'promo_price', 'duration_minutes'])
-                ->map(fn (Treatment $t) => $this->itemPayload('service', $t->id, $t->name, (float) ($t->promo_price ?: $t->price), null))
+            // Each service at its own price, then each line of its price list
+            // (an area, a package) as an item of its own.
+            'services' => Treatment::where('is_active', true)->orderBy('sort')->get(['id', 'name', 'price', 'promo_price', 'price_list'])
+                ->flatMap(fn (Treatment $t) => [
+                    // The bare service is left out when a list line already sells it at that price ("Face" at the from-price).
+                    ...((float) $t->price > 0 && ! collect($t->sellableOptions())->contains('price', (float) $t->price) ? [$this->itemPayload('service', $t->id, $t->name, (float) ($t->promo_price ?: $t->price), null)] : []),
+                    ...array_map(fn (array $o) => [...$this->itemPayload('service', $t->id, "{$t->name} ({$o['label']})", $o['price'], null), 'option' => $o['label']], $t->sellableOptions()),
+                ])
                 ->values(),
             'products' => Product::sellable()->with('stocks')->orderBy('name')->get(['id', 'name', 'price'])
                 ->map(fn (Product $p) => $this->itemPayload('product', $p->id, $p->name, (float) $p->price, $p->onHandAt($branch)))
@@ -84,6 +90,7 @@ class PosController extends Controller
             'items.*.kind' => ['required', Rule::in(['service', 'product'])],
             'items.*.id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'items.*.option' => ['nullable', 'string', 'max:120'],
             'discount_type' => ['nullable', Rule::in(['none', 'percent', 'fixed'])],
             'discount_value' => ['nullable', 'numeric', 'min:0'],
             'method' => ['required', Rule::in(array_keys(Payment::METHODS))],

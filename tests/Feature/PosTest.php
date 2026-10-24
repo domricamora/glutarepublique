@@ -297,3 +297,25 @@ it('needs a reason for a refund and a real method for a sale', function () {
         'amount' => 10, 'method' => 'cash', 'reason' => '',
     ])->assertSessionHasErrors('reason');
 });
+
+it('sells a price-list line, an area or a package, at its listed price', function () {
+    $hifu = Treatment::where('slug', '9d-hifu')->firstOrFail();
+    $drip = Treatment::where('slug', 'gluta-drip-bronze')->firstOrFail();
+
+    $tiles = collect($this->actingAs(till())->get('/admin/pos')->viewData('page')['props']['services']);
+    expect($tiles->firstWhere('name', '9D HIFU (Face & Neck)'))->toMatchArray(['id' => $hifu->id, 'price' => 7000, 'option' => 'Face & Neck'])
+        ->and($tiles->where('id', $drip->id)->pluck('option')->filter()->values()->all())->toBe(['5+1 package', '10+3 package']);
+
+    $this->post('/admin/pos', ringUp(['items' => [
+        ['kind' => 'service', 'id' => $hifu->id, 'option' => 'Face & Neck', 'quantity' => 1],
+        ['kind' => 'service', 'id' => $drip->id, 'option' => '5+1 package', 'quantity' => 1],
+    ]]))->assertRedirect();
+
+    $sale = Sale::latest('id')->firstOrFail();
+    expect((float) $sale->total)->toBe(10699.0)
+        ->and($sale->items()->pluck('description')->all())->toContain('9D HIFU (Face & Neck)', 'Bronze Gluta Drip (5+1 package)');
+
+    // The price comes from the catalogue: an unknown line is refused.
+    $this->post('/admin/pos', ringUp(['items' => [['kind' => 'service', 'id' => $hifu->id, 'option' => 'Whole body', 'quantity' => 1]]]))
+        ->assertSessionHasErrors('items');
+});
