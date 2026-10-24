@@ -7,6 +7,7 @@ use App\Actions\Inventory\ManageStock;
 use App\Models\Branch;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Treatment;
@@ -96,8 +97,8 @@ class RingUpSale
                 'note' => $data['note'] ?? null,
             ]);
 
-            foreach ($lines as $line) {
-                SaleItem::create([
+            foreach ($lines as $i => $line) {
+                $lines[$i]['item'] = SaleItem::create([
                     'sale_id' => $sale->id,
                     'kind' => $line['kind'],
                     'treatment_id' => $line['treatment']?->id,
@@ -106,6 +107,7 @@ class RingUpSale
                     'quantity' => $line['quantity'],
                     'unit_price' => $line['unit_price'],
                     'line_total' => $line['line_total'],
+                    'cost' => $line['cost'],
                 ]);
             }
 
@@ -194,7 +196,7 @@ class RingUpSale
             [$kind, $id] = explode(':', $key);
 
             $model = $kind === 'service'
-                ? Treatment::where('is_active', true)->find($id)
+                ? Treatment::where('is_active', true)->with('products')->find($id)
                 : Product::sellable()->find($id);
 
             if (! $model) {
@@ -212,6 +214,8 @@ class RingUpSale
                 'quantity' => $quantity,
                 'unit_price' => $price,
                 'line_total' => round($price * $quantity, 2),
+                // Cost of goods: the product itself, or one recipe per session.
+                'cost' => round(($kind === 'service' ? $model->recipeCost() : (float) $model->cost) * $quantity, 2),
             ];
         }
 
@@ -240,14 +244,25 @@ class RingUpSale
 
     /**
      * Draws each product off the shelf of the branch selling it, soonest expiry
-     * first, and records it in the stock ledger. The action throws when a branch
-     * does not hold enough, so the whole sale rolls back.
+     * first, and records it in the stock ledger. A product sold over the counter
+     * must be on the shelf: the action throws, and the whole sale rolls back.
+     *
+     * A service takes its recipe instead. The service has already been given,
+     * so a client is never held at the counter over the records: what the shelf
+     * shows is taken, and the gap is written on the line for a stock count
+     * (owner, 2026-10-24). The line's cost is the full recipe either way.
      *
      * @param  array<int, array<string, mixed>>  $lines
      */
     private function takeStock(array $lines, Branch $branch, string $reference, User $cashier): void
     {
         foreach ($lines as $line) {
+            if ($line['treatment']) {
+                $this->useRecipe($line, $branch, $reference, $cashier);
+
+                continue;
+            }
+
             if (! $line['product']) {
                 continue;
             }
@@ -258,6 +273,30 @@ class RingUpSale
                 // The message belongs to the cart, not to the quantity field.
                 throw ValidationException::withMessages(['items' => $e->validator->errors()->first('quantity')]);
             }
+        }
+    }
+
+    /** @param  array<string, mixed>  $line  a service line, with its saved SaleItem */
+    private function useRecipe(array $line, Branch $branch, string $reference, User $cashier): void
+    {
+        $shortfall = [];
+
+        foreach ($line['treatment']->products as $product) {
+            $needed = (int) $product->pivot->quantity * (int) $line['quantity'];
+            $onHand = (int) ProductStock::where('product_id', $product->id)->where('branch_id', $branch->id)->value('on_hand');
+            $taken = min($needed, $onHand);
+
+            if ($taken > 0) {
+                $this->stock->consume($product, $branch, $taken, 'service', $cashier, $reference, 'Used in '.$line['treatment']->name);
+            }
+
+            if ($taken < $needed) {
+                $shortfall[] = ['product_id' => $product->id, 'name' => $product->name, 'needed' => $needed, 'taken' => $taken];
+            }
+        }
+
+        if ($shortfall !== []) {
+            $line['item']->update(['stock_shortfall' => $shortfall]);
         }
     }
 

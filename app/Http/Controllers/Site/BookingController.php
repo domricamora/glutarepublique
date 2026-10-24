@@ -27,8 +27,8 @@ class BookingController extends Controller
             // The day picker greys out every day a branch is closed, so it needs the hours:
             // without them every day read "Closed" and nothing could be booked.
             'branches' => Branch::where('is_active', true)->bookable()->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'hours']),
-            'specialists' => Specialist::where('is_active', true)->orderBy('sort')->with('branches:id')->get(['id', 'name', 'title', 'photo'])
-                ->map(fn (Specialist $s) => $s->only(['id', 'name', 'title', 'photo']) + ['branch_ids' => $s->branches->pluck('id')]),
+            'specialists' => Specialist::where('is_active', true)->orderBy('sort')->with(['branches:id', 'treatments:id'])->get(['id', 'name', 'title', 'photo'])
+                ->map(fn (Specialist $s) => $s->only(['id', 'name', 'title', 'photo']) + ['branch_ids' => $s->branches->pluck('id'), 'treatment_ids' => $s->treatments->pluck('id')]),
             'initial' => $request->only(['treatment', 'branch', 'date', 'time']),
         ]);
     }

@@ -28,7 +28,8 @@ class PostSale
 
         $serviceTotal = round((float) $items->where('kind', 'service')->sum('line_total'), 2);
         $productTotal = round((float) $items->where('kind', 'product')->sum('line_total'), 2);
-        $goodsCost = round($this->costOfGoods($items), 2);
+        // A refund puts retail products back on the shelf; a service's recipe was used up.
+        $goodsCost = round($this->costOfGoods($isRefund ? $items->where('kind', 'product') : $items), 2);
         $money = $isRefund ? -$sale->amount_paid : $sale->total;
 
         if ($money < 0.01 && $goodsCost < 0.01) {
@@ -96,12 +97,18 @@ class PostSale
         $this->post($lines, $this->attributes($sale, 'pos_sale', $prefix), $user);
     }
 
-    /** @param  Collection<int, SaleItem>  $items */
+    /**
+     * The cost saved on each line when it was sold: a product's cost, or a
+     * service's recipe. A line from before costs were saved falls back to the
+     * product's cost today.
+     *
+     * @param  Collection<int, SaleItem>  $items
+     */
     private function costOfGoods($items): float
     {
-        $costs = $items
-            ->where('kind', 'product')
-            ->map(fn (SaleItem $item) => (float) (Product::where('id', $item->product_id)->value('cost') ?? 0) * $item->quantity);
+        $costs = $items->map(fn (SaleItem $item) => $item->cost ?? (
+            $item->kind === 'product' ? (float) (Product::where('id', $item->product_id)->value('cost') ?? 0) * $item->quantity : 0.0
+        ));
 
         return round((float) $costs->sum(), 2);
     }

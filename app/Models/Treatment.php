@@ -6,6 +6,7 @@ use App\Casts\AssetUrl;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Treatment extends Model
@@ -29,6 +30,34 @@ class Treatment extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(TreatmentCategory::class, 'treatment_category_id');
+    }
+
+    /**
+     * The recipe: the products one session uses, in whole units. They come off
+     * the shelf of the branch that rings the service up (App\Actions\Pos\RingUpSale).
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'treatment_products')->withPivot('quantity')->withTimestamps();
+    }
+
+    /**
+     * The staff who may perform the service. Nobody named means anyone at the
+     * branch can (App\Actions\Booking\AvailableSlots::specialists).
+     *
+     * @return BelongsToMany<Specialist, $this>
+     */
+    public function specialists(): BelongsToMany
+    {
+        return $this->belongsToMany(Specialist::class);
+    }
+
+    /** What one session's products cost, at today's product costs. */
+    public function recipeCost(): float
+    {
+        return round((float) $this->products->sum(fn (Product $p) => (float) $p->cost * (int) $p->pivot->quantity), 2);
     }
 
     /** @return HasMany<SaleItem, $this> */

@@ -20,6 +20,7 @@ class InventoryMovement extends Model
         'receive' => 'Received',
         'sale' => 'Sold',
         'consume' => 'Used in treatment',
+        'service' => 'Used in a service (recipe)',
         'return' => 'Returned',
         'adjustment' => 'Adjustment',
         'damage' => 'Damaged',
@@ -29,7 +30,7 @@ class InventoryMovement extends Model
     ];
 
     /** Movements that take stock out of a shelf. */
-    public const OUT = ['sale', 'consume', 'damage', 'expired', 'transfer_out', 'adjustment'];
+    public const OUT = ['sale', 'service', 'consume', 'damage', 'expired', 'transfer_out', 'adjustment'];
 
     protected $guarded = ['id'];
 

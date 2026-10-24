@@ -48,7 +48,7 @@ class BookAppointment
                     throw $taken;
                 }
 
-                $candidates = $this->slots->specialists($branch, $specialist);
+                $candidates = $this->slots->specialists($branch, $specialist, $treatment);
                 $booked = $this->slots->booked($candidates, $start)->lockForUpdate()->get()->groupBy('specialist_id');
                 $specialistId = $this->slots->freeSpecialist($candidates, $booked, $start, $end) ?? throw $taken;
 

@@ -367,7 +367,7 @@ export default function AnalyticsPanel({
                     <Card
                         className="xl:col-span-2"
                         title="Revenue and gross profit"
-                        note="Daily, net of refunds. Gross profit is takings less the cost of goods sold; treatments carry no recorded cost, which flatters it."
+                        note="Daily, net of refunds. Gross profit is takings less the cost of goods: retail products sold, plus the products each service uses (its recipe). A service with no recipe carries no cost, which flatters it."
                     >
                         <TrendChart
                             points={daily}

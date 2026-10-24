@@ -40,6 +40,7 @@ export type Specialist = {
     focus?: string[];
     branches?: string[];
     branch_ids?: number[];
+    treatment_ids?: number[];
 };
 
 export type Branch = {

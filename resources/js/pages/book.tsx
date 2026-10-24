@@ -6,6 +6,7 @@ import {
     formatDuration,
     formatTreatmentPrice,
     openWindow,
+    staffFor,
     splitTime,
     toIsoDate,
     upcomingDays,
@@ -64,9 +65,7 @@ export default function Book({
     const treatment =
         treatments.find((t) => t.id === data.treatment_id) ?? treatments[0];
     const branch = branches.find((b) => b.id === data.branch_id) ?? branches[0];
-    const doctors = specialists.filter((s) =>
-        s.branch_ids?.includes(branch.id),
-    );
+    const doctors = staffFor(specialists, branch.id, treatment.id);
     const doctor = specialists.find((s) => s.id === data.specialist_id);
 
     const [slots, setSlots] = useState<string[] | null>(null);

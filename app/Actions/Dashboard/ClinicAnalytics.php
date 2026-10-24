@@ -348,7 +348,8 @@ class ClinicAnalytics
     }
 
     /**
-     * Cost of goods, joined at the line rather than read off the sale.
+     * Cost of goods, joined at the line rather than read off the sale: retail
+     * products and the products used up by services (their recipes).
      *
      * product_id is nulled when a product is deleted, so a line whose product
      * is gone contributes revenue and no cost. That understates cost, which is
@@ -362,8 +363,8 @@ class ClinicAnalytics
             ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
             ->where('sales.created_at', '>=', $from)
             ->when($until, fn ($q) => $q->where('sales.created_at', '<', $until))
-            ->where('sale_items.kind', 'product')
-            ->selectRaw('COALESCE(SUM(sale_items.quantity * products.cost), 0) AS cost')
+            // The cost saved on the line (a product, or a service's recipe); older lines fall back to the product's cost.
+            ->selectRaw('COALESCE(SUM(COALESCE(sale_items.cost, sale_items.quantity * products.cost)), 0) AS cost')
             ->value('cost');
 
         return [(float) $cost];
@@ -436,8 +437,7 @@ class ClinicAnalytics
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
             ->where('sales.created_at', '>=', $from)
-            ->where('sale_items.kind', 'product')
-            ->get(['sales.created_at', DB::raw('sale_items.quantity * products.cost AS line_cost')])
+            ->get(['sales.created_at', DB::raw('COALESCE(sale_items.cost, sale_items.quantity * products.cost, 0) AS line_cost')])
             ->groupBy(fn ($row) => CarbonImmutable::parse($row->created_at)->toDateString());
 
         foreach ($costs as $date => $rows) {

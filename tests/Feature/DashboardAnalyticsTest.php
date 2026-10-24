@@ -68,9 +68,8 @@ it('adds up revenue and gross profit across the window', function () {
     $money = (new ClinicAnalytics(30))->toArray()['money'];
     $revenue = round($service + 2 * (float) $balm->price, 2);
 
-    // Only the product line carries cost of goods. A treatment is labour and
-    // has none recorded, which is exactly the caveat the UI states next to
-    // the number rather than leaving a reader to guess.
+    // Only the product line carries cost of goods: this treatment has no
+    // recipe, so it records none (ServiceRecipeTest covers one that does).
     expect($money['revenue'])->toBe($revenue)
         ->and($money['cost_of_goods'])->toBe($goods)
         ->and($money['profit'])->toBe(round($revenue - $goods, 2))

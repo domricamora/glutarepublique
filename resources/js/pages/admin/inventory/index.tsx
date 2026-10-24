@@ -32,6 +32,13 @@ type Props = {
     alert: string | null;
     rows: StockRow[];
     alerts: { expired: number; expiring: number; low: number; out: number };
+    shortfalls: {
+        id: number;
+        reference: string;
+        date: string;
+        service: string;
+        products: string;
+    }[];
     total_value: number;
     movements: Movement[];
     movement_types: Labels;
@@ -47,6 +54,7 @@ export default function InventoryIndex({
     rows,
     alerts,
     total_value,
+    shortfalls,
     movements,
 }: Props) {
     const can = useCan();
@@ -201,6 +209,38 @@ export default function InventoryIndex({
                         </p>
                     </div>
                 </div>
+
+                {shortfalls.length > 0 && (
+                    <section className="border border-gold/50 bg-gold/10 px-4 py-3">
+                        <h2 className="text-sm font-semibold">
+                            Count these: services used more than the records
+                            held
+                        </h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            The client was served and the sale went through.
+                            Count the products below and record the real number,
+                            so the shelf matches.
+                        </p>
+                        <ul className="mt-3 divide-y divide-border text-sm">
+                            {shortfalls.map((s) => (
+                                <li
+                                    key={s.id}
+                                    className="flex flex-wrap justify-between gap-x-6 gap-y-1 py-2"
+                                >
+                                    <span>
+                                        {s.service}{' '}
+                                        <span className="text-muted-foreground">
+                                            ({s.reference}, {s.date})
+                                        </span>
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {s.products}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
 
                 <div className="flex flex-wrap items-center gap-2">
                     <form

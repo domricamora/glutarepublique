@@ -26,7 +26,7 @@ class AvailableSlots
             return [];
         }
 
-        $specialists = $this->specialists($branch, $specialist);
+        $specialists = $this->specialists($branch, $specialist, $treatment);
         $booked = $this->booked($specialists, $date)->get()->groupBy('specialist_id');
 
         $now = CarbonImmutable::now();
@@ -52,12 +52,21 @@ class AvailableSlots
         return $branch->hoursOn($date);
     }
 
-    /** @return Collection<int, int> */
-    public function specialists(Branch $branch, ?Specialist $specialist): Collection
+    /**
+     * Who can take the booking: the chosen specialist, or everyone active at the
+     * branch. When the service names the staff who may perform it, only they
+     * qualify; a service with nobody named is open to all.
+     *
+     * @return Collection<int, int>
+     */
+    public function specialists(Branch $branch, ?Specialist $specialist, ?Treatment $treatment = null): Collection
     {
-        return $specialist
+        $ids = $specialist
             ? collect([$specialist->id])
             : $branch->specialists()->where('is_active', true)->orderBy('sort')->pluck('specialists.id');
+        $allowed = $treatment ? $treatment->specialists()->pluck('specialists.id') : collect();
+
+        return $allowed->isEmpty() ? $ids : $ids->intersect($allowed)->values();
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
+use App\Models\SaleItem;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -81,7 +82,36 @@ class InventoryController extends Controller
             'total_value' => round($rows->sum('value'), 2),
             'movements' => self::movements(12),
             'movement_types' => InventoryMovement::TYPES,
+            'shortfalls' => self::shortfalls($branch),
         ]);
+    }
+
+    /**
+     * Services rung up in the last 30 days whose recipe the branch's records
+     * could not cover. The client was served, so the sale went through; the
+     * shelf count for these products needs checking.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function shortfalls(Branch $branch): array
+    {
+        return SaleItem::whereNotNull('stock_shortfall')
+            ->whereHas('sale', fn (Builder $q) => $q->where('branch_id', $branch->id)->where('created_at', '>=', now()->subDays(30)))
+            ->with('sale:id,reference,created_at')
+            ->latest('id')
+            ->limit(20)
+            ->get()
+            ->map(fn (SaleItem $item) => [
+                'id' => $item->id,
+                'reference' => $item->sale->reference,
+                'date' => $item->sale->created_at->toDateString(),
+                'service' => $item->description,
+                'products' => collect($item->stock_shortfall)
+                    ->map(fn (array $s) => "{$s['name']}: {$s['taken']} of {$s['needed']} taken")
+                    ->join('; '),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

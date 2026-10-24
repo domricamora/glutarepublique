@@ -32,6 +32,21 @@ export const formatPrice = (value: number): string => peso.format(value);
 export const formatTreatmentPrice = (value: number): string =>
     value > 0 ? formatPrice(value) : 'Price on consultation';
 
+/**
+ * Staff who can take a service at a branch. A service with nobody assigned is
+ * open to everyone there (the server applies the same rule).
+ */
+export function staffFor<
+    T extends { branch_ids?: number[]; treatment_ids?: number[] },
+>(staff: T[], branchId: number, treatmentId: number): T[] {
+    const atBranch = staff.filter((s) => s.branch_ids?.includes(branchId));
+    const assigned = staff.some((s) => s.treatment_ids?.includes(treatmentId));
+
+    return assigned
+        ? atBranch.filter((s) => s.treatment_ids?.includes(treatmentId))
+        : atBranch;
+}
+
 /** The clinic's own promo artwork: text-heavy, so it is shown whole, never cropped. */
 export const isFlyer = (src: string | null | undefined): boolean =>
     Boolean(src?.includes('/media/photos/flyers/'));

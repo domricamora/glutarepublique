@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Organization;
 use App\Models\Product;
+use App\Models\Specialist;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,7 +66,7 @@ class CatalogController extends Controller
         return Inertia::render('admin/catalog/index', [
             'tab' => $filters['tab'] ?? 'products',
             'products' => $products->values(),
-            'services' => Treatment::withCount(['saleItems', 'appointments'])
+            'services' => Treatment::withCount(['saleItems', 'appointments'])->with(['products:id,name,cost', 'specialists:id'])
                 ->when($filters['q'] ?? null, fn (Builder $q, $term) => $q->where('name', 'like', "%{$term}%"))
                 ->when(($filters['status'] ?? 'all') === 'active', fn (Builder $q) => $q->where('is_active', true))
                 ->when(($filters['status'] ?? 'all') === 'inactive', fn (Builder $q) => $q->where('is_active', false))
@@ -83,6 +84,9 @@ class CatalogController extends Controller
                     'category_id' => $t->treatment_category_id,
                     'category' => $t->category?->name,
                     'subcategory' => $t->subcategory,
+                    'recipe' => $t->products->map(fn (Product $p) => ['product_id' => $p->id, 'quantity' => (int) $p->pivot->quantity])->values(),
+                    'recipe_cost' => $t->recipeCost(),
+                    'staff_ids' => $t->specialists->pluck('id'),
                     'is_active' => $t->is_active,
                     'sold' => $t->sale_items_count,
                     'booked' => $t->appointments_count,
@@ -91,6 +95,10 @@ class CatalogController extends Controller
                     'image' => $t->image,
                 ]),
             'service_categories' => TreatmentCategory::orderBy('name')->get(['id', 'name']),
+            // What a service's recipe and staff can be chosen from.
+            'recipe_products' => Product::where('is_active', true)->orderBy('name')->get(['id', 'name', 'sku', 'cost']),
+            'staff' => Specialist::where('is_active', true)->orderBy('sort')->with('branches:id,name')->get(['id', 'name', 'title'])
+                ->map(fn (Specialist $s) => ['id' => $s->id, 'name' => $s->name, 'title' => $s->title, 'branches' => $s->branches->pluck('name')->join(', ')]),
             'categories' => Product::orderBy('category')->distinct()->pluck('category')->filter()->values(),
             'query' => $filters['q'] ?? '',
             'category' => $filters['category'] ?? '',
@@ -129,6 +137,31 @@ class CatalogController extends Controller
         $treatment->delete();
 
         return back()->with('success', $treatment->name.' deleted.');
+    }
+
+    /**
+     * A service's recipe and staff: the products one session takes off the
+     * shelf when it is rung up, and the people who may perform it (nobody
+     * ticked means anyone at the branch). Receipts already sold keep their cost.
+     */
+    public function saveRecipe(Request $request, Treatment $treatment): RedirectResponse
+    {
+        $organization = $treatment->organization_id;
+        $data = $request->validate([
+            'products' => ['present', 'array', 'max:30'],
+            'products.*.product_id' => ['required', 'integer', 'distinct', Rule::exists('products', 'id')->where('organization_id', $organization)],
+            'products.*.quantity' => ['required', 'integer', 'min:1', 'max:1000'],
+            'staff' => ['present', 'array'],
+            'staff.*' => ['integer', 'distinct', Rule::exists('specialists', 'id')->where('organization_id', $organization)],
+        ], [
+            'products.*.product_id.distinct' => 'Each product goes on the recipe once; set its quantity instead.',
+            'products.*.quantity.min' => 'A recipe line needs at least 1 unit.',
+        ]);
+
+        $treatment->products()->sync(collect($data['products'])->mapWithKeys(fn (array $line) => [$line['product_id'] => ['quantity' => $line['quantity']]]));
+        $treatment->specialists()->sync($data['staff']);
+
+        return back()->with('success', $treatment->name.' recipe and staff saved.');
     }
 
     /** Adds a service to the menu. */

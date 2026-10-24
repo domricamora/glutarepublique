@@ -15,6 +15,8 @@ class SaleItem extends Model
         return ['quantity' => 'integer',
             'unit_price' => 'float',
             'line_total' => 'float',
+            'cost' => 'float',
+            'stock_shortfall' => 'array',
         ];
     }
 

@@ -18,6 +18,7 @@ import { useCan } from '@/lib/admin';
 import { money } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import catalog from '@/routes/admin/catalog';
+import type { RecipeProduct, StaffOption } from './recipe-editor';
 import { ServiceCatalogue } from './services';
 import inventory from '@/routes/admin/inventory';
 
@@ -40,6 +41,8 @@ type Props = {
     products: Row[];
     services: import('./services').ServiceRow[];
     service_categories: { id: number; name: string }[];
+    recipe_products: RecipeProduct[];
+    staff: StaffOption[];
     categories: string[];
     query: string;
     category: string;
@@ -250,6 +253,8 @@ export default function CatalogIndex(props: Props) {
                     <ServiceCatalogue
                         services={props.services}
                         categories={props.service_categories}
+                        recipeProducts={props.recipe_products}
+                        staff={props.staff}
                         canEdit={can('inventory.create')}
                     />
                 ) : (

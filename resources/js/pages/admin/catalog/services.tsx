@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { Check, Plus, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { money } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import catalog from '@/routes/admin/catalog';
+import { RecipeEditor } from './recipe-editor';
+import type { RecipeProduct, StaffOption } from './recipe-editor';
 
 export type ServiceRow = {
     id: number;
@@ -25,12 +27,17 @@ export type ServiceRow = {
     sold: number;
     booked: number;
     image: string | null;
+    recipe: { product_id: number; quantity: number }[];
+    recipe_cost: number;
+    staff_ids: number[];
 };
 
 type Props = {
     services: ServiceRow[];
     categories: { id: number; name: string }[];
     canEdit: boolean;
+    recipeProducts: RecipeProduct[];
+    staff: StaffOption[];
 };
 
 const empty = {
@@ -46,8 +53,15 @@ const empty = {
     is_active: 1,
 };
 
-export function ServiceCatalogue({ services, categories, canEdit }: Props) {
+export function ServiceCatalogue({
+    services,
+    categories,
+    canEdit,
+    recipeProducts,
+    staff,
+}: Props) {
     const [adding, setAdding] = useState(false);
+    const [recipeFor, setRecipeFor] = useState<number | null>(null);
     const [editing, setEditing] = useState<number | null>(null);
     const [busy, setBusy] = useState<number | null>(null);
     const [photoError, setPhotoError] = useState('');
@@ -558,99 +572,141 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
                                     </td>
                                 </tr>
                             ) : (
-                                <tr
-                                    key={row.id}
-                                    className="border-b border-border last:border-0"
-                                >
-                                    <td className="px-4 py-3">
-                                        {photoCell(row)}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {row.name}
-                                        {row.subcategory && (
-                                            <span className="block text-xs text-muted-foreground">
-                                                {row.category} /{' '}
-                                                {row.subcategory}
-                                            </span>
-                                        )}
-                                        {row.summary && (
-                                            <span className="block text-xs text-muted-foreground">
-                                                {row.summary}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-3 text-right tabular-nums">
-                                        {row.price > 0
-                                            ? money(row.price)
-                                            : 'On consultation'}
-                                        {row.promo_price &&
-                                            row.promo_price < row.price && (
-                                                <span className="block text-xs text-plum">
-                                                    {money(row.promo_price)}{' '}
-                                                    promo
+                                <Fragment key={row.id}>
+                                    <tr className="border-b border-border last:border-0">
+                                        <td className="px-4 py-3">
+                                            {photoCell(row)}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {row.name}
+                                            {row.subcategory && (
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {row.category} /{' '}
+                                                    {row.subcategory}
                                                 </span>
                                             )}
-                                    </td>
-                                    <td className="px-4 py-3 text-right text-muted-foreground tabular-nums">
-                                        {row.duration_minutes}
-                                    </td>
-                                    <td className="px-4 py-3 text-right text-muted-foreground tabular-nums">
-                                        {row.sold + row.booked > 0
-                                            ? `${row.sold + row.booked}`
-                                            : '—'}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span
-                                            className={cn(
-                                                'inline-flex border px-2 py-1 text-xs',
-                                                row.is_active
-                                                    ? 'border-plum/30 bg-lilac/60 text-plum'
-                                                    : 'border-border bg-background text-muted-foreground',
+                                            {row.summary && (
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {row.summary}
+                                                </span>
                                             )}
-                                        >
-                                            {row.is_active
-                                                ? 'On the menu'
-                                                : 'Retired'}
-                                        </span>
-                                    </td>
-                                    {canEdit && (
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() =>
-                                                        startEdit(row)
-                                                    }
-                                                    aria-label={`Edit ${row.name}`}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                {!used(row) && (
+                                            <span className="mt-1 block text-xs text-muted-foreground">
+                                                {row.recipe.length > 0
+                                                    ? `Uses ${row.recipe.length} product${row.recipe.length === 1 ? '' : 's'}, ${money(row.recipe_cost)} a session`
+                                                    : 'No recipe'}
+                                                {', '}
+                                                {row.staff_ids.length > 0
+                                                    ? `${row.staff_ids.length} staff`
+                                                    : 'any staff'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-right tabular-nums">
+                                            {row.price > 0
+                                                ? money(row.price)
+                                                : 'On consultation'}
+                                            {row.promo_price &&
+                                                row.promo_price < row.price && (
+                                                    <span className="block text-xs text-plum">
+                                                        {money(row.promo_price)}{' '}
+                                                        promo
+                                                    </span>
+                                                )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right text-muted-foreground tabular-nums">
+                                            {row.duration_minutes}
+                                        </td>
+                                        <td className="px-4 py-3 text-right text-muted-foreground tabular-nums">
+                                            {row.sold + row.booked > 0
+                                                ? `${row.sold + row.booked}`
+                                                : '—'}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span
+                                                className={cn(
+                                                    'inline-flex border px-2 py-1 text-xs',
+                                                    row.is_active
+                                                        ? 'border-plum/30 bg-lilac/60 text-plum'
+                                                        : 'border-border bg-background text-muted-foreground',
+                                                )}
+                                            >
+                                                {row.is_active
+                                                    ? 'On the menu'
+                                                    : 'Retired'}
+                                            </span>
+                                        </td>
+                                        {canEdit && (
+                                            <td className="px-4 py-3 text-right">
+                                                <div className="flex justify-end gap-1">
                                                     <Button
                                                         type="button"
                                                         size="sm"
                                                         variant="ghost"
                                                         onClick={() =>
-                                                            useForm({}).delete(
-                                                                catalog.services.destroy(
-                                                                    row.id,
-                                                                ).url,
-                                                                {
-                                                                    preserveScroll: true,
-                                                                },
+                                                            startEdit(row)
+                                                        }
+                                                        aria-label={`Edit ${row.name}`}
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        aria-expanded={
+                                                            recipeFor === row.id
+                                                        }
+                                                        onClick={() =>
+                                                            setRecipeFor(
+                                                                recipeFor ===
+                                                                    row.id
+                                                                    ? null
+                                                                    : row.id,
                                                             )
                                                         }
-                                                        aria-label={`Delete ${row.name}`}
                                                     >
-                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                        Recipe & staff
                                                     </Button>
-                                                )}
-                                            </div>
-                                        </td>
+                                                    {!used(row) && (
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() =>
+                                                                useForm(
+                                                                    {},
+                                                                ).delete(
+                                                                    catalog.services.destroy(
+                                                                        row.id,
+                                                                    ).url,
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                )
+                                                            }
+                                                            aria-label={`Delete ${row.name}`}
+                                                        >
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        )}
+                                    </tr>
+                                    {canEdit && recipeFor === row.id && (
+                                        <tr className="border-b border-border">
+                                            <td colSpan={7} className="p-0">
+                                                <RecipeEditor
+                                                    service={row}
+                                                    products={recipeProducts}
+                                                    staff={staff}
+                                                    onClose={() =>
+                                                        setRecipeFor(null)
+                                                    }
+                                                />
+                                            </td>
+                                        </tr>
                                     )}
-                                </tr>
+                                </Fragment>
                             ),
                         )}
                         {services.length === 0 && (

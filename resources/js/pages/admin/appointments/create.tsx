@@ -5,7 +5,7 @@ import Field, { control } from '@/components/admin/field';
 import InputError from '@/components/input-error';
 import type { Labels } from '@/lib/admin';
 import { clock, formatDate, manilaDate } from '@/lib/admin';
-import { manilaNow, splitTime, toIsoDate } from '@/lib/site';
+import { manilaNow, splitTime, staffFor, toIsoDate } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import bookRoutes from '@/routes/book';
 import appointments from '@/routes/admin/appointments';
@@ -20,6 +20,7 @@ type Props = {
         name: string;
         title: string;
         branch_ids: number[];
+        treatment_ids: number[];
     }[];
     lead: { id: number; name: string; phone: string | null } | null;
     moving: {
@@ -69,10 +70,12 @@ export default function AppointmentCreate({
     const [slots, setSlots] = useState<string[] | null>(null);
     const atBranch = useMemo(
         () =>
-            specialists.filter((s) =>
-                s.branch_ids.includes(Number(data.branch_id)),
+            staffFor(
+                specialists,
+                Number(data.branch_id),
+                Number(data.treatment_id),
             ),
-        [specialists, data.branch_id],
+        [specialists, data.branch_id, data.treatment_id],
     );
 
     useEffect(() => {

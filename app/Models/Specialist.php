@@ -18,6 +18,16 @@ class Specialist extends Model
         return ['photo' => AssetUrl::class, 'focus' => 'array', 'is_active' => 'boolean'];
     }
 
+    /**
+     * Services this person may perform; see Treatment::specialists().
+     *
+     * @return BelongsToMany<Treatment, $this>
+     */
+    public function treatments(): BelongsToMany
+    {
+        return $this->belongsToMany(Treatment::class);
+    }
+
     /** @return BelongsToMany<Branch, $this> */
     public function branches(): BelongsToMany
     {
