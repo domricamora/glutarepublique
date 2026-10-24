@@ -8,6 +8,8 @@ use App\Models\Branch;
 use App\Models\CrmActivity;
 use App\Models\Lead;
 use App\Models\Organization;
+use App\Models\Payment;
+use App\Models\Sale;
 use App\Models\Treatment;
 use App\Support\BranchAccess;
 use Illuminate\Database\Eloquent\Builder;
@@ -131,7 +133,7 @@ class LeadController extends Controller
             ->map(fn (Lead $l) => ['id' => $l->id, 'name' => $l->fullName(), 'phone' => $l->phone, 'stage' => Lead::STAGES[$l->stage] ?? $l->stage]));
     }
 
-    public function show(Lead $lead): Response
+    public function show(Request $request, Lead $lead): Response
     {
         $lead->load(['treatment:id,name', 'branch:id,name', 'activities.user:id,name']);
 
@@ -155,9 +157,48 @@ class LeadController extends Controller
                 'created_at' => $a->created_at?->toIso8601String(),
             ]),
             'appointments' => AppointmentController::rows(Appointment::where('lead_id', $lead->id)),
+            // Money is for people who may see the till.
+            'record' => $request->user()->can('pos.view') ? self::record($lead) : null,
             'stages' => Lead::STAGES,
             'statuses' => Appointment::STATUSES,
         ]);
+    }
+
+    /**
+     * The client record: visits, what they bought and what they have paid.
+     * Spend is money taken less money given back, from the payments, so a
+     * refunded or unpaid sale does not count as spend.
+     *
+     * @return array<string, mixed>
+     */
+    private static function record(Lead $lead): array
+    {
+        $sales = Sale::where('lead_id', $lead->id)
+            ->with(['items:id,sale_id,description,quantity', 'branch:id,name'])
+            ->latest()
+            ->get(['id', 'reference', 'branch_id', 'total', 'status', 'created_at']);
+        $payments = Payment::whereIn('sale_id', $sales->pluck('id'));
+        $paid = (float) (clone $payments)->where('type', 'payment')->sum('amount') - abs((float) (clone $payments)->where('type', 'refund')->sum('amount'));
+        $visits = Appointment::where('lead_id', $lead->id)->where('status', 'completed');
+        $counted = $sales->whereNotIn('status', ['void', 'refunded']);
+
+        return [
+            'visits' => (clone $visits)->count(),
+            'last_visit' => (clone $visits)->max('starts_at'),
+            'spend' => round($paid, 2),
+            'purchases' => $counted->count(),
+            'statuses' => Sale::STATUSES,
+            'average' => $counted->count() > 0 ? round((float) $counted->sum('total') / $counted->count(), 2) : 0.0,
+            'sales' => $sales->take(20)->map(fn (Sale $s) => [
+                'id' => $s->id,
+                'reference' => $s->reference,
+                'date' => $s->created_at->toIso8601String(),
+                'branch' => $s->branch?->name,
+                'total' => (float) $s->total,
+                'status' => $s->status,
+                'items' => $s->items->map(fn ($i) => $i->quantity > 1 ? "{$i->description} x{$i->quantity}" : $i->description)->join(', '),
+            ])->values(),
+        ];
     }
 
     public function update(Request $request, Lead $lead): RedirectResponse

@@ -1,13 +1,15 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CalendarPlus, Mail, Phone } from 'lucide-react';
+import { CalendarPlus, Mail, Phone, ShoppingBag } from 'lucide-react';
 import type { FormEvent } from 'react';
 import StatusSelect from '@/components/admin/status-select';
 import InputError from '@/components/input-error';
 import type { AppointmentRow, Labels, LeadRow } from '@/lib/admin';
 import { ago, clock, formatDate, sourceLabel, useCan } from '@/lib/admin';
+import { money, statusTone } from '@/lib/pos';
 import { cn } from '@/lib/utils';
 import appointmentRoutes from '@/routes/admin/appointments';
 import leads from '@/routes/admin/leads';
+import pos from '@/routes/admin/pos';
 
 /** A visit still ahead of the client is the only one worth moving. */
 const canMove = (appointment: AppointmentRow): boolean =>
@@ -33,10 +35,30 @@ type Activity = {
     created_at: string;
 };
 
+/** Visits, purchases and spend; null for people who may not see the till. */
+type ClientRecord = {
+    visits: number;
+    last_visit: string | null;
+    spend: number;
+    purchases: number;
+    average: number;
+    statuses: Labels;
+    sales: {
+        id: number;
+        reference: string;
+        date: string;
+        branch: string | null;
+        total: number;
+        status: string;
+        items: string;
+    }[];
+};
+
 type Props = {
     lead: Lead;
     activities: Activity[];
     appointments: AppointmentRow[];
+    record: ClientRecord | null;
     stages: Labels;
     statuses: Labels;
 };
@@ -45,6 +67,7 @@ export default function LeadShow({
     lead,
     activities,
     appointments,
+    record,
     stages,
     statuses,
 }: Props) {
@@ -109,6 +132,17 @@ export default function LeadShow({
                         </h1>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                        {can('pos.create') && (
+                            <Link
+                                href={
+                                    pos.index({ query: { lead: lead.id } }).url
+                                }
+                                className="inline-flex items-center gap-2 border border-border px-4 py-2 text-sm font-medium transition-[background-color,transform] duration-150 ease-out hover:bg-mist active:scale-[0.97] dark:hover:bg-white/5"
+                            >
+                                <ShoppingBag className="size-4" aria-hidden />{' '}
+                                Ring up a sale
+                            </Link>
+                        )}
                         {can('appointments.create') && (
                             <Link
                                 href={
@@ -286,6 +320,108 @@ export default function LeadShow({
                                 <blockquote className="border-l-2 border-gold pl-4 text-sm whitespace-pre-line">
                                     {lead.message}
                                 </blockquote>
+                            </section>
+                        )}
+
+                        {record && (
+                            <section aria-labelledby="record">
+                                <h2
+                                    id="record"
+                                    className="mb-2 text-lg font-medium"
+                                >
+                                    Client record
+                                </h2>
+                                <dl className="grid grid-cols-2 border-y border-border text-sm sm:grid-cols-4">
+                                    {(
+                                        [
+                                            ['Visits', String(record.visits)],
+                                            [
+                                                'Last visit',
+                                                record.last_visit
+                                                    ? formatDate(
+                                                          record.last_visit,
+                                                          {
+                                                              day: 'numeric',
+                                                              month: 'short',
+                                                              year: 'numeric',
+                                                          },
+                                                      )
+                                                    : 'None yet',
+                                            ],
+                                            [
+                                                'Paid to date',
+                                                money(record.spend),
+                                            ],
+                                            [
+                                                'Purchases',
+                                                record.purchases
+                                                    ? `${record.purchases}, avg ${money(record.average)}`
+                                                    : '0',
+                                            ],
+                                        ] as const
+                                    ).map(([k, v]) => (
+                                        <div key={k} className="py-3 pr-4">
+                                            <dt className="text-xs text-muted-foreground">
+                                                {k}
+                                            </dt>
+                                            <dd className="mt-1 font-medium tabular-nums">
+                                                {v}
+                                            </dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                                {record.sales.length > 0 ? (
+                                    <ul className="divide-y divide-border border-b border-border">
+                                        {record.sales.map((s) => (
+                                            <li key={s.id}>
+                                                <Link
+                                                    href={
+                                                        pos.sales.show(s.id).url
+                                                    }
+                                                    className="flex items-center justify-between gap-3 py-3 text-sm hover:bg-mist dark:hover:bg-white/5"
+                                                >
+                                                    <span className="min-w-0">
+                                                        <span className="block font-medium">
+                                                            {formatDate(
+                                                                s.date,
+                                                                {
+                                                                    day: 'numeric',
+                                                                    month: 'short',
+                                                                    year: 'numeric',
+                                                                },
+                                                            )}
+                                                            , {s.reference}
+                                                        </span>
+                                                        <span className="block truncate text-muted-foreground">
+                                                            {s.items}
+                                                            {s.branch
+                                                                ? `, ${s.branch}`
+                                                                : ''}
+                                                        </span>
+                                                    </span>
+                                                    <span className="flex shrink-0 items-center gap-3">
+                                                        <span
+                                                            className={`border px-2 py-1 text-xs ${statusTone(s.status)}`}
+                                                        >
+                                                            {record.statuses[
+                                                                s.status
+                                                            ] ?? s.status}
+                                                        </span>
+                                                        <span className="tabular-nums">
+                                                            {money(s.total)}
+                                                        </span>
+                                                    </span>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="py-3 text-sm text-muted-foreground">
+                                        No purchases linked to this client yet.
+                                        Pick them as the client at the till to
+                                        build their record.
+                                    </p>
+                                )}
                             </section>
                         )}
 

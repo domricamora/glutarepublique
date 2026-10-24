@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Branch;
+use App\Models\Lead;
 use App\Models\Organization;
 use App\Models\Payment;
 use App\Models\Product;
@@ -318,4 +319,20 @@ it('sells a price-list line, an area or a package, at its listed price', functio
     // The price comes from the catalogue: an unknown line is refused.
     $this->post('/admin/pos', ringUp(['items' => [['kind' => 'service', 'id' => $hifu->id, 'option' => 'Whole body', 'quantity' => 1]]]))
         ->assertSessionHasErrors('items');
+});
+
+it('builds a client record from the sales and visits linked to a lead', function () {
+    $lead = Lead::create(['organization_id' => till()->organization_id, 'first_name' => 'Ana', 'last_name' => 'Reyes', 'source' => 'walk_in', 'stage' => 'customer']);
+
+    $this->actingAs(counterOwner())->post('/admin/pos', ringUp(['lead_id' => $lead->id]))->assertRedirect();
+
+    $this->get("/admin/leads/{$lead->id}")->assertInertia(fn ($page) => $page
+        ->where('record.purchases', 1)
+        ->where('record.spend', fn ($v) => abs($v - facialPrice()) < 0.01)
+        ->where('record.sales.0.items', facial()->name));
+
+    // Someone who works the leads but not the till sees the visits, not the money.
+    $marketer = User::factory()->create(['organization_id' => till()->organization_id]);
+    $marketer->assignRole('Marketing Manager');
+    $this->actingAs($marketer)->get("/admin/leads/{$lead->id}")->assertInertia(fn ($page) => $page->where('record', null));
 });
