@@ -52,7 +52,7 @@ class InventoryController extends Controller
             ->when($filters['q'] ?? null, fn (Builder $q, $term) => $q->where('name', 'like', "%{$term}%"))
             ->when($filters['category'] ?? null, fn (Builder $q, $category) => $q->where('category', $category))
             ->get()
-            ->map(fn (Product $product) => $this->row($product, $stocks, $batches));
+            ->map(fn (Product $product) => $this->row($product, $stocks, $batches, $branch));
 
         $alert = $filters['alert'] ?? null;
 
@@ -76,7 +76,8 @@ class InventoryController extends Controller
             'alerts' => [
                 'expired' => $rows->where('expired_units', '>', 0)->count(),
                 'expiring' => $rows->where('expiring_units', '>', 0)->count(),
-                'low' => ProductStock::where('branch_id', $branch->id)->where('on_hand', '>', 0)->whereColumn('on_hand', '<=', 'reorder_level')->count(),
+                'low' => ProductStock::where('branch_id', $branch->id)->where('on_hand', '>', 0)
+                    ->whereRaw('on_hand <= CASE WHEN reorder_level > 0 THEN reorder_level ELSE ? END', [(int) ($branch->low_stock_level ?? 0)])->count(),
                 'out' => ProductStock::where('branch_id', $branch->id)->where('on_hand', '<=', 0)->count(),
             ],
             'total_value' => round($rows->sum('value'), 2),
@@ -122,7 +123,7 @@ class InventoryController extends Controller
      * @param  Collection<int, Collection<int, ProductBatch>>  $batches
      * @return array<string, mixed>
      */
-    private function row(Product $product, $stocks, $batches): array
+    private function row(Product $product, $stocks, $batches, Branch $branch): array
     {
         $stock = $stocks->get($product->id);
         $lots = $batches->get($product->id, collect());
@@ -142,23 +143,24 @@ class InventoryController extends Controller
             'price' => (float) $product->price,
             'cost' => (float) $product->cost,
             'on_hand' => (int) ($stock?->on_hand ?? 0),
-            'reorder_level' => (int) ($stock?->reorder_level ?? 0),
+            // The product's own level, else the branch's low-stock default.
+            'reorder_level' => $branch->lowStockLevel((int) ($stock?->reorder_level ?? 0)),
             'value' => round(((int) ($stock?->on_hand ?? 0)) * (float) $product->cost, 2),
             'lots' => $lots->count(),
             'expired_units' => (int) $expired->sum('quantity'),
             'expiring_units' => (int) $expiring->sum('quantity'),
             'next_expiry' => $next?->expires_on?->toDateString(),
             'next_expiry_days' => $next?->daysToExpiry(),
-            'status' => $this->status($stock, $expired->isNotEmpty(), $expiring->isNotEmpty()),
+            'status' => $this->status($stock, $expired->isNotEmpty(), $expiring->isNotEmpty(), $branch),
         ];
     }
 
-    private function status(?ProductStock $stock, bool $expired, bool $expiring): string
+    private function status(?ProductStock $stock, bool $expired, bool $expiring, Branch $branch): string
     {
         return match (true) {
             $expired => 'expired',
             (int) ($stock?->on_hand ?? 0) <= 0 => 'out',
-            (int) ($stock?->on_hand ?? 0) <= (int) ($stock?->reorder_level ?? 0) => 'low',
+            (int) ($stock?->on_hand ?? 0) <= $branch->lowStockLevel((int) ($stock?->reorder_level ?? 0)) => 'low',
             $expiring => 'expiring',
             default => 'ok',
         };

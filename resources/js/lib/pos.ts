@@ -34,6 +34,13 @@ export type SaleRow = {
 };
 
 export type SaleDetail = {
+    /** The selling branch's receipt details; empty ones fall back to the clinic's. */
+    receipt?: {
+        receipt_name: string | null;
+        receipt_tin: string | null;
+        receipt_address: string | null;
+        receipt_footer: string | null;
+    } | null;
     id: number;
     reference: string;
     status: string;

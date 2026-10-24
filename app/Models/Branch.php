@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property \Illuminate\Support\Carbon|null $opens_on
  * @property list<array{0: string, 1: string}|null> $hours
  */
-#[Fillable(['organization_id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url', 'is_active', 'opens_on'])]
+#[Fillable(['organization_id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'image', 'hours', 'map_url', 'is_active', 'opens_on', 'online_booking', 'receipt_name', 'receipt_tin', 'receipt_address', 'receipt_footer', 'discount_limit', 'low_stock_level'])]
 class Branch extends Model
 {
     use BelongsToOrganization;
@@ -46,6 +47,24 @@ class Branch extends Model
     }
 
     /** @return array{0: string, 1: string}|null */
+    /** Percent a discount may reach before the owner approves: the branch's own, else the clinic's (default 10). */
+    public function discountLimit(): float
+    {
+        return (float) ($this->discount_limit ?? ClinicSetting::get('approvals.discount_limit', 10));
+    }
+
+    /** Units at or below which a product counts as low here: its own level, else the branch default. */
+    public function lowStockLevel(int $productLevel): int
+    {
+        return $productLevel > 0 ? $productLevel : (int) ($this->low_stock_level ?? 0);
+    }
+
+    /** @return HasMany<Employee, $this> */
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
     public function hoursOn(CarbonInterface $date): ?array
     {
         return $this->hours[$date->dayOfWeek];
@@ -76,6 +95,6 @@ class Branch extends Model
 
     protected function casts(): array
     {
-        return ['image' => AssetUrl::class, 'is_active' => 'boolean', 'opens_on' => 'date:Y-m-d'];
+        return ['image' => AssetUrl::class, 'is_active' => 'boolean', 'opens_on' => 'date:Y-m-d', 'online_booking' => 'boolean', 'discount_limit' => 'float', 'low_stock_level' => 'integer'];
     }
 }

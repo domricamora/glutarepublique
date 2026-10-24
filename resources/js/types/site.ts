@@ -45,6 +45,7 @@ export type Specialist = {
 
 export type Branch = {
     id: number;
+    online_booking?: boolean;
     name: string;
     slug: string;
     address: string | null;

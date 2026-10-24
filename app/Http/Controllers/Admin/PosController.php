@@ -96,7 +96,8 @@ class PosController extends Controller
         // A discount past the clinic's limit is the owner's call: the cart waits
         // in her inbox and is rung up, as this cashier, when she approves.
         $quote = $ring->quote($data);
-        $limit = (float) ClinicSetting::get('approvals.discount_limit', 10);
+        // The selling branch's limit, else the clinic's.
+        $limit = Branch::findOrFail($data['branch_id'])->discountLimit();
         $share = $quote['subtotal'] > 0 ? $quote['discount'] / $quote['subtotal'] * 100 : 0;
         if ($share > $limit + 0.001 && ! $request->user()->can('approvals.decide')) {
             Approval::ask('discount', sprintf(
@@ -214,7 +215,7 @@ class PosController extends Controller
     /** The receipt: a printable record of what was sold and how it was paid. */
     public function show(Sale $sale): Response
     {
-        $sale->load(['items', 'payments.user:id,name', 'branch:id,name', 'user:id,name', 'lead:id,first_name,last_name', 'promotion:id,title']);
+        $sale->load(['items', 'payments.user:id,name', 'branch:id,name,receipt_name,receipt_tin,receipt_address,receipt_footer', 'user:id,name', 'lead:id,first_name,last_name', 'promotion:id,title']);
 
         return Inertia::render('admin/pos/sales/show', [
             'sale' => [
@@ -225,6 +226,7 @@ class PosController extends Controller
                 'client_phone' => $sale->client_phone,
                 'client' => $sale->client_name ?: $sale->lead?->fullName() ?: 'Walk-in',
                 'branch' => $sale->branch?->name,
+                'receipt' => $sale->branch?->only(['receipt_name', 'receipt_tin', 'receipt_address', 'receipt_footer']),
                 'cashier' => $sale->user?->name,
                 'promotion' => $sale->promotion?->title,
                 'note' => $sale->note,

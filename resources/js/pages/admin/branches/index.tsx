@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { DAY_NAMES, hoursSummary, openingLabel } from '@/lib/site';
 import { dashboard } from '@/routes';
 import branchRoutes from '@/routes/admin/branches';
+import hrRoutes from '@/routes/admin/hr';
 
 type Hours = ([string, string] | null)[];
 
@@ -22,7 +23,17 @@ type Branch = {
     map_url: string | null;
     is_active: boolean;
     opens_on: string | null;
+    online_booking: boolean;
+    receipt_name: string | null;
+    receipt_tin: string | null;
+    receipt_address: string | null;
+    receipt_footer: string | null;
+    discount_limit: number | null;
+    low_stock_level: number | null;
+    staff_count: number;
 };
+
+type Defaults = { discount_limit: number };
 
 const MONDAY_FIRST = [1, 2, 3, 4, 5, 6, 0];
 
@@ -35,6 +46,13 @@ const blank = {
     map_url: '',
     is_active: true,
     opens_on: '',
+    online_booking: true,
+    receipt_name: '',
+    receipt_tin: '',
+    receipt_address: '',
+    receipt_footer: '',
+    discount_limit: '',
+    low_stock_level: '',
     hours: [
         null,
         ['10:00', '20:00'],
@@ -46,7 +64,13 @@ const blank = {
     ] as Hours,
 };
 
-export default function BranchesIndex({ branches }: { branches: Branch[] }) {
+export default function BranchesIndex({
+    branches,
+    defaults,
+}: {
+    branches: Branch[];
+    defaults: Defaults;
+}) {
     const [editing, setEditing] = useState<number | 'new' | null>(null);
 
     return (
@@ -72,7 +96,10 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
                 </header>
 
                 {editing === 'new' && (
-                    <BranchForm onDone={() => setEditing(null)} />
+                    <BranchForm
+                        defaults={defaults}
+                        onDone={() => setEditing(null)}
+                    />
                 )}
 
                 <ul className="divide-y divide-border border-y border-border">
@@ -81,6 +108,7 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
                             <li key={branch.id} className="py-5">
                                 <BranchForm
                                     branch={branch}
+                                    defaults={defaults}
                                     onDone={() => setEditing(null)}
                                 />
                             </li>
@@ -102,6 +130,11 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
                                                 {openingLabel(branch)}
                                             </Badge>
                                         )}
+                                        {!branch.online_booking && (
+                                            <Badge variant="outline">
+                                                Online booking off
+                                            </Badge>
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm text-muted-foreground">
                                         {[branch.address, branch.city]
@@ -112,6 +145,45 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
                                         {[branch.phone, branch.email]
                                             .filter(Boolean)
                                             .join(' · ')}
+                                    </p>
+                                    <p className="mt-2 text-xs text-muted-foreground">
+                                        Discount approval above{' '}
+                                        {branch.discount_limit ??
+                                            defaults.discount_limit}
+                                        %
+                                        {branch.discount_limit === null &&
+                                            ' (clinic default)'}
+                                        {', low stock at '}
+                                        {branch.low_stock_level ??
+                                            "each product's level"}
+                                        {', '}
+                                        {branch.staff_count} staff
+                                    </p>
+                                    <p className="mt-2 flex flex-wrap gap-4 text-sm">
+                                        <Link
+                                            href={
+                                                hrRoutes.index({
+                                                    query: {
+                                                        branch: branch.id,
+                                                    },
+                                                }).url
+                                            }
+                                            className="underline-offset-4 hover:underline"
+                                        >
+                                            Staff
+                                        </Link>
+                                        <Link
+                                            href={
+                                                hrRoutes.schedule({
+                                                    query: {
+                                                        branch: branch.id,
+                                                    },
+                                                }).url
+                                            }
+                                            className="underline-offset-4 hover:underline"
+                                        >
+                                            Work schedule
+                                        </Link>
                                     </p>
                                 </div>
                                 <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-1 text-sm">
@@ -148,9 +220,11 @@ export default function BranchesIndex({ branches }: { branches: Branch[] }) {
 
 function BranchForm({
     branch,
+    defaults,
     onDone,
 }: {
     branch?: Branch;
+    defaults: Defaults;
     onDone: () => void;
 }) {
     const form = useForm(
@@ -164,6 +238,19 @@ function BranchForm({
                   map_url: branch.map_url ?? '',
                   is_active: branch.is_active,
                   opens_on: branch.opens_on ?? '',
+                  online_booking: branch.online_booking,
+                  receipt_name: branch.receipt_name ?? '',
+                  receipt_tin: branch.receipt_tin ?? '',
+                  receipt_address: branch.receipt_address ?? '',
+                  receipt_footer: branch.receipt_footer ?? '',
+                  discount_limit:
+                      branch.discount_limit === null
+                          ? ''
+                          : String(branch.discount_limit),
+                  low_stock_level:
+                      branch.low_stock_level === null
+                          ? ''
+                          : String(branch.low_stock_level),
                   hours: branch.hours,
               }
             : blank,
@@ -183,7 +270,13 @@ function BranchForm({
             | 'phone'
             | 'email'
             | 'map_url'
-            | 'opens_on',
+            | 'opens_on'
+            | 'receipt_name'
+            | 'receipt_tin'
+            | 'receipt_address'
+            | 'receipt_footer'
+            | 'discount_limit'
+            | 'low_stock_level',
         label: string,
         type = 'text',
     ) => (
@@ -322,6 +415,48 @@ function BranchForm({
                         </div>
                     );
                 })}
+            </fieldset>
+
+            <fieldset className="grid content-start gap-4 sm:grid-cols-2 lg:col-span-2">
+                <legend className="mb-2 text-sm font-medium">
+                    Branch settings
+                </legend>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                    <input
+                        type="checkbox"
+                        checked={form.data.online_booking}
+                        onChange={(e) =>
+                            form.setData('online_booking', e.target.checked)
+                        }
+                    />
+                    Take online bookings (off: clients call to book; the desk
+                    can still book)
+                </label>
+                {text('receipt_name', 'Receipt business name')}
+                {text('receipt_tin', 'TIN on receipts')}
+                <div className="sm:col-span-2">
+                    {text('receipt_address', 'Address line on receipts')}
+                </div>
+                <div className="sm:col-span-2">
+                    {text('receipt_footer', 'Receipt footer')}
+                </div>
+                <div>
+                    {text(
+                        'discount_limit',
+                        `Discount needing approval above (%), clinic default ${defaults.discount_limit}`,
+                        'number',
+                    )}
+                </div>
+                <div>
+                    {text(
+                        'low_stock_level',
+                        'Low stock at (units), for products without their own level',
+                        'number',
+                    )}
+                </div>
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                    Leave a box empty to use the clinic-wide setting.
+                </p>
             </fieldset>
 
             <div className="flex gap-2 lg:col-span-2">

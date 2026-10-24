@@ -486,12 +486,14 @@ export default function Home({
                         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
                             {branches.map((b) => (
                                 <li key={b.id}>
-                                    {openingLabel(b) ? (
+                                    {openingLabel(b) ||
+                                    b.online_booking === false ? (
                                         <div className="flex h-full flex-col border border-ice bg-white p-4">
                                             <span className="flex items-center justify-between gap-3 font-medium text-ocean">
                                                 {b.city}
                                                 <span className="text-[11px] font-medium tracking-wide text-royal-ink uppercase">
-                                                    {openingLabel(b)}
+                                                    {openingLabel(b) ??
+                                                        'Call to book'}
                                                 </span>
                                             </span>
                                             <span className="mt-0.5 text-sm text-charcoal/85">

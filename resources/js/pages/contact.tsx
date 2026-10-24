@@ -301,14 +301,16 @@ export default function Contact({ branches, treatments }: Props) {
                                             className="mt-4"
                                         />
                                         <div className="mt-5 flex flex-wrap gap-4 text-sm">
-                                            {!openingLabel(branch) && (
-                                                <Link
-                                                    href={`${book().url}?branch=${branch.slug}`}
-                                                    className="press inline-flex items-center gap-2 bg-plum px-5 py-2.5 text-sm font-medium text-white hover:bg-plum-deep"
-                                                >
-                                                    Book at {branch.name}
-                                                </Link>
-                                            )}
+                                            {!openingLabel(branch) &&
+                                                branch.online_booking !==
+                                                    false && (
+                                                    <Link
+                                                        href={`${book().url}?branch=${branch.slug}`}
+                                                        className="press inline-flex items-center gap-2 bg-plum px-5 py-2.5 text-sm font-medium text-white hover:bg-plum-deep"
+                                                    >
+                                                        Book at {branch.name}
+                                                    </Link>
+                                                )}
                                             {branch.map_url && (
                                                 <a
                                                     href={branch.map_url}

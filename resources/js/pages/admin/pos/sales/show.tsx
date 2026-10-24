@@ -87,10 +87,16 @@ export default function PosSaleShow({ sale, methods, statuses }: Props) {
                     <article className="border border-border bg-background p-6 print:border-0">
                         <header className="border-b border-border pb-4 text-center">
                             <h2 className="font-display text-2xl">
-                                {clinic.name}
+                                {sale.receipt?.receipt_name || clinic.name}
                             </h2>
+                            {sale.receipt?.receipt_tin && (
+                                <p className="text-sm text-muted-foreground">
+                                    TIN {sale.receipt.receipt_tin}
+                                </p>
+                            )}
                             <p className="text-sm text-muted-foreground">
-                                {clinic.contact.address}
+                                {sale.receipt?.receipt_address ||
+                                    clinic.contact.address}
                             </p>
                             <p className="text-sm text-muted-foreground">
                                 {clinic.contact.phone} &middot;{' '}
@@ -241,9 +247,8 @@ export default function PosSaleShow({ sale, methods, statuses }: Props) {
                         )}
 
                         <p className="mt-6 text-center text-xs text-muted-foreground">
-                            Thank you. Products and aftercare are dispensed at
-                            the counter. Ask the front desk about a membership
-                            if you visit often.
+                            {sale.receipt?.receipt_footer ||
+                                'Thank you. Products and aftercare are dispensed at the counter.'}
                         </p>
                     </article>
 

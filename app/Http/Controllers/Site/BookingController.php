@@ -13,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,7 +27,7 @@ class BookingController extends Controller
                 ->get(['id', 'treatment_category_id', 'name', 'slug', 'duration_minutes', 'price', 'promo_price', 'image']),
             // The day picker greys out every day a branch is closed, so it needs the hours:
             // without them every day read "Closed" and nothing could be booked.
-            'branches' => Branch::where('is_active', true)->bookable()->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'hours']),
+            'branches' => Branch::where('is_active', true)->where('online_booking', true)->bookable()->orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'hours']),
             'specialists' => Specialist::where('is_active', true)->orderBy('sort')->with(['branches:id', 'treatments:id'])->get(['id', 'name', 'title', 'photo'])
                 ->map(fn (Specialist $s) => $s->only(['id', 'name', 'title', 'photo']) + ['branch_ids' => $s->branches->pluck('id'), 'treatment_ids' => $s->treatments->pluck('id')]),
             'initial' => $request->only(['treatment', 'branch', 'date', 'time']),
@@ -42,7 +43,8 @@ class BookingController extends Controller
             'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today', 'before:+60 days'],
         ]);
 
-        $branch = Branch::findOrFail($data['branch_id']);
+        // Online booking switched off for the branch: no times are offered here (the desk can still book).
+        $branch = Branch::where('online_booking', true)->findOrFail($data['branch_id']);
         $date = CarbonImmutable::parse($data['date']);
 
         return response()->json([
@@ -61,7 +63,7 @@ class BookingController extends Controller
     {
         $data = $request->validate([
             'treatment_id' => ['required', 'integer', 'exists:treatments,id'],
-            'branch_id' => ['required', 'integer', 'exists:branches,id'],
+            'branch_id' => ['required', 'integer', Rule::exists('branches', 'id')->where('online_booking', true)],
             'specialist_id' => ['nullable', 'integer', 'exists:specialists,id'],
             'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today', 'before:+60 days'],
             'time' => ['required', 'date_format:H:i'],

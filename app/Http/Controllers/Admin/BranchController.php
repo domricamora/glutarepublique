@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Branch;
+use App\Models\ClinicSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -22,7 +23,11 @@ class BranchController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/branches/index', [
-            'branches' => Branch::orderBy('id')->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'hours', 'map_url', 'is_active', 'opens_on']),
+            'branches' => Branch::orderBy('id')->withCount(['employees as staff_count' => fn ($q) => $q->where('status', '!=', 'resigned')])
+                ->get(['id', 'name', 'slug', 'address', 'city', 'phone', 'email', 'hours', 'map_url', 'is_active', 'opens_on',
+                    'online_booking', 'receipt_name', 'receipt_tin', 'receipt_address', 'receipt_footer', 'discount_limit', 'low_stock_level']),
+            // What an empty branch setting falls back to.
+            'defaults' => ['discount_limit' => (float) ClinicSetting::get('approvals.discount_limit', 10)],
         ]);
     }
 
@@ -59,6 +64,13 @@ class BranchController extends Controller
             'hours' => ['required', 'array', 'size:7'],
             'hours.*' => ['nullable', 'array', 'size:2'],
             'hours.*.*' => ['required', 'date_format:H:i'],
+            'online_booking' => ['sometimes', 'boolean'],
+            'receipt_name' => ['nullable', 'string', 'max:120'],
+            'receipt_tin' => ['nullable', 'string', 'max:40'],
+            'receipt_address' => ['nullable', 'string', 'max:255'],
+            'receipt_footer' => ['nullable', 'string', 'max:255'],
+            'discount_limit' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'low_stock_level' => ['nullable', 'integer', 'min:0', 'max:100000'],
         ]);
 
         $hours = [];
