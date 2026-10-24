@@ -18,6 +18,10 @@ use Illuminate\Support\Str;
  * Only the Cebu branch is stocked, so the branch filter has something to
  * show, and a few lots carry an expiry so the expiry alerts are not empty.
  * These rows are the opening state; after this the ledger owns the numbers.
+ *
+ * The owner cleared the made-up products on 2026-10-24 and the clinic's own
+ * stock list is not in yet, so these are only loaded for the test suite, which
+ * sells and counts them. A real installation starts with an empty counter.
  */
 class PosDemoSeeder extends Seeder
 {
@@ -39,6 +43,10 @@ class PosDemoSeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->runningUnitTests()) {
+            return;
+        }
+
         $organization = Organization::where('slug', config('clinic.organization'))->firstOrFail();
         $branches = Branch::where('organization_id', $organization->id)->orderBy('id')->get();
         $mainBranch = $branches->first();
@@ -50,7 +58,7 @@ class PosDemoSeeder extends Seeder
             'address' => '12 Kalayaan Avenue, Quezon City',
         ]);
 
-        foreach (self::PRODUCTS as $index => [$name, $category, $price, $cost, $units, $reorder, $expiry, $description]) {
+        foreach (app()->runningUnitTests() ? self::PRODUCTS : [] as $index => [$name, $category, $price, $cost, $units, $reorder, $expiry, $description]) {
             $product = Product::updateOrCreate(
                 ['organization_id' => $organization->id, 'slug' => Str::slug($name)],
                 [

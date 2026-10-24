@@ -13,6 +13,7 @@ type Props = {
     branches: Branch[];
     testimonials: Testimonial[];
     faqs: Faq[];
+    treatmentCount: number;
 };
 
 const stagger = (i: number) => ({ '--i': i }) as CSSProperties;
@@ -24,7 +25,7 @@ const principles = [
     ],
     [
         'One practitioner per plan',
-        'The doctor who assesses you explains the plan, performs it and reviews how your skin responded.',
+        'The clinician who assesses you explains the plan, performs it and reviews how your skin responded.',
     ],
     [
         'Plain pricing, written down',
@@ -56,6 +57,7 @@ export default function About({
     branches,
     testimonials,
     faqs,
+    treatmentCount,
 }: Props) {
     const { clinic, mediaUrl } = usePage().props;
     const media = (file: string) => `${mediaUrl}/${file}`;
@@ -63,9 +65,9 @@ export default function About({
 
     const figures: [string, string][] = [
         ['2018', 'Caring for clients since'],
-        [`${specialists.length}`, 'Doctors and artists on the team'],
+        [`${specialists.length}`, 'Clinicians on the team'],
         [`${branches.length}`, 'Clinics in Laguna, Cavite and Cebu'],
-        ['35+', 'Treatments on the menu'],
+        [`${treatmentCount}`, 'Treatments on the menu'],
     ];
 
     return (
@@ -217,8 +219,8 @@ export default function About({
                     Who looks after you
                 </h2>
                 <p className="mt-5 max-w-xl text-muted-foreground">
-                    Fictional profiles for this demonstration clinic. Each
-                    practitioner works from a written plan that you keep.
+                    Our nurses, aestheticians and facialists. Each one works
+                    from a written plan that you keep.
                 </p>
                 <TeamGrid specialists={specialists} />
             </section>
@@ -239,9 +241,10 @@ export default function About({
                                     className="aspect-[4/3] w-full object-cover"
                                 />
                             )}
-                            <h3 className="mt-5 text-2xl">{b.name}</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                {[b.address, b.city].filter(Boolean).join(', ')}
+                            <h3 className="mt-5 text-2xl">{b.city}</h3>
+                            <p className="mt-1 font-medium">{b.name}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {b.address}
                             </p>
                             {b.phone && (
                                 <p className="mt-1 text-sm">
@@ -265,8 +268,8 @@ export default function About({
                         In their words
                     </h2>
                     <p className="mt-4 max-w-lg text-sm text-lilac">
-                        Demo testimonials written for this demonstration clinic.
-                        Reviews are only published with permission.
+                        Reviews from Gluta RepubliQ clients, published with
+                        their permission.
                     </p>
                     <div className="mt-12 grid gap-10 lg:grid-cols-3">
                         {testimonials.map((t, i) => (

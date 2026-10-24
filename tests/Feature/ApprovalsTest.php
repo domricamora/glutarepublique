@@ -32,7 +32,7 @@ function approvalCart(array $extra = []): array
 {
     return $extra + [
         'branch_id' => Branch::where('slug', 'cebu')->value('id'),
-        'items' => [['kind' => 'service', 'id' => Treatment::where('is_active', true)->orderBy('price')->value('id'), 'quantity' => 1]],
+        'items' => [['kind' => 'service', 'id' => Treatment::where('is_active', true)->where('price', '>', 0)->orderBy('price')->value('id'), 'quantity' => 1]],
         'method' => 'cash',
     ];
 }

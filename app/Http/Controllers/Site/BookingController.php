@@ -91,7 +91,7 @@ class BookingController extends Controller
                 'ends_at' => $appointment->ends_at->toIso8601String(),
                 'status' => $appointment->status,
                 'first_name' => $appointment->lead?->first_name,
-                'treatment' => $appointment->treatment->only(['name', 'duration_minutes']),
+                'treatment' => $appointment->treatment?->only(['name', 'duration_minutes']) ?? ['name' => $appointment->service_name ?? 'Service no longer offered', 'duration_minutes' => $appointment->starts_at->diffInMinutes($appointment->ends_at)],
                 'branch' => $appointment->branch->only(['name', 'address', 'city', 'phone']),
                 'specialist' => $appointment->specialist->only(['name', 'title', 'photo']),
             ],

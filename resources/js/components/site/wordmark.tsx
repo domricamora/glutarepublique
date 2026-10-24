@@ -2,6 +2,11 @@ import { usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import type { Clinic } from '@/types';
 
+/**
+ * The clinic's logo: the splash mark, the name in Conthrax (the logo's own
+ * lettering, a licensed webfont) and the descriptor from the clinic's posters.
+ * `name={null}` shows the mark alone.
+ */
 export default function Wordmark({
     name,
     descriptor,
@@ -18,36 +23,21 @@ export default function Wordmark({
     variant?: 'dark' | 'light';
 }) {
     const { clinic } = usePage<{ clinic: Clinic }>().props;
-
-    const split =
-        name === undefined
-            ? clinic.name.startsWith(clinic.short_name)
-                ? {
-                      main: clinic.short_name,
-                      sub:
-                          clinic.name.slice(clinic.short_name.length).trim() ||
-                          'AESTHETICS',
-                  }
-                : { main: clinic.short_name || clinic.name, sub: 'AESTHETICS' }
-            : {
-                  main: name ?? clinic.short_name,
-                  sub: descriptor ?? 'AESTHETICS',
-              };
+    const light = variant === 'light';
 
     // Absolute urls from the server: a relative path breaks on nested pages
     // such as /treatments/{slug}.
-    const logoSrc = variant === 'light' ? clinic.logo_light : clinic.logo;
-    const logoFallback =
-        variant === 'light'
-            ? clinic.logo_light.replace(/\.webp$/, '.png')
-            : clinic.logo_fallback;
+    const logoSrc = light ? clinic.logo_light : clinic.logo;
+    const logoFallback = light
+        ? clinic.logo_light.replace(/\.webp$/, '.png')
+        : clinic.logo_fallback;
 
     const mark = (
         <picture className={cn('block shrink-0', markClassName ?? 'size-11')}>
             <source srcSet={logoSrc} type="image/webp" />
             <img
                 src={logoFallback}
-                alt={split.main ? '' : clinic.name}
+                alt={name === null ? clinic.name : ''}
                 width={256}
                 height={256}
                 decoding="async"
@@ -56,7 +46,7 @@ export default function Wordmark({
         </picture>
     );
 
-    if (!split.main) {
+    if (name === null) {
         return (
             <span className={cn('inline-flex items-center', className)}>
                 {mark}
@@ -70,22 +60,20 @@ export default function Wordmark({
             <span className="flex min-w-0 flex-col">
                 <span
                     className={cn(
-                        'font-brand text-[1.45rem] leading-none font-semibold tracking-tight',
-                        variant === 'light' ? 'text-white' : 'text-ocean',
+                        'font-brand text-[1.2rem] leading-none font-semibold whitespace-nowrap',
+                        light ? 'text-white' : 'text-ocean',
                         nameClassName,
                     )}
                 >
-                    {split.main}
+                    {name ?? clinic.short_name}
                 </span>
                 <span
                     className={cn(
-                        'mt-1 font-sans text-[0.625rem] font-bold tracking-[0.22em] uppercase',
-                        variant === 'light'
-                            ? 'text-soft-aqua'
-                            : 'text-royal-ink',
+                        'mt-1.5 font-sans text-[0.6rem] font-semibold tracking-[0.22em] whitespace-nowrap uppercase',
+                        light ? 'text-soft-aqua' : 'text-royal-ink',
                     )}
                 >
-                    {split.sub}
+                    {descriptor ?? clinic.descriptor}
                 </span>
             </span>
         </span>

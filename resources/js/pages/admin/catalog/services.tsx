@@ -20,6 +20,7 @@ export type ServiceRow = {
     duration_minutes: number;
     category_id: number;
     category: string | null;
+    subcategory: string | null;
     is_active: boolean;
     sold: number;
     booked: number;
@@ -40,6 +41,7 @@ const empty = {
     price: '',
     promo_price: '',
     treatment_category_id: '',
+    subcategory: '',
     recommended_sessions: '',
     is_active: 1,
 };
@@ -167,6 +169,7 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
             price: String(row.price),
             promo_price: row.promo_price ? String(row.promo_price) : '',
             treatment_category_id: String(row.category_id ?? ''),
+            subcategory: row.subcategory ?? '',
             recommended_sessions: '',
             is_active: row.is_active ? 1 : 0,
         });
@@ -274,6 +277,13 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
                             ))}
                         </select>
                     </div>
+                    {field(
+                        create,
+                        'subcategory',
+                        'Sub-category',
+                        'text',
+                        'h-10',
+                    )}
                     {field(
                         create,
                         'price',
@@ -414,6 +424,17 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
                                                 ))}
                                             </select>
                                             <Input
+                                                aria-label="Sub-category"
+                                                placeholder="Sub-category, e.g. Botox Procedures"
+                                                value={update.data.subcategory}
+                                                onChange={(e) =>
+                                                    update.setData(
+                                                        'subcategory',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <Input
                                                 aria-label="Summary"
                                                 value={update.data.summary}
                                                 onChange={(e) =>
@@ -546,6 +567,12 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
                                     </td>
                                     <td className="px-4 py-3">
                                         {row.name}
+                                        {row.subcategory && (
+                                            <span className="block text-xs text-muted-foreground">
+                                                {row.category} /{' '}
+                                                {row.subcategory}
+                                            </span>
+                                        )}
                                         {row.summary && (
                                             <span className="block text-xs text-muted-foreground">
                                                 {row.summary}
@@ -553,7 +580,9 @@ export function ServiceCatalogue({ services, categories, canEdit }: Props) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-right tabular-nums">
-                                        {money(row.price)}
+                                        {row.price > 0
+                                            ? money(row.price)
+                                            : 'On consultation'}
                                         {row.promo_price &&
                                             row.promo_price < row.price && (
                                                 <span className="block text-xs text-plum">

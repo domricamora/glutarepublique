@@ -4,7 +4,6 @@ import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
@@ -12,18 +11,11 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
-            fonts: [
-                bunny('Pinyon Script', {
-                    weights: [400],
-                }),
-                bunny('Bodoni Moda', {
-                    weights: [400, 500, 600],
-                    styles: ['normal', 'italic'],
-                }),
-                bunny('Jost', {
-                    weights: [400, 500, 600],
-                }),
-            ],
+            // No font loader here: the site's fonts (Geist, Noto Serif Display)
+            // are self-hosted through app.css. The starter kit's preloaded
+            // Pinyon Script, Bodoni Moda and Jost were unused, and on the live
+            // site they held up the real fonts, so text first painted in a
+            // fallback face.
         }),
         inertia(),
         react(),

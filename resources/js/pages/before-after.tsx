@@ -1,12 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import BeforeAfter from '@/components/site/before-after';
 import { useReveal } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
-import type { CompareCase } from '@/types/site';
 
 const stagger = (i: number) => ({ '--i': i }) as CSSProperties;
 
@@ -28,14 +26,18 @@ const gallery = [
         wide: true,
     },
     { file: 'melasma.jpg', title: 'Melasma treatment', slug: null },
+    // From the clinic's promo flyers (2026-10-23).
+    { file: 'lip-fillers.jpg', title: 'Lip fillers', slug: 'fillers' },
+    { file: 'luhilo.jpg', title: 'Luhilo skin booster', slug: 'luhilo' },
+    { file: 'peach-bottle.jpg', title: 'Peach Bottle', slug: 'peach-bottle' },
 ];
 
 /**
- * Comparison gallery: the clinic's own published client photos, then stock
- * portraits with a simulated "before", labelled as an illustration and never
- * as a result (plan.md §18, §83).
+ * Comparison gallery: the clinic's own published client photos only, labelled
+ * as illustrative (plan.md §18, §83). The simulated stock comparisons were
+ * removed on 2026-10-24.
  */
-export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
+export default function BeforeAfterPage() {
     const { mediaUrl } = usePage().props;
     useReveal();
 
@@ -44,7 +46,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
             <Head title="Before and after">
                 <meta
                     name="description"
-                    content="Before and after photos from Gluta RepubliQ clients, illustrated comparisons for common treatments, and how clinical photographs are handled with written consent."
+                    content="Before and after photos from Gluta RepubliQ clients, and how clinical photographs are handled with written consent."
                 />
             </Head>
 
@@ -56,9 +58,8 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                         <em className="text-champagne">what to expect.</em>
                     </h1>
                     <p className="mt-6 max-w-2xl text-lg text-lilac">
-                        Client photos from our own gallery, then illustrated
-                        comparisons for common treatments. Your clinician will
-                        show you more relevant cases at your consultation.
+                        Client photos from our own clinics. Your clinician will
+                        show you more cases like yours at your consultation.
                     </p>
                 </div>
             </section>
@@ -114,7 +115,7 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
             <section className="gutter py-14">
                 <div className="grid gap-6 border-y border-border py-6 sm:grid-cols-3">
                     <p className="text-sm text-muted-foreground">
-                        Every comparison is labelled illustrative.
+                        Every comparison is illustrative.
                     </p>
                     <p className="text-sm text-muted-foreground">
                         Real photographs stay in your clinical record only.
@@ -122,41 +123,6 @@ export default function BeforeAfterPage({ cases }: { cases: CompareCase[] }) {
                     <p className="text-sm text-muted-foreground">
                         Results vary with your skin, history and aftercare.
                     </p>
-                </div>
-            </section>
-
-            <section className="gutter pb-16">
-                <div className="grid gap-12 lg:grid-cols-2">
-                    {cases.map((item, i) => (
-                        <article
-                            key={item.id}
-                            data-reveal
-                            style={stagger(i % 2)}
-                        >
-                            {item.image && (
-                                <BeforeAfter
-                                    src={item.image}
-                                    alt={`Portrait used to illustrate ${item.name.toLowerCase()} in this demo`}
-                                />
-                            )}
-                            <h2 className="mt-4 text-2xl">
-                                <Link
-                                    href={treatmentRoutes.show(item.slug).url}
-                                    className="hover:text-rose-ink"
-                                >
-                                    {item.name}
-                                </Link>
-                            </h2>
-                            {item.category && (
-                                <p className="mt-1 text-xs tracking-wide text-muted-foreground uppercase">
-                                    {item.category}
-                                </p>
-                            )}
-                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                                {item.summary}
-                            </p>
-                        </article>
-                    ))}
                 </div>
             </section>
 

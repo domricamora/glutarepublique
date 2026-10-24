@@ -27,7 +27,7 @@ export default function Promotions({ promotions, tiers }: Props) {
             <Head title="Promotions and packages">
                 <meta
                     name="description"
-                    content="Current Gluta RepubliQ offers: series pricing, packages and first visit credits, each with what is included and when it ends."
+                    content="Current Gluta RepubliQ promotions and packages: drip packages, slimming programs and skin offers, each with what is included and what it costs."
                 />
             </Head>
 
@@ -67,7 +67,7 @@ export default function Promotions({ promotions, tiers }: Props) {
                                         src={promo.image}
                                         alt=""
                                         loading="lazy"
-                                        className="aspect-[4/3] w-full object-cover"
+                                        className="aspect-square w-full object-cover"
                                     />
                                 )}
                             </div>
@@ -189,7 +189,9 @@ export default function Promotions({ promotions, tiers }: Props) {
                         Offers cannot be combined with each other or with member
                         pricing unless the offer says so, and they apply to
                         treatment sessions booked and attended within the stated
-                        dates. The general rules are in our{' '}
+                        dates. Offer artwork is the clinic's own; before and
+                        after photos in it are illustrative, and results vary.
+                        The general rules are in our{' '}
                         <Link
                             href={legal('terms').url}
                             className="text-rose-ink underline-offset-4 hover:underline"

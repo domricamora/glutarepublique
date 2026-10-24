@@ -13,12 +13,13 @@ use Illuminate\Support\Str;
  */
 class DatabaseSeeder extends Seeder
 {
+    /** Named after the mall or building; `city` is the town or province (owner's location format, 2026-10-24). */
     public const BRANCHES = [
-        ['name' => 'Robinsons Galleria Cebu II', 'slug' => 'cebu', 'city' => 'Cebu City', 'address' => '2nd Floor, Robinsons Galleria, General Maxilom Avenue corner Sergio Osmeña Boulevard, Brgy. Tejero', 'phone' => '+63 995 510 9095'],
-        ['name' => 'San Pedro', 'slug' => 'san-pedro', 'city' => 'San Pedro, Laguna', 'address' => 'Ground Floor, Esperanza Bldg., 39 Pacita Ave.', 'phone' => '+63 995 510 9095'],
-        ['name' => 'Sta. Rosa', 'slug' => 'sta-rosa', 'city' => 'Sta. Rosa', 'address' => '2nd Floor, Carvajal Commercial Bldg. 1, Balibago, Sta. Rosa, Laguna', 'phone' => '+63 995 510 9095', 'is_active' => false],
-        ['name' => 'Southwoods', 'slug' => 'southwoods', 'city' => 'Biñan City, Laguna', 'address' => 'Third Floor, Southwoods Mall, Commerce Avenue and Southwoods Avenue, Southwoods City, Barangay San Francisco', 'phone' => '+63 995 510 9095', 'opens_on' => '2027-01-01'],
-        ['name' => 'Bacoor', 'slug' => 'bacoor', 'city' => 'Bacoor, Cavite', 'address' => 'SOMO A Vista Mall, Molino - Paliparan Rd, Molino IV', 'phone' => '+63 995 510 9095'],
+        ['name' => 'Robinsons Galleria Cebu II', 'slug' => 'cebu', 'city' => 'Cebu City', 'address' => '2nd Floor, General Maxilom Avenue corner Sergio Osmeña Boulevard, Brgy. Tejero', 'phone' => '+63 995 510 9095'],
+        ['name' => 'Esperanza Building', 'slug' => 'san-pedro', 'city' => 'San Pedro, Laguna', 'address' => 'Ground Floor, 39 Pacita Ave.', 'phone' => '+63 995 510 9095'],
+        ['name' => 'Carvajal Commercial Building 1', 'slug' => 'sta-rosa', 'city' => 'Sta. Rosa, Laguna', 'address' => '2nd Floor, Balibago', 'phone' => '+63 995 510 9095', 'is_active' => false],
+        ['name' => 'Southwoods Mall', 'slug' => 'southwoods', 'city' => 'Biñan City, Laguna', 'address' => 'Third Floor, Commerce Avenue and Southwoods Avenue, Southwoods City, Barangay San Francisco', 'phone' => '+63 995 510 9095', 'opens_on' => '2027-01-01'],
+        ['name' => 'SOMO A Vista Mall', 'slug' => 'bacoor', 'city' => 'Bacoor, Cavite', 'address' => 'Molino - Paliparan Rd, Molino IV', 'phone' => '+63 995 510 9095'],
     ];
 
     public function run(): void
@@ -61,12 +62,8 @@ class DatabaseSeeder extends Seeder
         $this->call(HolidaySeeder::class);
         $this->call(AccountingSeeder::class);
 
-        if (! app()->runningUnitTests()) {
-            // A year of history first (once per database); the CRM seeder then
-            // fills today and this week around it, checking the diary for each slot.
-            $this->call(ShowcaseHistorySeeder::class);
-            $this->call(CrmDemoSeeder::class);
-            $this->call(TrafficDemoSeeder::class);
-        }
+        // No made-up activity: the owner runs this installation on live data
+        // (2026-10-24). ShowcaseHistorySeeder, CrmDemoSeeder and
+        // TrafficDemoSeeder stay for a demonstration install, run by hand.
     }
 }

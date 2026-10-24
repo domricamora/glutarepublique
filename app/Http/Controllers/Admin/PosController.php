@@ -48,7 +48,8 @@ class PosController extends Controller
             'branches' => Branch::where('is_active', true)->orderBy('id')->get(['id', 'name']),
             'lead' => isset($filters['lead']) ? $this->leadPayload(Lead::find($filters['lead'])) : null,
             'query' => $filters['q'] ?? '',
-            'services' => Treatment::where('is_active', true)->orderBy('sort')->get(['id', 'name', 'price', 'promo_price', 'duration_minutes'])
+            // A service priced on consultation joins the till once the office gives it a price.
+            'services' => Treatment::where('is_active', true)->where('price', '>', 0)->orderBy('sort')->get(['id', 'name', 'price', 'promo_price', 'duration_minutes'])
                 ->map(fn (Treatment $t) => $this->itemPayload('service', $t->id, $t->name, (float) ($t->promo_price ?: $t->price), null))
                 ->values(),
             'products' => Product::sellable()->with('stocks')->orderBy('name')->get(['id', 'name', 'price'])

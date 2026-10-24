@@ -2,7 +2,6 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight, Gift, MapPin, Sparkles } from 'lucide-react';
 import type { CSSProperties, FormEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import BeforeAfter from '@/components/site/before-after';
 import Glitter from '@/components/site/glitter';
 import HeroVideo from '@/components/site/hero-video';
 import { formatPrice, openingLabel, useReveal } from '@/lib/site';
@@ -75,10 +74,10 @@ export default function Home({
 
     return (
         <>
-            <Head title="Glutathione, laser and skin clinic in Cebu and Laguna">
+            <Head title="Aesthetic, laser and slimming clinic in Laguna, Cavite and Cebu">
                 <meta
                     name="description"
-                    content="Gluta RepubliQ Aesthetics: gluta drips, 9D HIFU, Fotona laser, Hydrafacial, fillers and hair removal at clinics in San Pedro, Laguna; Bacoor, Cavite; and Cebu City."
+                    content="Gluta RepubliQ Aesthetics: gluta drips, facials, botox and fillers, skin boosters, HIFU, Fotona laser and body slimming at clinics in San Pedro, Laguna; Bacoor, Cavite; and Cebu City."
                 />
             </Head>
 
@@ -119,8 +118,8 @@ export default function Home({
                             Advanced care.
                         </p>
                         <p className="mt-3 text-base leading-relaxed text-ocean/85">
-                            Doctor-led glutathione, laser and facial treatments,
-                            planned around your skin.
+                            Gluta drips, facials, injectables, laser and body
+                            slimming, planned around you.
                         </p>
                         <div className="mt-6 flex flex-wrap gap-3">
                             <Link href={book().url} className="btn btn-solid">
@@ -334,11 +333,12 @@ export default function Home({
                     <div className="mt-12 grid items-center gap-10 lg:grid-cols-12">
                         <div className="lg:col-span-3">
                             <h3 className="text-ocean">
-                                See a treatment plan side by side
+                                Our clients, before and after
                             </h3>
                             <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-                                Drag the handle to compare. Results differ from
-                                person to person.
+                                Photos from our own clinics. They are
+                                illustrative, and results differ from person to
+                                person.
                             </p>
                             <Link
                                 href={beforeAfter().url}
@@ -347,12 +347,25 @@ export default function Home({
                                 More results
                             </Link>
                         </div>
-                        <div className="lg:col-span-6">
-                            <BeforeAfter
-                                src={media('skin-closeup.jpg')}
-                                alt="Illustrative skin comparison"
-                            />
-                        </div>
+                        <figure className="grid gap-3 sm:grid-cols-2 lg:col-span-6">
+                            {[
+                                ['lip-fillers.jpg', 'Lip fillers'],
+                                ['aqua-lips.jpg', 'Aqua Lips'],
+                            ].map(([file, title]) => (
+                                <div key={file}>
+                                    <img
+                                        src={media(`results/${file}`)}
+                                        alt={`${title}, before and after, a Gluta RepubliQ client`}
+                                        loading="lazy"
+                                        className="aspect-[4/3] w-full bg-white object-cover"
+                                    />
+                                    <figcaption className="mt-2 flex justify-between text-xs text-charcoal/65">
+                                        <span>{title}</span>
+                                        <span>Before / after</span>
+                                    </figcaption>
+                                </div>
+                            ))}
+                        </figure>
                         <ul className="grid grid-cols-3 gap-3 lg:col-span-3 lg:grid-cols-1">
                             {[
                                 [String(branches.length || 4), 'clinics'],
@@ -480,17 +493,23 @@ export default function Home({
                                     {openingLabel(b) ? (
                                         <div className="flex h-full flex-col border border-ice bg-white p-4">
                                             <span className="flex items-center justify-between gap-3 font-medium text-ocean">
-                                                {b.name}
+                                                {b.city}
                                                 <span className="text-[11px] font-medium tracking-wide text-royal-ink uppercase">
                                                     {openingLabel(b)}
                                                 </span>
                                             </span>
+                                            <span className="mt-0.5 text-sm text-charcoal/85">
+                                                {b.name}
+                                            </span>
                                             <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
                                                 <MapPin className="mt-px size-3.5 shrink-0" />
-                                                {[b.address, b.city]
-                                                    .filter(Boolean)
-                                                    .join(', ')}
+                                                {b.address}
                                             </span>
+                                            {b.phone && (
+                                                <span className="mt-1 text-xs text-charcoal/65 tabular-nums">
+                                                    {b.phone}
+                                                </span>
+                                            )}
                                         </div>
                                     ) : (
                                         <Link
@@ -502,13 +521,21 @@ export default function Home({
                                             className="group flex h-full flex-col border border-ice bg-white p-4 transition-colors duration-200 ease-out hover:border-royal/40"
                                         >
                                             <span className="flex items-center justify-between font-medium text-ocean">
-                                                {b.name}
+                                                {b.city}
                                                 <ArrowUpRight className="size-4 text-royal-ink transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                            </span>
+                                            <span className="mt-0.5 text-sm text-charcoal/85">
+                                                {b.name}
                                             </span>
                                             <span className="mt-1 flex gap-1.5 text-xs leading-snug text-charcoal/65">
                                                 <MapPin className="mt-px size-3.5 shrink-0" />
                                                 {b.address}
                                             </span>
+                                            {b.phone && (
+                                                <span className="mt-1 text-xs text-charcoal/65 tabular-nums">
+                                                    {b.phone}
+                                                </span>
+                                            )}
                                         </Link>
                                     )}
                                 </li>

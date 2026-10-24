@@ -19,6 +19,7 @@ return [
     'logo' => env('CLINIC_LOGO', 'media/brand/logo.webp'),
     'logo_fallback' => env('CLINIC_LOGO_FALLBACK', 'media/brand/logo.png'),
     'logo_light' => env('CLINIC_LOGO_LIGHT', 'media/brand/logo-light.webp'),
+    'descriptor' => env('CLINIC_DESCRIPTOR', 'Aesthetic · Laser · Slimming'),
 
     /*
      * Brand palette according to Gluta Republiq brand specifications.

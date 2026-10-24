@@ -82,6 +82,7 @@ class CatalogController extends Controller
                     'duration_minutes' => (int) $t->duration_minutes,
                     'category_id' => $t->treatment_category_id,
                     'category' => $t->category?->name,
+                    'subcategory' => $t->subcategory,
                     'is_active' => $t->is_active,
                     'sold' => $t->sale_items_count,
                     'booked' => $t->appointments_count,
@@ -148,6 +149,8 @@ class CatalogController extends Controller
     {
         $data = $this->validateService($request);
         $data['treatment_category_id'] ??= $treatment->treatment_category_id;
+        // The edit row has no sessions field, so a blank one keeps the menu's text ("Buy 5, get 1 free").
+        $data['recommended_sessions'] ??= $treatment->recommended_sessions;
 
         $treatment->update($data);
 
@@ -168,6 +171,8 @@ class CatalogController extends Controller
             'promo_price' => ['nullable', 'numeric', 'min:0', 'max:1000000'],
             // A service without a category has nowhere to sit on the menu.
             'treatment_category_id' => ['required', 'integer', Rule::exists('treatment_categories', 'id')],
+            // The heading a service sits under within its category, e.g. "Botox Procedures".
+            'subcategory' => ['nullable', 'string', 'max:80'],
             'recommended_sessions' => ['nullable', 'integer', 'min:1', 'max:60'],
             'preparation' => ['nullable', 'string', 'max:1000'],
             'aftercare' => ['nullable', 'string', 'max:1000'],

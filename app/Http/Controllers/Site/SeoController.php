@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\MembershipTier;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
+use App\View\Composers\SeoComposer;
 use Illuminate\Http\Response;
 
 /** Sitemap and robots so search engines can find the public pages (plan.md §85). */
@@ -21,8 +23,8 @@ class SeoController extends Controller
             ['loc' => route('book'), 'priority' => '0.9'],
             ['loc' => route('about'), 'priority' => '0.7'],
             ['loc' => route('doctors'), 'priority' => '0.7'],
-            ['loc' => route('membership'), 'priority' => '0.7'],
             ['loc' => route('promotions'), 'priority' => '0.6'],
+            ...(MembershipTier::where('is_active', true)->exists() ? [['loc' => route('membership'), 'priority' => '0.7']] : []),
             ['loc' => route('before-after'), 'priority' => '0.6'],
             ['loc' => route('blog.index'), 'priority' => '0.7'],
             ['loc' => route('contact'), 'priority' => '0.7'],
@@ -72,7 +74,7 @@ class SeoController extends Controller
         $out[] = '## Branches and opening hours';
         foreach (Branch::where('is_active', true)->orderBy('id')->get() as $b) {
             $hours = $b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y') : collect([1, 2, 3, 4, 5, 6, 0])->map(fn ($d) => $days[$d].' '.($b->hours[$d] ? $b->hours[$d][0].'-'.$b->hours[$d][1] : 'closed'))->implode(', ');
-            $out[] = "- {$b->name}: ".trim($b->address.', '.$b->city, ', ').". Phone {$b->phone}. {$hours}.";
+            $out[] = "- {$b->city}: ".trim($b->name.', '.$b->address, ', ').". Phone {$b->phone}. {$hours}.";
         }
 
         $out[] = '';
@@ -83,7 +85,7 @@ class SeoController extends Controller
             }
             $out[] = "### {$category->name}";
             foreach ($category->treatments as $t) {
-                $out[] = "- [{$t->name}](".route('treatments.show', $t->slug).'): from PHP '.number_format((float) ($t->promo_price ?? $t->price)).", {$t->duration_minutes} min. {$t->summary}";
+                $out[] = "- [{$t->name}](".route('treatments.show', $t->slug).'): '.str_replace('₱', 'PHP ', SeoComposer::from((float) ($t->promo_price ?? $t->price))).", {$t->duration_minutes} min. {$t->summary}";
             }
         }
 
@@ -92,9 +94,8 @@ class SeoController extends Controller
         foreach ([
             'Book a consultation online (no account needed)' => route('book'),
             'All treatments and prices' => route('treatments.index'),
-            'Doctors and specialists' => route('doctors'),
+            'Our team (nurses, aestheticians and facialists)' => route('doctors'),
             'Promotions and packages' => route('promotions'),
-            'Membership' => route('membership'),
             'Before and after (labelled illustrative)' => route('before-after'),
             'Contact and branches' => route('contact'),
             'Journal' => route('blog.index'),

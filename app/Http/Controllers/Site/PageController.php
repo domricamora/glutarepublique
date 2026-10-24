@@ -14,6 +14,7 @@ use App\Models\Testimonial;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -40,7 +41,7 @@ class PageController extends Controller
     public function treatments(): Response
     {
         return Inertia::render('treatments/index', [
-            'categories' => TreatmentCategory::orderBy('sort')->with(['treatments' => fn ($q) => $q->select(['id', 'treatment_category_id', 'name', 'slug', 'summary', 'duration_minutes', 'price', 'promo_price', 'image', 'recommended_sessions'])])->get(['id', 'name', 'slug', 'description', 'image']),
+            'categories' => TreatmentCategory::orderBy('sort')->with(['treatments' => fn ($q) => $q->select(['id', 'treatment_category_id', 'subcategory', 'name', 'slug', 'summary', 'duration_minutes', 'price', 'promo_price', 'image', 'recommended_sessions'])])->get(['id', 'name', 'slug', 'description', 'image']),
         ]);
     }
 
@@ -63,6 +64,7 @@ class PageController extends Controller
             'branches' => $this->branches(),
             'testimonials' => Testimonial::where('is_published', true)->latest('id')->limit(3)->get(['id', 'author_name', 'author_meta', 'quote', 'rating']),
             'faqs' => Faq::orderBy('sort')->limit(4)->get(['id', 'question', 'answer']),
+            'treatmentCount' => $this->activeTreatments()->count(),
         ]);
     }
 
@@ -73,8 +75,13 @@ class PageController extends Controller
     }
 
     /** Membership: the monthly tiers and what they include (plan.md §36). */
-    public function membership(): Response
+    public function membership(): Response|RedirectResponse
     {
+        // No plan on offer: the page would sell nothing, so send people to the offers.
+        if (MembershipTier::where('is_active', true)->doesntExist()) {
+            return redirect()->route('promotions');
+        }
+
         return Inertia::render('membership', [
             'tiers' => MembershipTier::where('is_active', true)->orderBy('sort')->get(['id', 'name', 'slug', 'tagline', 'price_monthly', 'benefits', 'note', 'is_featured']),
             'branches' => $this->branches(),
@@ -94,20 +101,10 @@ class PageController extends Controller
         ]);
     }
 
-    /** Before and after: illustrative comparisons, never presented as results (plan.md §18). */
+    /** Before and after: the clinic's own client photos, labelled illustrative (plan.md §18). */
     public function beforeAfter(): Response
     {
-        return Inertia::render('before-after', [
-            'cases' => $this->activeTreatments()->where('is_featured', true)->get()
-                ->map(fn (Treatment $t) => [
-                    'id' => $t->id,
-                    'name' => $t->name,
-                    'slug' => $t->slug,
-                    'summary' => $t->summary,
-                    'image' => $t->image,
-                    'category' => $t->category?->name,
-                ]),
-        ]);
+        return Inertia::render('before-after');
     }
 
     /** Contact: branches, hours and one form that lands in the CRM. */

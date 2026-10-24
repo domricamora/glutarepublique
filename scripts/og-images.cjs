@@ -28,6 +28,8 @@ const sans = file(
     'node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2',
 );
 const logo = file('public/media/brand/logo-light.png');
+// The logo's lettering (licensed webfont, see resources/fonts/conthrax).
+const brand = file('resources/fonts/conthrax/Conthrax-SemiBold.woff2');
 const escape = (s) =>
     String(s).replace(
         /[&<>"]/g,
@@ -37,12 +39,13 @@ const escape = (s) =>
 const html = (card) => `<!doctype html><html><head><style>
 @font-face { font-family: 'GR Display'; src: url(${serif}) format('woff2'); font-weight: 100 900; }
 @font-face { font-family: 'GR Body'; src: url(${sans}) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: 'GR Brand'; src: url(${brand}) format('woff2'); font-weight: 600; }
 * { margin: 0; box-sizing: border-box; }
 body { width: 1200px; height: 630px; overflow: hidden; background: #406480; }
 .photo { position: absolute; inset: 0; background: url(${pathToFileURL(card.image).href}) center / cover; }
 .shade { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(47,75,97,0.96) 0%, rgba(47,75,97,0.86) 46%, rgba(47,75,97,0.15) 100%); }
 .inner { position: absolute; inset: 0; padding: 64px 72px; display: flex; flex-direction: column; justify-content: space-between; color: #fff; }
-.brand { display: flex; align-items: center; gap: 18px; font: 600 26px 'GR Body'; letter-spacing: 0.01em; }
+.brand { display: flex; align-items: center; gap: 18px; font: 600 26px 'GR Brand'; }
 .brand img { height: 64px; }
 h1 { font: 300 ${card.title.length > 38 ? 60 : 76}px/1.04 'GR Display'; max-width: 760px; }
 p { margin-top: 22px; font: 400 28px/1.35 'GR Body'; color: #cde7e5; max-width: 720px; }
@@ -51,7 +54,7 @@ p { margin-top: 22px; font: 400 28px/1.35 'GR Body'; color: #cde7e5; max-width: 
 </style></head><body>
 <div class="photo"></div><div class="shade"></div>
 <div class="inner">
-  <div class="brand"><img src="${logo}" alt=""> Gluta RepubliQ Aesthetics</div>
+  <div class="brand"><img src="${logo}" alt=""> Gluta RepubliQ</div>
   <div><h1>${escape(card.title)}</h1><p>${escape(card.subtitle)}</p></div>
   <div class="foot"><span class="bar"></span><span>Cebu · San Pedro · Bacoor</span></div>
 </div></body></html>`;

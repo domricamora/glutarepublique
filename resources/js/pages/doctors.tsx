@@ -5,7 +5,7 @@ import { useReveal } from '@/lib/site';
 import { book } from '@/routes';
 import type { Specialist } from '@/types/site';
 
-/** Doctors and specialists: the practitioners published from the staff roll. */
+/** Our team: the clinicians published from the staff roll (route /doctors). */
 export default function Doctors({
     specialists,
 }: {
@@ -15,16 +15,16 @@ export default function Doctors({
 
     return (
         <>
-            <Head title="Doctors and specialists">
+            <Head title="Our team">
                 <meta
                     name="description"
-                    content="Meet the doctors and specialists at Gluta RepubliQ Aesthetics: who they are, what they focus on and which branch they work from."
+                    content="Meet the nurses, aestheticians and facialists at Gluta RepubliQ Aesthetics: who they are and which branch they work from."
                 />
             </Head>
 
             <section className="on-dark gutter bg-plum pt-16 pb-14 text-white lg:pt-24">
                 <div className="mx-auto max-w-7xl">
-                    <p className="eyebrow">Doctors and specialists</p>
+                    <p className="eyebrow">Our team</p>
                     <h1 className="mt-4 max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
                         The people who{' '}
                         <em className="text-champagne">look after you.</em>

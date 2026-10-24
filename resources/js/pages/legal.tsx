@@ -100,9 +100,8 @@ export default function LegalPage({ page, others }: Props) {
                         </ul>
                     </div>
                     <p className="mt-6 text-xs text-muted-foreground">
-                        This demonstration clinic is fictional. The copy is
-                        written to show how a clinic can present its policies,
-                        and it is not legal advice.
+                        Questions about these policies? Contact the clinic and
+                        we will answer in plain language.
                     </p>
                 </aside>
             </section>

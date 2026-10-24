@@ -33,7 +33,7 @@ function shopItem(): Product
 
 function facials(): int
 {
-    return (int) TreatmentCategory::where('slug', 'facial')->value('id');
+    return (int) TreatmentCategory::where('slug', 'facials')->value('id');
 }
 
 function shop(): Branch

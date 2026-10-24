@@ -114,7 +114,8 @@ class ShowcaseHistorySeeder extends Seeder
         Auth::setUser($this->cashier);
 
         $branches = Branch::where('is_active', true)->orderBy('id')->with(['specialists' => fn ($q) => $q->where('is_active', true)])->get();
-        $treatments = Treatment::where('is_active', true)->get();
+        // A service priced on consultation has no till price to sell it at.
+        $treatments = Treatment::where('is_active', true)->where('price', '>', 0)->get();
         $products = Product::where('is_active', true)->get();
         $weights = $treatments->mapWithKeys(fn (Treatment $t) => [$t->id => ($t->is_featured ? 3 : 1) * (int) max(1, 12000 / max(1500, (float) $t->price))])->all();
 
@@ -225,7 +226,7 @@ class ShowcaseHistorySeeder extends Seeder
         Carbon::setTestNow($at);
 
         $items = [['kind' => 'service', 'id' => $treatment->id, 'quantity' => 1]];
-        if (mt_rand(1, 100) <= 30) {
+        if ($products->isNotEmpty() && mt_rand(1, 100) <= 30) {
             $items[] = ['kind' => 'product', 'id' => $products[mt_rand(0, $products->count() - 1)]->id, 'quantity' => mt_rand(1, 2)];
         }
 

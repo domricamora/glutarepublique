@@ -113,10 +113,12 @@ export default function BookConfirmed({ appointment: a }: Props) {
                                         Where
                                     </dt>
                                     <dd className="text-right">
+                                        {a.branch.city}
+                                        <br />
                                         {a.branch.name}
                                         <br />
                                         <span className="text-muted-foreground">
-                                            {a.branch.address}, {a.branch.city}
+                                            {a.branch.address}
                                         </span>
                                     </dd>
                                 </div>

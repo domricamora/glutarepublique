@@ -25,7 +25,7 @@ import treatments from '@/routes/treatments';
 const nav = [
     { label: 'Home', href: home().url },
     { label: 'About Us', href: about().url },
-    { label: 'Doctors', href: doctors().url },
+    { label: 'Our Team', href: doctors().url },
     { label: 'Treatments', href: treatments.index().url },
     { label: 'Before & After', href: beforeAfter().url },
     { label: 'Promotions', href: promotions().url },
@@ -40,8 +40,9 @@ const DEFAULT_SOCIALS: Record<string, string> = {
 };
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
-    const { clinic, flash } = usePage<{ flash?: { success?: string | null } }>()
-        .props;
+    const { clinic, flash, hasMembership } = usePage<{
+        flash?: { success?: string | null };
+    }>().props;
     const [open, setOpen] = useState(false);
     const tel = `tel:${clinic.contact.phone.replace(/[^0-9+]/g, '')}`;
 
@@ -128,15 +129,17 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                             </Link>
                         </li>
                     ))}
-                    <li>
-                        <Link
-                            href={membership().url}
-                            onClick={() => setOpen(false)}
-                            className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal-ink"
-                        >
-                            Membership
-                        </Link>
-                    </li>
+                    {hasMembership && (
+                        <li>
+                            <Link
+                                href={membership().url}
+                                onClick={() => setOpen(false)}
+                                className="flex py-4 font-display text-2xl font-light text-ocean hover:text-royal-ink"
+                            >
+                                Membership
+                            </Link>
+                        </li>
+                    )}
                 </ul>
                 <div className="mt-8 grid gap-3">
                     <Link
@@ -196,7 +199,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 }
 
 function SiteFooter() {
-    const { clinic, socials } = usePage().props;
+    const { clinic, socials, hasMembership } = usePage().props;
     const links =
         socials && Object.keys(socials).length > 0 ? socials : DEFAULT_SOCIALS;
 
@@ -207,14 +210,16 @@ function SiteFooter() {
                 ['All treatments', treatments.index().url],
                 ['Before & after', beforeAfter().url],
                 ['Promotions', promotions().url],
-                ['Membership', membership().url],
+                ...(hasMembership
+                    ? [['Membership', membership().url] as [string, string]]
+                    : []),
             ],
         ],
         [
             'Clinic',
             [
                 ['About us', about().url],
-                ['Our doctors', doctors().url],
+                ['Our team', doctors().url],
                 ['Blog', blog.index().url],
                 ['Contact', contact().url],
                 ['Staff login', login().url],
@@ -229,7 +234,7 @@ function SiteFooter() {
                     <Wordmark
                         variant="light"
                         markClassName="size-20"
-                        nameClassName="text-[1.9rem] text-white"
+                        nameClassName="text-[1.6rem]"
                     />
                     <p className="mt-6 max-w-xs text-sm leading-relaxed text-ice/90">
                         <Link

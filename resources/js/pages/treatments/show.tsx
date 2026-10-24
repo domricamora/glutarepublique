@@ -1,6 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { formatDuration, formatPrice } from '@/lib/site';
+import {
+    formatDuration,
+    formatPrice,
+    formatTreatmentPrice,
+    isFlyer,
+} from '@/lib/site';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
 import type { Specialist, Treatment } from '@/types/site';
@@ -20,10 +25,12 @@ export default function TreatmentShow({
 
     return (
         <>
-            <Head title={`${t.name}, from ${formatPrice(price)}`}>
+            <Head
+                title={`${t.name}, ${price > 0 ? `from ${formatPrice(price)}` : 'price on consultation'}`}
+            >
                 <meta
                     name="description"
-                    content={`${t.summary} ${formatDuration(t.duration_minutes)} session from ${formatPrice(price)}. Book online.`}
+                    content={`${t.summary} ${formatDuration(t.duration_minutes)} session, ${price > 0 ? `from ${formatPrice(price)}` : 'price on consultation'}. Book online.`}
                 />
                 <script type="application/ld+json">
                     {JSON.stringify({
@@ -32,25 +39,44 @@ export default function TreatmentShow({
                         name: t.name,
                         description: t.summary,
                         category: t.category?.name,
-                        offers: {
-                            '@type': 'Offer',
-                            price,
-                            priceCurrency: 'PHP',
-                        },
+                        offers:
+                            price > 0
+                                ? {
+                                      '@type': 'Offer',
+                                      price,
+                                      priceCurrency: 'PHP',
+                                  }
+                                : undefined,
                     })}
                 </script>
             </Head>
 
             <section className="grid lg:min-h-[calc(100dvh-5rem)] lg:grid-cols-2">
                 <div className="relative bg-lilac">
-                    {t.image && (
-                        <img
-                            src={t.image}
-                            alt=""
-                            className="h-80 w-full object-cover sm:h-[28rem] lg:absolute lg:inset-0 lg:h-full"
-                            fetchPriority="high"
-                        />
-                    )}
+                    {t.image &&
+                        (isFlyer(t.image) ? (
+                            // The clinic's own artwork carries prices and text, so it is shown
+                            // whole, pinned under the header while the details scroll.
+                            <figure className="flex flex-col items-center gap-3 p-6 sm:p-10 lg:sticky lg:top-20 lg:h-[calc(100dvh-5rem)] lg:justify-center">
+                                <img
+                                    src={t.image}
+                                    alt={`${t.name}, from the clinic's promotional artwork`}
+                                    className="max-h-[80dvh] w-full max-w-xl object-contain"
+                                    fetchPriority="high"
+                                />
+                                <figcaption className="text-xs text-muted-foreground">
+                                    Clinic artwork. Before and after photos are
+                                    illustrative; results vary.
+                                </figcaption>
+                            </figure>
+                        ) : (
+                            <img
+                                src={t.image}
+                                alt=""
+                                className="h-80 w-full object-cover sm:h-[28rem] lg:absolute lg:inset-0 lg:h-full"
+                                fetchPriority="high"
+                            />
+                        ))}
                 </div>
                 <div className="px-4 py-12 sm:px-8 lg:px-16 lg:py-20">
                     <Link
@@ -74,8 +100,14 @@ export default function TreatmentShow({
                             <dt className="text-xs text-muted-foreground">
                                 From
                             </dt>
-                            <dd className="mt-1 font-display text-3xl">
-                                {formatPrice(price)}
+                            <dd
+                                className={
+                                    price > 0
+                                        ? 'mt-1 font-display text-3xl'
+                                        : 'mt-2 text-sm'
+                                }
+                            >
+                                {formatTreatmentPrice(price)}
                             </dd>
                             {t.promo_price && (
                                 <dd className="text-xs text-muted-foreground">
@@ -218,7 +250,9 @@ export default function TreatmentShow({
                                         {r.name}
                                     </h3>
                                     <span className="font-display text-xl">
-                                        {formatPrice(r.promo_price ?? r.price)}
+                                        {formatTreatmentPrice(
+                                            r.promo_price ?? r.price,
+                                        )}
                                     </span>
                                 </div>
                             </Link>

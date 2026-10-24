@@ -49,29 +49,29 @@ class SeoComposer
 
         $seo = match (true) {
             $component === 'home' => [
-                'title' => "{$name} | Glutathione, laser and skin clinic in {$where}",
-                'description' => "{$name}: gluta drips, 9D HIFU, Fotona laser, Hydrafacial, fillers and hair removal at physician-led clinics in {$where}. Prices online, book a consultation.",
+                'title' => "{$name} | Aesthetic, laser and slimming clinic in {$where}",
+                'description' => "{$name}: gluta drips, facials, botox and fillers, skin boosters, HIFU, Fotona laser and body slimming at clinics in {$where}. Prices online, book a consultation.",
                 'jsonld' => [$this->clinic(), $this->faqs($p['faqs'] ?? [])],
                 'body' => $this->home($p),
             ],
             $component === 'treatments/index' => [
                 'title' => "Treatments and prices | {$name}",
-                'description' => 'Every treatment with its price, session time and what to expect: facials, laser, injectables, body, hair, wellness drips and makeup.',
+                'description' => 'Every treatment with its price, session time and what to expect: facials, gluta drips, botox and fillers, skin boosters, lifting, laser, slimming and semi-permanent makeup.',
                 'jsonld' => [$this->breadcrumb(['Treatments' => route('treatments.index')])],
                 'body' => $this->treatmentList($p['categories'] ?? []),
             ],
             $component === 'treatments/show' => $this->treatment($p['treatment'] ?? [], $name),
             $component === 'about' => [
                 'title' => "About the clinic | {$name}",
-                'description' => "How {$name} works: physician-led assessments, written treatment plans, plain pricing, and clinics in {$where}.",
+                'description' => "How {$name} works: an assessment before every plan, written treatment plans, plain pricing, and clinics in {$where}.",
                 'jsonld' => [$this->clinic(), $this->faqs($p['faqs'] ?? [])],
                 'body' => $this->people('Who looks after you', $p['specialists'] ?? []).$this->branchesHtml(),
             ],
             $component === 'doctors' => [
-                'title' => "Doctors and specialists | {$name}",
-                'description' => "Meet the doctors and specialists at {$name}: who they are, what they focus on and which branch they work from.",
+                'title' => "Our team | {$name}",
+                'description' => "Meet the nurses, aestheticians and facialists at {$name}: who they are and which branch they work from.",
                 'jsonld' => [$this->doctors($p['specialists'] ?? [])],
-                'body' => $this->people('Doctors and specialists', $p['specialists'] ?? []),
+                'body' => $this->people('Our team', $p['specialists'] ?? []),
             ],
             $component === 'contact' => [
                 'title' => "Contact, branches and opening hours | {$name}",
@@ -112,7 +112,7 @@ class SeoComposer
             ],
             $component === 'book' => [
                 'title' => "Book a consultation | {$name}",
-                'description' => "Book a treatment or consultation at {$name} online: choose the branch, the doctor or first available, and a free time. No account needed.",
+                'description' => "Book a treatment or consultation at {$name} online: choose the branch, your clinician or first available, and a free time. No account needed.",
                 'jsonld' => [],
                 'body' => '<h1>Book a consultation</h1><p>Choose a treatment, a branch, a doctor or the first available, and a time. No account needed.</p>'.$this->branchesHtml(),
             ],
@@ -200,7 +200,8 @@ class SeoComposer
             'itemListElement' => collect($categories)->filter(fn ($c) => ! empty($c['treatments']))->values()->map(fn ($c) => [
                 '@type' => 'OfferCatalog',
                 'name' => $c['name'],
-                'itemListElement' => collect($c['treatments'])->map(fn ($t) => [
+                // An offer needs a price; services priced on consultation are left out.
+                'itemListElement' => collect($c['treatments'])->filter(fn ($t) => (float) $t['price'] > 0)->values()->map(fn ($t) => [
                     '@type' => 'Offer',
                     'priceCurrency' => 'PHP',
                     'price' => (float) ($t['promo_price'] ?? $t['price']),
@@ -262,8 +263,7 @@ class SeoComposer
                     'description' => $x['summary'] ?? null,
                     'url' => route('promotions'),
                     'validThrough' => $x['ends_on'] ?? null,
-                    'priceCurrency' => isset($x['treatment']['price']) ? 'PHP' : null,
-                    'price' => isset($x['treatment']['price']) ? (float) ($x['treatment']['promo_price'] ?? $x['treatment']['price']) : null,
+                    // No price: a package's price is its own, not the linked service's session price.
                     'seller' => ['@id' => route('home').'#clinic'],
                 ]),
             ])->all(),
@@ -280,7 +280,7 @@ class SeoComposer
             '@type' => ['MedicalClinic', 'HealthAndBeautyBusiness'],
             '@id' => route('home').'#clinic',
             'name' => config('clinic.name'),
-            'description' => config('clinic.tagline').' Physician-led glutathione, laser and aesthetic skin clinic in the Philippines.',
+            'description' => config('clinic.tagline').' Aesthetic, laser and slimming clinic in the Philippines.',
             'url' => route('home'),
             'logo' => asset(config('clinic.logo')),
             'image' => asset('media/photos/clinic/cebu-storefront.jpg'),
@@ -309,7 +309,7 @@ class SeoComposer
             'hasMap' => $b->map_url,
             'address' => array_filter([
                 '@type' => 'PostalAddress',
-                'streetAddress' => $b->address,
+                'streetAddress' => trim($b->name.', '.$b->address, ', '),
                 'addressLocality' => $b->city,
                 'addressCountry' => 'PH',
             ]),
@@ -363,6 +363,12 @@ class SeoComposer
      * @param  array<string, mixed>  $t
      * @return array<string, mixed>|null
      */
+    /** "from ₱1,500", or "price on consultation" for a service listed without a price. */
+    public static function from(float $price): string
+    {
+        return $price > 0 ? 'from ₱'.number_format($price) : 'price on consultation';
+    }
+
     private function treatment(array $t, string $name): ?array
     {
         if (! isset($t['slug'])) {
@@ -376,8 +382,8 @@ class SeoComposer
         $category = $t['category']['name'] ?? null;
 
         return [
-            'title' => $t['name'].', from ₱'.number_format($price)." | {$name}",
-            'description' => Str::limit(trim(($t['summary'] ?? '').' '.$t['duration_minutes'].' minute session from ₱'.number_format($price).'. Book online.'), 158),
+            'title' => $t['name'].', '.self::from($price)." | {$name}",
+            'description' => Str::limit(trim(($t['summary'] ?? '').' '.$t['duration_minutes'].' minute session, '.self::from($price).'. Book online.'), 158),
             'image' => $t['image'] ?? null,
             'jsonld' => [
                 [
@@ -390,7 +396,7 @@ class SeoComposer
                     'image' => $t['image'] ?? null,
                     'provider' => ['@id' => route('home').'#clinic'],
                     'areaServed' => ['Cebu City', 'San Pedro, Laguna', 'Bacoor, Cavite'],
-                    'offers' => $prices->count() > 1 ? [
+                    'offers' => $prices->isEmpty() ? null : ($prices->count() > 1 ? [
                         '@type' => 'AggregateOffer',
                         'priceCurrency' => 'PHP',
                         'lowPrice' => $prices->min(),
@@ -402,14 +408,14 @@ class SeoComposer
                         'priceCurrency' => 'PHP',
                         'price' => $price,
                         'url' => $url,
-                    ],
+                    ]),
                 ],
                 $this->breadcrumb(['Treatments' => route('treatments.index'), $t['name'] => $url]),
             ],
             'body' => '<h1>'.e($t['name']).'</h1>'
                 .($category ? '<p>Category: '.e($category).'</p>' : '')
                 .'<p>'.e($t['description'] ?? $t['summary'] ?? '').'</p>'
-                .'<p>Session: '.e($t['duration_minutes']).' minutes. From ₱'.number_format($price).'.'
+                .'<p>Session: '.e($t['duration_minutes']).' minutes. '.ucfirst(self::from($price)).'.'
                 .(! empty($t['recommended_sessions']) ? ' Recommended: '.e($t['recommended_sessions']).'.' : '').'</p>'
                 .($lines->isNotEmpty() ? '<h2>Prices</h2><ul>'.$lines->map(fn ($l) => '<li>'.e($l['label']).': ₱'.number_format((float) $l['price']).(! empty($l['unit']) ? ' ('.e($l['unit']).')' : '').'</li>')->implode('').'</ul>' : '')
                 .$this->section('Preparation', $t['preparation'] ?? null)
@@ -464,7 +470,7 @@ class SeoComposer
         $html = '<h1>'.e(config('clinic.name')).'</h1><p>'.e(config('clinic.tagline')).' Physician-led glutathione drips, laser, HIFU, facials, injectables and hair removal at clinics in Cebu, San Pedro and Bacoor.</p>';
 
         if (! empty($p['featured'])) {
-            $html .= '<h2>Signature treatments</h2><ul>'.collect($p['featured'])->map(fn ($t) => '<li><a href="'.e(route('treatments.show', $t['slug'])).'">'.e($t['name']).'</a>: '.e($t['summary'] ?? '').' From ₱'.number_format((float) ($t['promo_price'] ?? $t['price'])).'.</li>')->implode('').'</ul>';
+            $html .= '<h2>Signature treatments</h2><ul>'.collect($p['featured'])->map(fn ($t) => '<li><a href="'.e(route('treatments.show', $t['slug'])).'">'.e($t['name']).'</a>: '.e($t['summary'] ?? '').' '.ucfirst(self::from((float) ($t['promo_price'] ?? $t['price']))).'.</li>')->implode('').'</ul>';
         }
         if (! empty($p['faqs'])) {
             $html .= '<h2>Questions</h2>'.collect($p['faqs'])->map(fn ($f) => '<h3>'.e($f['question']).'</h3><p>'.e($f['answer']).'</p>')->implode('');
@@ -478,7 +484,7 @@ class SeoComposer
     {
         return '<h1>Treatments and prices</h1>'.collect($categories)->map(fn ($c) => '<h2>'.e($c['name']).'</h2>'
             .(! empty($c['description']) ? '<p>'.e($c['description']).'</p>' : '')
-            .'<ul>'.collect($c['treatments'] ?? [])->map(fn ($t) => '<li><a href="'.e(route('treatments.show', $t['slug'])).'">'.e($t['name']).'</a>: from ₱'.number_format((float) ($t['promo_price'] ?? $t['price'])).', '.e($t['duration_minutes']).' minutes. '.e($t['summary'] ?? '').'</li>')->implode('').'</ul>')->implode('');
+            .'<ul>'.collect($c['treatments'] ?? [])->map(fn ($t) => '<li><a href="'.e(route('treatments.show', $t['slug'])).'">'.e($t['name']).'</a>: '.self::from((float) ($t['promo_price'] ?? $t['price'])).', '.e($t['duration_minutes']).' minutes. '.e($t['summary'] ?? '').'</li>')->implode('').'</ul>')->implode('');
     }
 
     /** @param  list<array<string, mixed>>  $people */
@@ -499,7 +505,7 @@ class SeoComposer
         return [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => 'Doctors and specialists at '.config('clinic.name'),
+            'name' => 'The team at '.config('clinic.name'),
             'itemListElement' => collect($people)->values()->map(fn ($s, $i) => [
                 '@type' => 'ListItem',
                 'position' => $i + 1,
@@ -537,7 +543,7 @@ class SeoComposer
         return '<h2>Branches and opening hours</h2><ul>'.Branch::where('is_active', true)->orderBy('id')->get()->map(function (Branch $b) use ($days) {
             $hours = collect([1, 2, 3, 4, 5, 6, 0])->map(fn ($d) => $days[$d].' '.($b->hours[$d] ? $b->hours[$d][0].' to '.$b->hours[$d][1] : 'closed'))->implode(', ');
 
-            return '<li><strong>'.e($b->name).'</strong>: '.e(trim($b->address.', '.$b->city, ', ')).'. '.($b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y').'.' : 'Phone '.e((string) $b->phone).'. Open '.e($hours).'.').'</li>';
+            return '<li><strong>'.e((string) $b->city).'</strong>: '.e(trim($b->name.', '.$b->address, ', ')).'. '.($b->opens_on?->isFuture() ? 'Opening '.$b->opens_on->format('F Y').'.' : 'Phone '.e((string) $b->phone).'. Open '.e($hours).'.').'</li>';
         })->implode('').'</ul>';
     }
 

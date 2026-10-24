@@ -8,7 +8,6 @@ use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\Organization;
 use App\Models\User;
-use App\Models\WorkSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
@@ -98,8 +97,11 @@ class HrDemoSeeder extends Seeder
                 ]
             );
 
-            $this->clockIn($employee, 18);
-            $this->schedule($employee);
+            // Made-up clock-ins are for the test suite only; live attendance
+            // comes from the kiosk (owner, 2026-10-24: live data only).
+            if (app()->runningUnitTests()) {
+                $this->clockIn($employee, 18);
+            }
         }
 
         // A clinic puts its clinicians on the website and keeps the rest behind
@@ -111,6 +113,10 @@ class HrDemoSeeder extends Seeder
         // live by accident is not a mistake anybody wants to find out about
         // from a customer.
         Employee::whereIn('name', self::CLINICIANS)->update(['show_on_site' => true]);
+
+        if (! app()->runningUnitTests()) {
+            return;
+        }
 
         $nurse = Employee::where('name', 'Jermaine Ramirez')->firstOrFail();
         $therapist = Employee::where('name', 'Marinel Bombaes')->firstOrFail();
@@ -140,34 +146,6 @@ class HrDemoSeeder extends Seeder
                 'status' => 'pending',
             ]
         );
-    }
-
-    /**
-     * A plain rota from four weeks back to the end of next week: 09:00 to 18:00
-     * on weekdays, weekends off, matching the demo clock-ins above. A day
-     * already planned in the office is left as it is. Not in tests, whose
-     * payroll figures are worked out without a rota.
-     */
-    private function schedule(Employee $employee): void
-    {
-        if (app()->runningUnitTests()) {
-            return;
-        }
-
-        $end = CarbonImmutable::today()->startOfWeek(CarbonImmutable::MONDAY)->addDays(13);
-
-        for ($day = CarbonImmutable::today()->subWeeks(4)->startOfWeek(CarbonImmutable::MONDAY); $day->lte($end); $day = $day->addDay()) {
-            WorkSchedule::firstOrCreate(
-                ['employee_id' => $employee->id, 'work_date' => $day->toDateString()],
-                [
-                    'organization_id' => $employee->organization_id,
-                    'branch_id' => $employee->branch_id,
-                    'is_rest_day' => $day->isWeekend(),
-                    'starts_at' => $day->isWeekend() ? null : '09:00',
-                    'ends_at' => $day->isWeekend() ? null : '18:00',
-                ],
-            );
-        }
     }
 
     /** A run of ordinary days, with the odd hour past eight. */

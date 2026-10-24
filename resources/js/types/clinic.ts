@@ -5,6 +5,7 @@ export type Clinic = {
     logo: string;
     logo_fallback: string;
     logo_light: string;
+    descriptor: string;
     colors: Record<string, string>;
     contact: { address: string; phone: string; email: string };
     social: Record<'facebook' | 'instagram' | 'tiktok', string | null>;

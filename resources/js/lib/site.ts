@@ -28,6 +28,14 @@ const peso = new Intl.NumberFormat('en-PH', {
 
 export const formatPrice = (value: number): string => peso.format(value);
 
+/** A treatment's price; the clinic lists some services without one (price 0). */
+export const formatTreatmentPrice = (value: number): string =>
+    value > 0 ? formatPrice(value) : 'Price on consultation';
+
+/** The clinic's own promo artwork: text-heavy, so it is shown whole, never cropped. */
+export const isFlyer = (src: string | null | undefined): boolean =>
+    Boolean(src?.includes('/media/photos/flyers/'));
+
 export const formatDuration = (minutes: number): string =>
     minutes >= 60
         ? `${Math.floor(minutes / 60)} hr${minutes % 60 ? ` ${minutes % 60} min` : ''}`

@@ -105,8 +105,8 @@ export default function BlogShow({ post, related }: Props) {
                             </h2>
                             <p className="mt-3 text-lg">{post.author_name}</p>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Practitioner at Gluta RepubliQ Aesthetics. A
-                                fictional profile in this demonstration clinic.
+                                Written by the clinical team at Gluta RepubliQ
+                                Aesthetics.
                             </p>
                             <Link
                                 href={book().url}

@@ -41,7 +41,8 @@ class AppointmentController extends Controller
                 'lead_id' => $a->lead_id,
                 'client' => $a->lead?->fullName() ?? 'Walk-in',
                 'phone' => $a->lead?->phone,
-                'treatment' => $a->treatment->name,
+                // A service removed from the menu leaves its bookings behind.
+                'treatment' => $a->treatment?->name ?? $a->service_name ?? 'Service no longer offered',
                 'specialist' => $a->specialist->name,
                 'branch' => $a->branch->name,
             ])

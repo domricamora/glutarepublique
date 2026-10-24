@@ -2,6 +2,14 @@
 @import '@fontsource-variable/noto-serif-display/wght.css';
 @import '@fontsource-variable/noto-serif-display/wght-italic.css';
 
+@font-face {
+    font-family: 'Conthrax';
+    src: url('../fonts/conthrax/Conthrax-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
@@ -12,8 +20,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-brand:
-        'Century Gothic', 'Avenir Next', 'Gill Sans', 'Segoe UI', sans-serif;
+    /* The logo's lettering; licensed webfont, see resources/fonts/conthrax. */
+    --font-brand: 'Conthrax', 'Segoe UI', sans-serif;
     --font-sans:
         'Geist Variable', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',

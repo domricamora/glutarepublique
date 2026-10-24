@@ -201,7 +201,9 @@ export default function AppointmentCard({
                                 </>
                             ) : (
                                 <span className="text-ink">
-                                    From {formatPrice(treatment.price)}
+                                    {treatment.price > 0
+                                        ? `From ${formatPrice(treatment.price)}`
+                                        : 'Price on consultation'}
                                 </span>
                             )}
                         </span>

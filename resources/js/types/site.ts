@@ -11,6 +11,7 @@ export type Category = {
 export type Treatment = {
     id: number;
     treatment_category_id?: number;
+    subcategory?: string | null;
     name: string;
     slug: string;
     summary?: string;

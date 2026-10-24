@@ -3,6 +3,8 @@
 use App\Models\Employee;
 use App\Models\Specialist;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\MarketingContentSeeder;
+use Database\Seeders\SiteContentSeeder;
 
 beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
@@ -26,16 +28,16 @@ it('shows the marketing pages from the seeded content', function () {
 
     $this->get('/promotions')->assertOk()
         ->assertInertia(fn ($page) => $page->component('promotions')
-            ->has('promotions', 5)
+            ->has('promotions', count(MarketingContentSeeder::PROMOTIONS))
             ->has('tiers', 3));
 
     $this->get('/before-after')->assertOk()
-        ->assertInertia(fn ($page) => $page->component('before-after')->has('cases', 4));
+        ->assertInertia(fn ($page) => $page->component('before-after')->missing('cases'));
 
     $this->get('/contact')->assertOk()
         ->assertInertia(fn ($page) => $page->component('contact')
             ->has('branches', 4)
-            ->has('treatments', count(\Database\Seeders\SiteContentSeeder::TREATMENTS)));
+            ->has('treatments', count(SiteContentSeeder::TREATMENTS)));
 });
 
 it('serves the journal with a topic filter and an article', function () {

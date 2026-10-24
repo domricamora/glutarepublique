@@ -14,6 +14,7 @@ declare module '@inertiajs/core' {
             clinic: Clinic;
             // platform => full profile url, for the ones the clinic has set
             socials: Record<string, string>;
+            hasMembership: boolean;
             modules: Record<Module, boolean>;
             // Fingerprint of the compiled assets, shown in the sidebar so a
             // screen that does not match the server can be identified at a glance.

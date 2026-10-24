@@ -268,7 +268,7 @@ export function AppSidebar() {
                                     name={clinic.short_name}
                                     descriptor="Clinic desk"
                                     markClassName="size-8"
-                                    nameClassName="text-[1.35rem]"
+                                    nameClassName="text-[1.05rem]"
                                     className="group-data-[collapsible=icon]:[&>span:last-child]:hidden"
                                 />
                             </Link>

@@ -12,8 +12,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Marketing content for the pages beyond the home screen: membership tiers,
- * promotions, journal articles and the legal pages. Copy is fictional demo
- * content and avoids result guarantees and superiority claims (plan.md §83).
+ * promotions, journal articles and the legal pages. Copy avoids result guarantees and superiority claims (plan.md §83).
  */
 class MarketingContentSeeder extends Seeder
 {
@@ -62,84 +61,215 @@ class MarketingContentSeeder extends Seeder
         ],
     ];
 
-    /** slug => [title, summary, description, details, badge, ends_on, treatment, image] */
-    /** The clinic's current offers, from glutarepubliq.com and its promo posts (2026-10-21). */
+    /**
+     * slug => [title, summary, description, details, badge, ends_on, treatment, image]
+     *
+     * The clinic's packages and promotions, from its own flyers (supplied by the
+     * owner, 2026-10-23). Prices are as printed. The flyers give no end dates,
+     * so none are set; the office adds them in Promotions & packages.
+     */
     public const PROMOTIONS = [
-        'gluta-drip-packages' => [
-            'Gluta drip packages: 5+1 and 10+3',
-            'Buy five gluta drips and get one free, or buy ten and get three.',
-            'Gluta drips work best as a series, so every drip comes in two packages. Book five sessions and the sixth is free, or book ten and get three more.',
-            [
-                'Bronze: 3,699 pesos for 5+1, 7,299 pesos for 10+3',
-                'Gold: 7,299 pesos for 5+1, 14,499 pesos for 10+3',
-                'Diamond Drip: 9,999 pesos for 5+1, 19,999 pesos for 10+3',
-                'Platinum Drip: 14,000 pesos for 5+1, 26,000 pesos for 10+3',
-            ],
-            'Best value',
-            null,
-            'gluta-drip-bronze',
-            '/media/photos/asian-gluta-drip.jpg',
-        ],
-        'novanad-promo' => [
-            'NovaNAD+ IV drip promo',
-            'NAD+ IV therapy from 5,499 pesos for a 100 mg drip.',
-            'NovaNAD+ is a premium NAD+ IV drip for cellular repair, given by licensed nurses after a consultation.',
-            [
-                '100 mg: 5,499 pesos',
-                '250 mg: 15,999 pesos',
-                '500 mg: 24,990 pesos',
-            ],
-            'Promo',
+        'nad-bermonths-promo' => [
+            'NAD+ IV Therapy: Bermonths promo',
+            'A session of NAD+ IV therapy for 5,499 pesos. Buy 8 sessions and get 2 free.',
+            'NAD+ (nicotinamide adenine dinucleotide) is a coenzyme found in every cell of the body, and its levels fall with age. The drip is given by our nurses after a consultation.',
+            ['5,499 pesos per session', 'Buy 8 sessions, get 2 free'],
+            'Bermonths promo',
             null,
             'nad-iv-therapy',
-            '/media/photos/iv.jpg',
+            '/media/photos/flyers/nad-bermonths-promo.jpg',
         ],
-        'hiko-nose-lift' => [
-            'Hiko Nose Lift for 9,999 pesos',
-            'A non-surgical nose lift with 10 threads, Alartox and filler.',
-            'Hiko Nose Lift shapes and lifts the nose bridge and tip without surgery, using dissolvable threads, Alartox and filler in one visit.',
-            [
-                '10 threads, Alartox and filler included',
-                'Done by a doctor after a consultation',
-                'One visit',
-            ],
+        '90-day-body-slim-down' => [
+            '90 Day Body Slim Down',
+            'A comprehensive 90-day slimming program for 40,000 pesos. Regular price 60,000 pesos.',
+            "Slimming shots, Slimming Dome, Emsculpt and Peach Bottle over 90 days. The slimming shots are prescription injectables, so the program begins with a doctor's assessment.",
+            ['4 shots slimming shot (2.5 mg per shot)', '8 shots slimming shot (5.0 mg per shot)', '4 sessions Slimming Dome', '4 sessions Emsculpt', '1 vial Peach Bottle', '40,000 pesos (regular price 60,000 pesos)'],
+            'Package',
+            null,
+            null,
+            '/media/photos/flyers/90-day-body-slim-down.jpg',
+        ],
+        '30-days-slimming-program' => [
+            '30 Days Slimming Program',
+            'Mounjaro shots with sauna capsule, Luscilipo and RF sessions, the full program for 35,000 pesos.',
+            "A 30-day program. Mounjaro (tirzepatide) is a prescription medicine, so the program begins with a doctor's assessment.",
+            ['4 shots of Mounjaro pen', '4 sessions Sauna Slimming Capsule', '4 sessions Luscilipo Mesotherapy', '4 sessions RF Treatment', 'The full session: 35,000 pesos'],
+            'Package',
+            null,
+            null,
+            '/media/photos/flyers/30-days-slimming-program.jpg',
+        ],
+        'fat-kill-3-day-sale' => [
+            'Fat Kill: 3 Day Sale',
+            'Five sessions each of Emslim, Cryo Fat and Meso Lipo for 14,999 pesos.',
+            'Three body treatments in one package, offered as a 3 day sale.',
+            ['5 sessions of Emslim', '5 sessions of Cryo Fat', '5 sessions of Meso Lipo', '14,999 pesos'],
+            '3 day sale',
+            null,
+            null,
+            '/media/photos/flyers/fat-kill.jpg',
+        ],
+        'ultimate-slimming-package' => [
+            'Ultimate Slimming Package',
+            'Five sessions each of Mesolipo, Exilift and Emsculpture for 14,999 pesos.',
+            'Fat-dissolving injections, skin tightening and body contouring in one package.',
+            ['5 sessions Mesolipo', '5 sessions Exilift', '5 sessions Emsculpture', '14,999 pesos'],
+            'Package',
+            null,
+            null,
+            '/media/photos/flyers/ultimate-slimming-package.jpg',
+        ],
+        'slimming-fit-iv-push' => [
+            'Slimming Fit IV Push',
+            '20 sessions of Vita Boost and 20 sessions of Slimming Drip for 8,888 pesos, shareable by 2 to 3 people.',
+            'Forty IV push sessions in one package that two or three people can share.',
+            ['20 sessions Vita Boost', '20 sessions Slimming Drip', '8,888 pesos', 'Shareable for 2 to 3 people'],
+            'Package',
+            null,
+            null,
+            '/media/photos/flyers/slimming-fit-iv-push.jpg',
+        ],
+        'get-glow-drip' => [
+            'Get Glow Drip',
+            'Three sessions each of Platinum Drip, NAD+ and Vita Boost for 7,499 pesos. Shareable.',
+            'Nine drip sessions in one package that can be shared.',
+            ['3 sessions Platinum Drip', '3 sessions NAD+', '3 sessions Vita Boost', '7,499 pesos', 'Shareable'],
+            'Package',
+            null,
+            'platinum-drip',
+            '/media/photos/flyers/get-glow-drip.jpg',
+        ],
+        'nad-facial-skin-booster' => [
+            'NAD+ plus Facial plus Skin Booster',
+            'NAD+ with a free facial and a free skin booster, for 12,500 pesos.',
+            'NAD+ for energy and cellular repair, a facial that deep-cleans and exfoliates, and a skin booster that hydrates from within.',
+            ['NAD+', 'Facial, free', 'Skin booster, free', '12,500 pesos'],
+            'Package',
+            null,
+            'nad-iv-therapy',
+            '/media/photos/flyers/nad-facial-skin-booster.jpg',
+        ],
+        'ultimate-ua-whitening-package' => [
+            'Ultimate UA Whitening Package',
+            'Ten sessions each of diode UA laser, UA bleach and skin rejuve laser for 9,999 pesos.',
+            'An underarm (UA) package: diode laser, bleach and skin rejuvenation laser, ten sessions of each.',
+            ['10 sessions Diode UA Laser', '10 sessions UA Bleach', '10 sessions Skin Rejuve Laser', '9,999 pesos'],
+            'Package',
+            null,
+            'diode-laser-hair-removal',
+            '/media/photos/flyers/ultimate-ua-whitening.jpg',
+        ],
+        'aqua-sponge-peel-4-sessions' => [
+            'Aqua Sponge Peel: 4 sessions',
+            'Four sessions of Aqua Sponge Peel bio-microneedling for 10,000 pesos.',
+            'Aqua Sponge Peel is suited to acne-prone skin, hyperpigmentation, uneven tone and texture, fine lines, large pores and keratosis pilaris.',
+            ['4 sessions for 10,000 pesos'],
+            'Package',
+            null,
+            'aqua-sponge-peel',
+            '/media/photos/flyers/aqua-sponge-peel.jpg',
+        ],
+        'gluta-drip-packages' => [
+            'Gluta Push & Gluta Drip packages: 5+1 and 10+3',
+            'Every gluta push and drip comes as a 5+1 or a 10+3 package.',
+            'Book five sessions and the sixth is free, or book ten and get three more.',
+            ['Bronze: 900 pesos per session, 3,699 pesos for 5+1, 7,299 pesos for 10+3', 'Gold: 1,800 pesos per session, 7,299 pesos for 5+1, 14,499 pesos for 10+3', 'Diamond Drip: 2,500 pesos per session, 9,999 pesos for 5+1, 19,999 pesos for 10+3', 'Platinum Drip: 3,000 pesos per session, 14,000 pesos for 5+1, 26,000 pesos for 10+3'],
+            'Package',
+            null,
+            'gluta-drip-bronze',
+            '/media/photos/clinic/cebu-iv-drip.jpg',
+        ],
+        'lumin-seoul-drip-5-plus-1' => [
+            'Lumin Seoul Drip: buy 5 + 1 free',
+            'Lumin Seoul Drip for 2,500 pesos a session. Buy 5 sessions, get 1 free.',
+            'An all-in-one gluta drip with a powdery white booster.',
+            ['2,500 pesos per session', 'Buy 5, get 1 free'],
             'Promo',
             null,
-            'hiko-nose-lift',
-            '/media/photos/fillers.jpg',
+            'lumin-seoul-drip',
+            '/media/photos/flyers/lumin-seoul-drip.jpg',
         ],
-        'laennec-five-sessions' => [
-            'Laennec placenta, 5 sessions',
-            'Five Laennec placenta shots for 8,499 pesos.',
-            'Laennec is a Japanese placenta injection for skin renewal and vitality. A single shot is 1,800 pesos; the five-session package brings each one down.',
-            [
-                '5 sessions for 8,499 pesos',
-                '1,800 pesos per single shot',
-                'Given by a licensed physician',
-            ],
-            'Package',
+        'hikari-drip-premium-5-plus-1' => [
+            'Hikari Drip Premium: buy 5 + 1 free',
+            'Hikari Drip Premium for 2,500 pesos a session. Buy 5 sessions, get 1 free.',
+            'A rosy white skin drip for whitening and anti-aging care.',
+            ['2,500 pesos per session', 'Buy 5, get 1 free'],
+            'Promo',
             null,
-            'laennec-placenta',
-            '/media/photos/booster.jpg',
+            'hikari-drip-premium',
+            '/media/photos/flyers/hikari-drip-premium.jpg',
         ],
-        'ipl-buy-ten' => [
-            'IPL hair removal: buy 10, get 1 free',
-            'IPL OPT + SHR sessions from 499 pesos, with an eleventh session free.',
-            'Hair removal takes a series of sessions, so IPL is priced to make the series easier: buy ten sessions for an area and the eleventh is on us.',
-            [
-                'Lip, underarms, mustache and beard: 499 pesos a session',
-                'Arms 699 pesos, legs 799 pesos, Brazilian and bikini 1,000 pesos',
-                'Buy 10 sessions, get 1 free',
-            ],
-            'Package',
+        'namiko-fusion-drip-packages' => [
+            'Namiko Fusion Drip packages',
+            'Namiko Fusion Drip for 2,000 pesos a session, 5 sessions for 9,000 pesos or 10 sessions for 15,000 pesos.',
+            'Gluta, tranexamic acid, CoQ10, ALA, B vitamins, zinc and collagen in one drip.',
+            ['2,000 pesos per session', '5 sessions for 9,000 pesos', '10 sessions for 15,000 pesos'],
+            'Promo',
             null,
-            'ipl-hair-removal',
-            '/media/photos/hair.jpg',
+            'namiko-fusion-drip',
+            '/media/photos/flyers/namiko-fusion-drip.jpg',
+        ],
+        'sakura-kiyoshi-drip-packages' => [
+            'Sakura Kiyoshi Drip packages',
+            'Sakura Kiyoshi Drip, 5 sessions for 11,499 pesos or 10 sessions for 17,999 pesos.',
+            'A drip for radiant, rosy skin with collagen and immune support.',
+            ['5 sessions for 11,499 pesos', '10 sessions for 17,999 pesos'],
+            'Promo',
+            null,
+            'sakura-kiyoshi-drip',
+            '/media/photos/flyers/sakura-kiyoshi-drip.jpg',
+        ],
+        'cinderella-drips-5-plus-1' => [
+            'Cinderella Drip and Cinderella & Skinny Drip',
+            'Cinderella Drip for 2,200 pesos and Cinderella & Skinny Drip for 2,500 pesos a session, each buy 5 + 1.',
+            'Two drips, each also sold as a buy 5 + 1 series.',
+            ['Cinderella Drip: 2,200 pesos per session, buy 5 sessions + 1 free', 'Cinderella & Skinny Drip: 2,500 pesos per session, buy 5 + 1'],
+            'Promo',
+            null,
+            'cinderella-drip',
+            '/media/photos/flyers/cinderella-drips.jpg',
+        ],
+        'nctf-skin-booster-5000' => [
+            'NCTF Skin Booster for 5,000 pesos',
+            'NCTF skin booster, 1 vial per session, for 5,000 pesos.',
+            'Fillmed NCTF 135 HA for deep hydration, skin elasticity and firmness, fine lines and pigmentation, and radiance.',
+            ['5,000 pesos', '1 vial per session'],
+            'Promo',
+            null,
+            'nctf-skin-booster',
+            '/media/photos/flyers/nctf-skin-booster.jpg',
+        ],
+        '12d-hifu-20-off' => [
+            '12D HIFU: 20% off',
+            '12D HIFU for the whole body and face, now 20% off.',
+            'A non-invasive treatment using high-intensity focused ultrasound to lift, tighten and rejuvenate the skin.',
+            ['20% off', 'Treatment area: whole body and face'],
+            '20% off',
+            null,
+            '12d-hifu',
+            '/media/photos/flyers/12d-hifu.jpg',
+        ],
+        'thermage-20-off' => [
+            'Thermage Skin Tightening: 20% off',
+            'Thermage skin tightening, now 20% off.',
+            'Thermage can smoothen and tighten skin and give contour for an overall younger-looking appearance.',
+            ['20% off'],
+            '20% off',
+            null,
+            'thermage',
+            '/media/photos/flyers/thermage.jpg',
+        ],
+        'vaginal-rejuvenation-30-off' => [
+            'Vaginal Rejuvenation: 30% off',
+            'Laser vaginal rejuvenation, now 30% off.',
+            'Laser vaginal tightening is a non-surgical procedure that uses laser energy to tighten the vaginal canal and rejuvenate the vaginal area.',
+            ['30% off'],
+            '30% off',
+            null,
+            'vaginal-rejuvenation',
+            '/media/photos/flyers/vaginal-rejuvenation.jpg',
         ],
     ];
-
-    /** The first demo offers, switched off now the clinic's real ones are listed. */
-    public const RETIRED_PROMOTIONS = ['first-visit-consultation', 'hydra-facial-series', 'bridal-package', 'skin-booster-set'];
 
     /** slug => [title, category, excerpt, body, takeaways, image, author, read minutes, days ago] */
     public const POSTS = [
@@ -147,9 +277,9 @@ class MarketingContentSeeder extends Seeder
             'Choosing your first facial',
             'Skin care',
             'A facial is not one treatment but a family of them. Here is how to pick the one that suits your skin and your calendar.',
-            "Facials differ by how much they exfoliate, how much downtime they involve and how often they should be repeated. A Hydra Facial is the gentlest starting point: cleansing, extraction and serum infusion in about an hour, with no downtime. A chemical peel goes further, using controlled exfoliation to refresh tone and texture, and usually needs three to six sessions spaced a few weeks apart.\n\nThe useful question is not which facial is strongest but which one fits your skin right now. If you have active breakouts, a doctor-led acne programme combined with extraction and home care usually works better than a single brightening facial. If your concern is dullness or pigmentation, a series planned in advance will do more than repeated one-offs.\n\nBring your current routine to the consultation, including prescription creams and anything you use for acne or retinol. Your practitioner needs that picture to advise a plan you can actually follow, and to tell you honestly if the treatment you asked for is not the one you need.\n\nMost clients see a difference after one visit and a clearer difference after a planned series. We will give you the plan in writing, with the number of sessions and the price, before you commit to anything.",
+            "Facials differ by how much they exfoliate, how much downtime they involve and how often they should be repeated. A Hydrafacial is the gentlest starting point: cleansing, extraction and serum infusion in about an hour, with no downtime. A Diamond Peel or an Aqua Sponge Peel goes further, exfoliating to refresh tone and texture, and works best as a series spaced a few weeks apart.\n\nThe useful question is not which facial is strongest but which one fits your skin right now. If you have active breakouts, a doctor-led acne programme combined with extraction and home care usually works better than a single brightening facial. If your concern is dullness or pigmentation, a series planned in advance will do more than repeated one-offs.\n\nBring your current routine to the consultation, including prescription creams and anything you use for acne or retinol. Your practitioner needs that picture to advise a plan you can actually follow, and to tell you honestly if the treatment you asked for is not the one you need.\n\nMost clients see a difference after one visit and a clearer difference after a planned series. We will give you the plan in writing, with the number of sessions and the price, before you commit to anything.",
             [
-                'Gentle first: a Hydra Facial suits most skin with no downtime',
+                'Gentle first: a Hydrafacial suits most skin with no downtime',
                 'Peels and lasers work as a series, not as a single visit',
                 'Bring your current routine, including prescriptions, to the consultation',
             ],
@@ -162,7 +292,7 @@ class MarketingContentSeeder extends Seeder
             'What happens in a consultation',
             'Clinic news',
             'A first visit at Gluta RepubliQ is an assessment, not a sales conversation. Here is how the forty minutes are spent.',
-            "We start with what brought you in. Your practitioner asks about your concerns, how long you have had them, what you have tried and what you did not like about it. History matters: medicines, allergies, pregnancy or breastfeeding, recent treatments elsewhere, and any skin or health condition that changes what is safe.\n\nNext comes the assessment. Your skin is examined under good light, sometimes with a lamp or a camera, and your practitioner explains what they see in plain language. You are welcome to photograph anything you want to remember.\n\nThen the plan. Where a treatment is appropriate, you receive the options with prices, the number of sessions, realistic downtime and what aftercare involves. Where we think a treatment is not in your interest, we say so, and where a referral is more appropriate we will help you find one.\n\nThe consultation fee is 1,500 pesos, and on a first visit it is credited against your first treatment booked within 30 days.",
+            "We start with what brought you in. Your practitioner asks about your concerns, how long you have had them, what you have tried and what you did not like about it. History matters: medicines, allergies, pregnancy or breastfeeding, recent treatments elsewhere, and any skin or health condition that changes what is safe.\n\nNext comes the assessment. Your skin is examined under good light, sometimes with a lamp or a camera, and your practitioner explains what they see in plain language. You are welcome to photograph anything you want to remember.\n\nThen the plan. Where a treatment is appropriate, you receive the options with prices, the number of sessions, realistic downtime and what aftercare involves. Where we think a treatment is not in your interest, we say so, and where a referral is more appropriate we will help you find one.",
             [
                 'Assessment first, treatment second',
                 'You leave with a written plan and prices',
@@ -297,7 +427,7 @@ class MarketingContentSeeder extends Seeder
             0,
             [
                 ['heading' => 'Using this website', 'paragraphs' => [
-                    'This website is provided so that you can learn about our treatments and book appointments. It is a demonstration site: the clinic, the practitioners, the prices and the reviews shown are fictional, and no real medical service is provided through it.',
+                    'This website is provided so that you can learn about our treatments and book appointments.',
                     'Please do not misuse the site, attempt to reach data that is not yours, or submit information that is false or that belongs to someone else.',
                 ]],
                 ['heading' => 'Bookings and confirmations', 'paragraphs' => [
@@ -326,7 +456,7 @@ class MarketingContentSeeder extends Seeder
                 ]],
                 ['heading' => 'Content and intellectual property', 'paragraphs' => [
                     'The text, layout and photography on this site belong to the clinic or its licensors. Please do not reuse them commercially without written permission.',
-                    'Photographs used on this demonstration site come from royalty free libraries and are credited where the licence requires it.',
+                    "Photographs on this site are the clinic's own or come from royalty free libraries, credited where the licence requires it.",
                 ]],
                 ['heading' => 'Limits of liability', 'paragraphs' => [
                     'To the extent the law allows, we are not liable for indirect or consequential loss arising from use of this website or from a booking made through it. Nothing in these terms limits any right you have under Philippine consumer and health laws.',
@@ -379,15 +509,21 @@ class MarketingContentSeeder extends Seeder
         $org = ['organization_id' => $organization->id];
 
         $sort = 0;
-        foreach (self::TIERS as $slug => [$name, $tagline, $price, $benefits, $note, $featured]) {
+        // The tiers were demo content and the clinic sells no membership yet
+        // (2026-10-24), so only the test suite gets them; the site hides
+        // membership until an active tier exists.
+        foreach (app()->runningUnitTests() ? self::TIERS : [] as $slug => [$name, $tagline, $price, $benefits, $note, $featured]) {
             MembershipTier::withoutGlobalScopes()->updateOrCreate($org + ['slug' => $slug], [
                 'name' => $name, 'tagline' => $tagline, 'price_monthly' => $price, 'benefits' => $benefits,
                 'note' => $note, 'is_featured' => $featured, 'sort' => $sort++,
             ]);
         }
 
+        // Like the menu, the offers are the office's once loaded: they are only
+        // written when there are none, so an offer switched off stays off.
         $sort = 0;
-        foreach (self::PROMOTIONS as $slug => [$title, $summary, $description, $details, $badge, $endsOn, $treatment, $image]) {
+        $promotions = Promotion::withoutGlobalScopes()->where($org)->doesntExist() ? self::PROMOTIONS : [];
+        foreach ($promotions as $slug => [$title, $summary, $description, $details, $badge, $endsOn, $treatment, $image]) {
             Promotion::withoutGlobalScopes()->firstOrCreate($org + ['slug' => $slug], [
                 'title' => $title,
                 'summary' => $summary,

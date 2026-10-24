@@ -1,7 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
+import { Fragment } from 'react';
 import type { CSSProperties } from 'react';
-import { formatDuration, formatPrice, useReveal } from '@/lib/site';
+import {
+    formatDuration,
+    formatPrice,
+    formatTreatmentPrice,
+    useReveal,
+} from '@/lib/site';
 import { book } from '@/routes';
 import treatmentRoutes from '@/routes/treatments';
 import type { Category } from '@/types/site';
@@ -18,7 +24,7 @@ export default function TreatmentsIndex({
             <Head title="Treatments and prices">
                 <meta
                     name="description"
-                    content="Facial treatments, injectables, body, hair, wellness and makeup services with prices, session times and what to expect."
+                    content="Facials, gluta drips, injectables, skin boosters, lifting, laser, slimming and semi-permanent makeup, with prices, session times and what to expect."
                 />
             </Head>
 
@@ -29,9 +35,9 @@ export default function TreatmentsIndex({
                         <em className="text-champagne">priced plainly.</em>
                     </h1>
                     <p className="mt-6 max-w-xl text-lg text-lilac">
-                        Every price below is the starting price for one session.
-                        Your doctor confirms the plan and total before anything
-                        begins.
+                        Prices below are starting prices. Services marked price
+                        on consultation are quoted at your visit, and the plan
+                        and total are agreed before anything begins.
                     </p>
                     <nav
                         aria-label="Categories"
@@ -79,72 +85,101 @@ export default function TreatmentsIndex({
                         </div>
                         <ul className="divide-y divide-border border-y border-border lg:col-span-8">
                             {c.treatments?.map((t, i) => (
-                                <li
-                                    key={t.id}
-                                    data-reveal
-                                    style={{ '--i': i } as CSSProperties}
-                                    className="group grid grid-cols-[5rem_1fr] gap-5 py-6 sm:grid-cols-[7rem_1fr_auto] sm:items-center"
-                                >
-                                    <Link
-                                        href={treatmentRoutes.show(t.slug).url}
-                                        className="block aspect-square overflow-hidden bg-lilac"
-                                        tabIndex={-1}
-                                    >
-                                        {t.image && (
-                                            <img
-                                                src={t.image}
-                                                alt=""
-                                                loading="lazy"
-                                                className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                                            />
+                                <Fragment key={t.id}>
+                                    {/* A sub-category heading where the group changes, as on the clinic's price posters. */}
+                                    {t.subcategory &&
+                                        t.subcategory !==
+                                            c.treatments?.[i - 1]
+                                                ?.subcategory && (
+                                            <li className="pt-8 pb-3">
+                                                <h3 className="font-sans text-sm font-semibold text-muted-foreground">
+                                                    {t.subcategory}
+                                                </h3>
+                                            </li>
                                         )}
-                                    </Link>
-                                    <div>
-                                        <h3 className="text-2xl">
-                                            <Link
-                                                href={
-                                                    treatmentRoutes.show(t.slug)
-                                                        .url
-                                                }
-                                                className="hover:text-rose-ink"
-                                            >
-                                                {t.name}
-                                            </Link>
-                                        </h3>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            {t.summary}
-                                        </p>
-                                        <p className="numerals mt-2 text-xs text-muted-foreground">
-                                            {formatDuration(t.duration_minutes)}{' '}
-                                            · {t.recommended_sessions}
-                                        </p>
-                                    </div>
-                                    <div className="numerals col-span-2 flex items-center justify-between gap-6 sm:col-span-1 sm:flex-col sm:items-end">
-                                        <p className="text-right">
-                                            <span className="font-display text-3xl">
-                                                {formatPrice(
-                                                    t.promo_price ?? t.price,
-                                                )}
-                                            </span>
-                                            {t.promo_price && (
-                                                <s className="ml-2 text-sm text-muted-foreground">
-                                                    {formatPrice(t.price)}
-                                                </s>
-                                            )}
-                                        </p>
+                                    <li
+                                        data-reveal
+                                        style={{ '--i': i } as CSSProperties}
+                                        className="group grid grid-cols-[5rem_1fr] gap-5 py-6 sm:grid-cols-[7rem_1fr_auto] sm:items-center"
+                                    >
                                         <Link
                                             href={
-                                                book({
-                                                    query: { treatment: t.id },
-                                                }).url
+                                                treatmentRoutes.show(t.slug).url
                                             }
-                                            className="press inline-flex items-center gap-1.5 text-sm font-medium text-rose-ink hover:text-plum"
+                                            className="block aspect-square overflow-hidden bg-lilac"
+                                            tabIndex={-1}
                                         >
-                                            Book{' '}
-                                            <ArrowRight className="size-4" />
+                                            {t.image && (
+                                                <img
+                                                    src={t.image}
+                                                    alt=""
+                                                    loading="lazy"
+                                                    className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                                                />
+                                            )}
                                         </Link>
-                                    </div>
-                                </li>
+                                        <div>
+                                            <h3 className="text-2xl">
+                                                <Link
+                                                    href={
+                                                        treatmentRoutes.show(
+                                                            t.slug,
+                                                        ).url
+                                                    }
+                                                    className="hover:text-rose-ink"
+                                                >
+                                                    {t.name}
+                                                </Link>
+                                            </h3>
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                {t.summary}
+                                            </p>
+                                            <p className="numerals mt-2 text-xs text-muted-foreground">
+                                                {formatDuration(
+                                                    t.duration_minutes,
+                                                )}
+                                                {t.recommended_sessions &&
+                                                    `, ${t.recommended_sessions}`}
+                                            </p>
+                                        </div>
+                                        <div className="numerals col-span-2 flex items-center justify-between gap-6 sm:col-span-1 sm:flex-col sm:items-end">
+                                            <p className="text-right">
+                                                {t.price > 0 ? (
+                                                    <span className="font-display text-3xl">
+                                                        {formatPrice(
+                                                            t.promo_price ??
+                                                                t.price,
+                                                        )}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm">
+                                                        {formatTreatmentPrice(
+                                                            0,
+                                                        )}
+                                                    </span>
+                                                )}
+                                                {t.promo_price && (
+                                                    <s className="ml-2 text-sm text-muted-foreground">
+                                                        {formatPrice(t.price)}
+                                                    </s>
+                                                )}
+                                            </p>
+                                            <Link
+                                                href={
+                                                    book({
+                                                        query: {
+                                                            treatment: t.id,
+                                                        },
+                                                    }).url
+                                                }
+                                                className="press inline-flex items-center gap-1.5 text-sm font-medium text-rose-ink hover:text-plum"
+                                            >
+                                                Book{' '}
+                                                <ArrowRight className="size-4" />
+                                            </Link>
+                                        </div>
+                                    </li>
+                                </Fragment>
                             ))}
                         </ul>
                     </div>

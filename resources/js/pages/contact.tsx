@@ -266,13 +266,15 @@ export default function Contact({ branches, treatments }: Props) {
                                         />
                                     )}
                                     <div>
+                                        {/* City or province, mall, address, phone (owner's format). */}
                                         <h3 className="text-2xl">
-                                            {branch.name}
+                                            {branch.city}
                                         </h3>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            {[branch.address, branch.city]
-                                                .filter(Boolean)
-                                                .join(', ')}
+                                        <p className="mt-1 font-medium">
+                                            {branch.name}
+                                        </p>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {branch.address}
                                         </p>
                                         {branch.phone && (
                                             <p className="mt-2 text-sm">

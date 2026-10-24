@@ -4,7 +4,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     formatDuration,
-    formatPrice,
+    formatTreatmentPrice,
     openWindow,
     splitTime,
     toIsoDate,
@@ -176,7 +176,7 @@ export default function Book({
                                     {items.map((t) => (
                                         <option key={t.id} value={t.id}>
                                             {t.name},{' '}
-                                            {formatPrice(
+                                            {formatTreatmentPrice(
                                                 t.promo_price ?? t.price,
                                             )}
                                         </option>
@@ -203,6 +203,9 @@ export default function Book({
                                     }}
                                 >
                                     <span className="block font-display text-xl">
+                                        {b.city}
+                                    </span>
+                                    <span className="mt-0.5 block text-sm">
                                         {b.name}
                                     </span>
                                     <span className="mt-1 block text-xs opacity-75">
@@ -573,7 +576,7 @@ export default function Book({
                             </span>
                             <span className="font-display text-4xl">
                                 {treatment
-                                    ? formatPrice(
+                                    ? formatTreatmentPrice(
                                           treatment.promo_price ??
                                               treatment.price,
                                       )

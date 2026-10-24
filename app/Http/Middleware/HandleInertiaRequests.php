@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Approval;
 use App\Models\ClinicSetting;
+use App\Models\MembershipTier;
 use Illuminate\Foundation\Vite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -58,6 +59,8 @@ class HandleInertiaRequests extends Middleware
             // saved any, so a fresh one still shows whatever it was configured
             // with rather than nothing at all.
             'socials' => fn () => ClinicSetting::socials(),
+            // Membership is only shown once the clinic offers a real plan.
+            'hasMembership' => fn () => MembershipTier::where('is_active', true)->exists(),
             // A short fingerprint of the compiled assets, so "my screen does
             // not match the server" can be settled by reading it off the page
             // instead of guessing from a stale tab.
