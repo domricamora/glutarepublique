@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\HrController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Admin\LegalPageController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PostController;
@@ -82,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // handles and whether the chat is on.
         Route::get('settings/clinic', [ClinicSettingsController::class, 'index'])->middleware('can:settings.edit')->name('settings.clinic.index');
         Route::patch('settings/clinic', [ClinicSettingsController::class, 'update'])->middleware('can:settings.edit')->name('settings.clinic.update');
+        Route::post('settings/clinic/webhook-test', [ClinicSettingsController::class, 'testWebhook'])->middleware('can:clients.contacts')->name('settings.clinic.webhook-test');
 
         // Setup: load the reference and content rows the app needs to trade,
         // from the dashboard rather than a shell. Gated on settings.edit
@@ -96,6 +98,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Requests only the owner grants. Everyone sees their own; deciding is owner only.
         Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read', [NotificationController::class, 'readAll'])->name('notifications.read');
+        Route::get('notifications/{id}', [NotificationController::class, 'open'])->name('notifications.open');
         Route::post('approvals/{approval}', [ApprovalController::class, 'decide'])->middleware('can:approvals.decide')->name('approvals.decide');
 
         // Any member of staff on the roll files their own leave; the owner grants it.

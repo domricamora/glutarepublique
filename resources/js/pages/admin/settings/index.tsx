@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,24 +13,49 @@ type Social = {
     handle: string | null;
 };
 
+type Webhooks = {
+    url: string | null;
+    secret: string | null;
+    events: string[];
+    options: Record<string, string>;
+    last: string | null;
+};
+
 type Props = {
     socials: Social[];
     chat_enabled: boolean;
     chat_greeting: string;
+    /** Null for anyone but the owner: webhooks can carry client contacts. */
+    webhooks: Webhooks | null;
 };
 
 export default function ClinicSettings({
     socials,
     chat_enabled,
     chat_greeting,
+    webhooks,
 }: Props) {
-    const form = useForm({
+    const form = useForm<{
+        socials: Record<string, string>;
+        chat_enabled: number;
+        chat_greeting: string;
+        webhook_url?: string;
+        webhook_events?: string[];
+    }>({
         socials: Object.fromEntries(
             socials.map((s) => [s.platform, s.handle ?? '']),
         ),
         chat_enabled: chat_enabled ? 1 : 0,
         chat_greeting,
+        // Only sent by the owner, so a manager saving the page leaves the webhook alone.
+        ...(webhooks
+            ? {
+                  webhook_url: webhooks.url ?? '',
+                  webhook_events: webhooks.events,
+              }
+            : {}),
     });
+    const events = form.data.webhook_events ?? [];
 
     return (
         <>
@@ -146,6 +171,107 @@ export default function ClinicSettings({
                             )}
                         </div>
                     </section>
+
+                    {webhooks && (
+                        <section className="max-w-2xl space-y-4">
+                            <div>
+                                <h2 className="font-display text-xl">
+                                    Webhooks
+                                </h2>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Send new enquiries, bookings and sales to
+                                    another system (a CRM, Zapier, a group chat
+                                    bot) as they happen. Each request is signed
+                                    with the key below in the X-Clinic-Signature
+                                    header. Client phone numbers and emails are
+                                    included, so only point this at a system you
+                                    control.
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="webhook_url">
+                                    Send to (https address)
+                                </Label>
+                                <Input
+                                    id="webhook_url"
+                                    type="url"
+                                    placeholder="https://"
+                                    value={form.data.webhook_url ?? ''}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'webhook_url',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                                {form.errors.webhook_url && (
+                                    <p className="text-sm text-destructive">
+                                        {form.errors.webhook_url}
+                                    </p>
+                                )}
+                            </div>
+                            <fieldset className="space-y-2">
+                                <legend className="text-sm font-medium">
+                                    Events
+                                </legend>
+                                {Object.entries(webhooks.options).map(
+                                    ([key, label]) => (
+                                        <label
+                                            key={key}
+                                            className="flex items-center gap-2 text-sm"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={events.includes(key)}
+                                                onChange={() =>
+                                                    form.setData(
+                                                        'webhook_events',
+                                                        events.includes(key)
+                                                            ? events.filter(
+                                                                  (e) =>
+                                                                      e !== key,
+                                                              )
+                                                            : [...events, key],
+                                                    )
+                                                }
+                                            />
+                                            {label}
+                                        </label>
+                                    ),
+                                )}
+                            </fieldset>
+                            {webhooks.secret && (
+                                <p className="text-sm">
+                                    Signing key:{' '}
+                                    <code className="border border-border px-1.5 py-0.5 text-xs break-all">
+                                        {webhooks.secret}
+                                    </code>
+                                </p>
+                            )}
+                            {webhooks.url && (
+                                <div className="flex flex-wrap items-center gap-3 text-sm">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.post(
+                                                settings.webhookTest().url,
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        className="press h-9 border border-border px-3 hover:bg-mist dark:hover:bg-white/5"
+                                    >
+                                        Send a test
+                                    </button>
+                                    <span className="text-muted-foreground">
+                                        {webhooks.last
+                                            ? `Last sent ${webhooks.last}`
+                                            : 'Nothing sent yet.'}
+                                    </span>
+                                </div>
+                            )}
+                        </section>
+                    )}
 
                     <Button type="submit" disabled={form.processing}>
                         {form.processing ? (

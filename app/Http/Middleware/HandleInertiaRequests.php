@@ -92,6 +92,8 @@ class HandleInertiaRequests extends Middleware
             ],
             // The owner's count of requests waiting, for the badge on Approvals.
             'approvalsWaiting' => fn () => $request->user()?->can('approvals.decide') ? Approval::pending()->count() : 0,
+            // Unread alerts, for the bell in the office header.
+            'notificationsUnread' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

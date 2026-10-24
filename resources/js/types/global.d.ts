@@ -31,6 +31,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             approvalsWaiting: number;
+            notificationsUnread: number;
             [key: string]: unknown;
         };
     }

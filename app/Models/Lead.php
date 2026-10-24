@@ -73,4 +73,26 @@ class Lead extends Model
     {
         return $this->hasMany(CrmActivity::class)->latest();
     }
+
+    /**
+     * What a webhook receives about a client. Contacts are included: only the
+     * owner can point a webhook anywhere (clients.contacts).
+     *
+     * @return array<string, mixed>
+     */
+    public function webhookPayload(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->fullName(),
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'source' => $this->source,
+            'form' => $this->form,
+            'stage' => $this->stage,
+            'treatment' => $this->treatment?->name,
+            'branch' => $this->branch?->name,
+            'message' => $this->message,
+        ];
+    }
 }

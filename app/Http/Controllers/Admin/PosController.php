@@ -16,6 +16,7 @@ use App\Models\Treatment;
 use App\Payments\PaymentManager;
 use App\Support\BranchAccess;
 use App\Support\ClientContact;
+use App\Support\ClinicEvents;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -133,6 +134,17 @@ class PosController extends Controller
         }
 
         $completed = $ring($data, $request->user());
+        // Webhook only: the office does not need a bell for its own sales.
+        $sale = $completed->sale->load(['items:id,sale_id,description,quantity,line_total', 'branch:id,name']);
+        ClinicEvents::fire('sale.completed', '', '', null, [
+            'reference' => $sale->reference,
+            'branch' => $sale->branch?->name,
+            'client' => $sale->client_name,
+            'total' => (float) $sale->total,
+            'paid' => (float) $sale->amount_paid,
+            'status' => $sale->status,
+            'items' => $sale->items->map(fn ($i) => ['description' => $i->description, 'quantity' => $i->quantity, 'total' => (float) $i->line_total])->all(),
+        ], null);
 
         return redirect()
             ->to(route('admin.pos.sales.show', $completed->sale))

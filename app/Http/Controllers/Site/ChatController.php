@@ -8,6 +8,7 @@ use App\Models\ChatMessage;
 use App\Models\ClinicSetting;
 use App\Models\Lead;
 use App\Models\Organization;
+use App\Support\ClinicEvents;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -116,6 +117,7 @@ class ChatController extends Controller
         ]);
 
         $conversation->forceFill(['lead_id' => $lead->id])->save();
+        ClinicEvents::fire('lead.created', "New chat from {$lead->fullName()}", Str::limit((string) $data['body'], 120), route('admin.leads.show', $lead), $lead->webhookPayload() + ['chat' => (string) $data['body']], 'leads.view');
     }
 
     /**

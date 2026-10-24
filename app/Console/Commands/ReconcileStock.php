@@ -6,6 +6,7 @@ use App\Models\InventoryMovement;
 use App\Models\ProductBatch;
 use App\Models\ProductStock;
 use App\Models\StockDiscrepancy;
+use App\Support\ClinicEvents;
 use Illuminate\Console\Command;
 
 /**
@@ -52,16 +53,23 @@ class ReconcileStock extends Command
             }
 
             $found++;
-            $open
-                ? $open->update([...$figures, 'checked_at' => $now])
-                : StockDiscrepancy::create([
-                    ...$figures,
-                    'organization_id' => $stock->organization_id,
-                    'product_id' => $stock->product_id,
-                    'branch_id' => $stock->branch_id,
-                    'found_at' => $now,
-                    'checked_at' => $now,
-                ]);
+            if ($open) {
+                $open->update([...$figures, 'checked_at' => $now]);
+
+                continue;
+            }
+
+            StockDiscrepancy::create([
+                ...$figures,
+                'organization_id' => $stock->organization_id,
+                'product_id' => $stock->product_id,
+                'branch_id' => $stock->branch_id,
+                'found_at' => $now,
+                'checked_at' => $now,
+            ]);
+            // Only when first found, so a flag left for a week does not ring every night.
+            $name = $stock->product()->withoutGlobalScopes()->value('name');
+            ClinicEvents::fire('stock.discrepancy', "Count {$name}", "Shelf {$figures['on_hand']}, lots {$figures['lots']}, ledger {$figures['ledger']}.", route('admin.inventory.index', ['branch' => $stock->branch_id]), [...$figures, 'product' => $name, 'branch_id' => $stock->branch_id], 'inventory.create', $stock->branch_id);
         }
 
         $this->info($found === 0 ? 'Stock records agree everywhere.' : "{$found} product(s) need a count.");

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Models\CrmActivity;
 use App\Models\Lead;
+use App\Support\ClinicEvents;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -37,6 +38,14 @@ class LeadController extends Controller
         ] + $request->session()->get('attribution', []));
 
         CrmActivity::create(['lead_id' => $lead->id, 'type' => $data['form'], 'description' => 'Website '.$data['form'].' form submitted']);
+        ClinicEvents::fire(
+            'lead.created',
+            $data['form'] === 'newsletter' ? 'New newsletter sign-up' : "New enquiry from {$lead->fullName()}",
+            $lead->treatment?->name ? "Asked about {$lead->treatment->name}." : 'Sent the '.$data['form'].' form on the website.',
+            route('admin.leads.show', $lead),
+            $lead->webhookPayload(),
+            $data['form'] === 'newsletter' ? null : 'leads.view',
+        );
 
         return back()->with('success', $data['form'] === 'newsletter'
             ? 'You are on the list. Watch your inbox for our next update.'

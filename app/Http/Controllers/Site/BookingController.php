@@ -9,12 +9,13 @@ use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\Specialist;
 use App\Models\Treatment;
+use App\Support\ClinicEvents;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -80,6 +81,23 @@ class BookingController extends Controller
         ]);
 
         $appointment = $book($data + ['tracking' => $request->session()->get('attribution', [])]);
+        $appointment->load(['lead', 'treatment:id,name', 'branch:id,name']);
+        ClinicEvents::fire(
+            'appointment.booked',
+            "Online booking: {$appointment->lead?->fullName()}",
+            sprintf('%s at %s, %s. Confirm it in the diary.', $appointment->treatment?->name, $appointment->branch?->name, $appointment->starts_at->format('D j M, g:i A')),
+            route('admin.appointments.index', ['date' => $appointment->starts_at->toDateString()]),
+            [
+                'reference' => $appointment->reference,
+                'status' => $appointment->status,
+                'starts_at' => $appointment->starts_at->toIso8601String(),
+                'treatment' => $appointment->treatment?->name,
+                'branch' => $appointment->branch?->name,
+                'client' => $appointment->lead?->webhookPayload(),
+            ],
+            'appointments.view',
+            $appointment->branch_id,
+        );
 
         return redirect()->to(URL::signedRoute('book.confirmed', $appointment->reference, now()->addDays(7)));
     }
