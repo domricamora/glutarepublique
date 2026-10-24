@@ -8,7 +8,14 @@ Updated 2026-10-24 (live-data restart, below). Earlier: 2026-10-23 late notes fu
 - **Team page hidden**: `/doctors` 301s to `/about` (which shows the team); page, controller method, SEO entry, menu, footer, sitemap and llms.txt entries removed.
 - **Branch split done for leads and the dashboard**: `ClinicAnalytics($days, $branch)` scopes every figure (refunds and payment mix through the sale's branch, capacity by staff at the branch; chat stays clinic-wide). Leads list shows the branch's leads plus those with no branch. Test in BranchAccessTest.
 - **Shortfall "mark as counted"**: `sale_items.shortfall_counted_at/by`; Inventory "Count these" lines link each product to the adjust form (`?product=`) and have "Mark as counted" (`PATCH admin/inventory/shortfalls/{item}`, audited, own-branch only for restricted staff).
-- Next: must-have list C-G (owner said continue). Commit rewrite (item 12) still only on an explicit yes.
+- **Must-have list C-G done and deployed (2026-10-24 night)**, full suite 317 tests (315 passed, 2 skipped), checked live:
+  - **C reports**: `AccountingController::window()` presets `?preset=month|quarter|year&to=` against the period before; custom ranges against the same dates last year. Income statement uses `period`/`previous`; balance sheet and trial balance stay year to date. CSV has the comparison.
+  - **D till price lists**: `Treatment::sellableOptions()`; the till lists each priced price-list line as its own item (`option` = label, priced server-side in `RingUpSale::resolveLines`). A bare service tile is hidden when a line already sells it at that price. One recipe per line sold: later sessions of a prepaid package do not take stock automatically (use Adjust > Used in a treatment).
+  - **E reconciliation**: `stock:reconcile` (01:30 daily, cron already on live) writes `stock_discrepancies`; the inventory page shows "Records disagree"; `GET/POST admin/inventory/count` count sheet. `ManageStock::realign()` sets shelf = lots and closes a ledger gap before any count.
+  - **F client record**: lead page `record` prop (visits, last visit, paid to date = payments less refunds, purchases, last 20 sales), money only with `pos.view`; "Ring up a sale" link.
+  - **G safeguards**: permission `clients.contacts` (Owner only); `App\Support\ClientContact` masks phone/email on leads, diary, chat and till; `POST admin/leads/{lead}/reveal` (audited); `GET admin/leads-export` owner-only, audited. A masked phone posted from the till is replaced with the real one.
+  - **G notifications and webhooks**: `App\Support\ClinicEvents::fire()` sends database notifications (bell in the header, `admin/notifications`) and owner-set signed webhooks (`webhooks.url/secret/events/last` ClinicSettings, `X-Clinic-Signature` HMAC-SHA256, sent after the response, test button in Settings).
+- Still open: live `.env` APP_URL (owner); commit rewrite (item 12) only on an explicit yes; owner data list (prices for 23 services, promo end dates, products and recipes, San Pedro staff, pay data, HIFU photo, link logins to employees); privacy notice wording for IP/location logging.
 
 ## Recipes, branch settings, branch access (2026-10-24 late)
 

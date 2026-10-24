@@ -10,7 +10,7 @@ Backups run from Laravel's scheduler. Add this cron job once in cPanel > Cron Jo
 * * * * * /opt/alt/php83/usr/bin/php /home/<cpanel-user>/public_html/<site-folder>/artisan schedule:run >> /dev/null 2>&1
 ```
 
-`php artisan schedule:list` shows what will run: the nightly backup at 02:00 Manila time and `model:prune` at 03:00, which deletes website traffic rows older than 13 months.
+`php artisan schedule:list` shows what will run: the stock check (`stock:reconcile`) at 01:30 Manila time, the nightly backup at 02:00 and `model:prune` at 03:00, which deletes website traffic rows older than 13 months.
 
 On the live server the cron line was added on 2026-10-23 (the crontab was backed up to `~/crontab.bak-*` first).
 

@@ -44,6 +44,13 @@ Every website enquiry, booking and chat becomes a **lead**, with where it came f
 - **Leads** lists them by stage: New, Contacted, Consultation booked, and so on up to VIP. Click the stage tabs to filter, or search by name, phone or email.
 - Open a lead to move it along the pipeline (click a stage), add notes, and see its full history.
 - Leads are for sales follow-up only. Never write medical details on a lead.
+- **Client record**: on a lead, staff who use the till see visits, last visit, amount paid to date and every purchase. **Ring up a sale** from the lead so the sale lands on their record.
+- **Contact details are masked** ("0917 ••• ••34") for everyone but the owner. Press **Show contact details** on the lead to see one client's number and email; each time is written to the audit log. Only the owner can **Export clients** (a spreadsheet of every client with contacts), and that is logged too.
+- Staff tied to a branch see their branch's leads plus enquiries that did not name a branch.
+
+### Notifications
+
+The bell at the top right shows new alerts for your work: website enquiries and chats (people who handle leads), online bookings (people who handle the diary, for their own branch) and stock to count (stock staff). Click one to open it.
 
 ### Website chat
 
@@ -56,7 +63,7 @@ Every website enquiry, booking and chat becomes a **lead**, with where it came f
 ### Ringing up a sale (Point of sale)
 
 1. Open **Point of sale**.
-2. Search or filter the list and tap treatments and products to add them. Prices come from the catalogue and cannot be typed in.
+2. Search or filter the list and tap treatments and products to add them. Prices come from the catalogue and cannot be typed in. Services with a price list appear once per line, for example "9D HIFU (Face & Neck)" or "Bronze Gluta Drip (5+1 package)", each at its listed price.
 3. Optionally pick the client and a promotion, and add a discount (percent or fixed amount).
 4. Choose the payment method: cash, card, GCash, Maya, bank transfer or other.
 5. Enter the amount received. For cash the change is shown. A part payment (deposit) leaves a balance on the sale.
@@ -80,6 +87,9 @@ Open the sale (**Point of sale** > **Sales**, then the sale) and use the refund 
 - **Adjust**: record damage, expired stock, stock used in a treatment, a count correction, or a **transfer** to another branch.
 - Open a product to see its lots in expiry order and every movement in and out.
 - The system always uses the lot that expires first, when selling and when stock is used in treatments.
+- **Count stock**: a stocktake sheet for the whole branch. Type what is on the shelf (blank rows are left alone); anything that differs is corrected as one stocktake.
+- **Count these**: services rung up when the records held too little of a recipe product. Count the product (**Count** link) and press **Mark as counted**.
+- **Records disagree**: every night the system checks that the shelf count, the lots and the stock ledger agree. A product listed here needs counting; the flag clears on the next check after the count.
 
 **Catalogue** holds the treatment menu and retail products: names, prices, promo prices, photos and whether each one is shown and sellable.
 
@@ -114,7 +124,7 @@ Below the agenda, the analytics panel shows revenue, gross profit, average sale,
 - **Chart of accounts**: the account list with balances.
 - **Journal entries**: post an entry (debits must equal credits). A posted entry is never edited: **void** it and post a correct one. Sales and payroll post their own entries.
 - **Close a month** once its books are final; nothing more can be posted into it.
-- **Reports**: trial balance, income statement and balance sheet for any date range. **Export CSV** downloads all three for your accountant.
+- **Reports**: trial balance, income statement and balance sheet. Pick **Month**, **Quarter** or **Year** (step back and forward with the arrows) and the income statement sits next to the period before it, with the change per line; **Custom** compares any dates with the same dates a year earlier. **Export CSV** downloads all three, comparison included, for your accountant.
 
 ### Branches
 
@@ -139,6 +149,8 @@ Below the agenda, the analytics panel shows revenue, gross profit, average sale,
 ### Clinic settings
 
 Social media links shown on the website, and whether the website chat is switched on and how it greets visitors.
+
+**Webhooks** (owner only): an https address that receives new enquiries, online bookings, sales and stock alerts as they happen, for example a CRM or Zapier. Requests are signed with the key shown (header `X-Clinic-Signature`, HMAC-SHA256 of the body). They include client contact details, so only use a system the clinic controls. **Send a test** shows what came back.
 
 ### Audit log
 
