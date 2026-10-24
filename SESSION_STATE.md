@@ -2,7 +2,15 @@
 
 Updated 2026-10-24 (live-data restart, below). Earlier: 2026-10-23 late notes further down. Earlier: contract gap pass (Annex A of `~/Downloads/glutarepubliq/Software-Development-Agreement-Recursive-Frog- GlutaRepubliQ.pdf`) built, tested and deployed to https://glutarepubliq.recursive-frog.com together with the 2026-10-21 real-content import.
 
-## Recipes, branch settings, branch access (2026-10-24 late) — read first
+## Domain, team page, branch split, shortfall counts (2026-10-24 night) — read first
+
+- **glutarepubliq.com is the home address** (owner, 2026-10-24). Same server and folder as before (`~/public_html/glutarepubliq.recursive-frog.com`, glutarepubliq.com is pointed at it). `public/.htaccess` 301s `glutarepubliq.recursive-frog.com` and `www.glutarepubliq.com` to `https://glutarepubliq.com/<path>`; `deploy.ps1` builds and checks against https://glutarepubliq.com. **Live `.env` still says `APP_URL=https://glutarepubliq.recursive-frog.com`**: the classifier blocked editing it over SSH. Pages are fine (URLs follow the request host), but mail links and CLI output use APP_URL: the owner should set it to `https://glutarepubliq.com` (cPanel File Manager) and redeploy. Passkeys registered on the old address will not work on the new one; re-register them.
+- **Team page hidden**: `/doctors` 301s to `/about` (which shows the team); page, controller method, SEO entry, menu, footer, sitemap and llms.txt entries removed.
+- **Branch split done for leads and the dashboard**: `ClinicAnalytics($days, $branch)` scopes every figure (refunds and payment mix through the sale's branch, capacity by staff at the branch; chat stays clinic-wide). Leads list shows the branch's leads plus those with no branch. Test in BranchAccessTest.
+- **Shortfall "mark as counted"**: `sale_items.shortfall_counted_at/by`; Inventory "Count these" lines link each product to the adjust form (`?product=`) and have "Mark as counted" (`PATCH admin/inventory/shortfalls/{item}`, audited, own-branch only for restricted staff).
+- Next: must-have list C-G (owner said continue). Commit rewrite (item 12) still only on an explicit yes.
+
+## Recipes, branch settings, branch access (2026-10-24 late)
 
 - **Booking fix (deployed, 2c69b65)**: `/book` got branches without `hours`, so every day read "Closed" (broke in bddb612). Test in BookingTest.
 - **Phase 1 done + deployed (15cafba)**: service recipes (`treatment_products`: product + whole units per session) and staff per service (`specialist_treatment`; none = anyone at the branch). Catalogue > Services > "Recipe & staff" panel (`recipe-editor.tsx`, `PUT admin/catalog/services/{t}/recipe`). `RingUpSale` takes the recipe off the selling branch's shelf (movement type `service`), saves `sale_items.cost` (product cost or recipe cost) and, when records are short, takes what is there and writes `sale_items.stock_shortfall` (owner chose: record it, flag it). `PostSale` books cost from `sale_items.cost`; refunds return only retail products and reverse only their cost. Dashboard gross profit uses `sale_items.cost`. Inventory shows "Count these" shortfalls (30 days). `AvailableSlots::specialists($branch, $specialist, $treatment)` limits staff; `staffFor()` in lib/site.ts filters both booking forms. Tests: ServiceRecipeTest.
