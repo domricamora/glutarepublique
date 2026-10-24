@@ -13,6 +13,10 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # glutarepubliq.com is the clinic's home: the old address and www land there
+    RewriteCond %{HTTP_HOST} ^(glutarepubliq\.recursive-frog\.com|www\.glutarepubliq\.com)$ [NC]
+    RewriteRule ^ https://glutarepubliq.com%{REQUEST_URI} [L,R=301]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$

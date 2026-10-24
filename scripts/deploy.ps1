@@ -10,7 +10,7 @@ param(
     [string]$Host_ = 'htrjymuo@ck.deskpulse.click',
     [int]$Port = 9022,
     [string]$Remote = '~/public_html/glutarepubliq.recursive-frog.com',
-    [string]$AppUrl = 'https://glutarepubliq.recursive-frog.com',
+    [string]$AppUrl = 'https://glutarepubliq.com',
     [string]$ExpectedDatabase = 'htrjymuo_glutarepubliq',
     [switch]$AllowDatabaseMismatch,
     [switch]$SkipTests,
@@ -27,7 +27,7 @@ $slug = (Select-String -Path config\clinic.php `
 
 if (-not $slug) { throw 'Could not read the organization slug from config/clinic.php.' }
 
-$expected = "https://glutarepubliq.recursive-frog.com"
+$expected = "https://glutarepubliq.com"
 
 Write-Host "This repository is the '$slug' site; target URL: $AppUrl"
 
