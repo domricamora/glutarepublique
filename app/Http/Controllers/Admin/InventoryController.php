@@ -96,6 +96,7 @@ class InventoryController extends Controller
     private static function shortfalls(Branch $branch): array
     {
         return SaleItem::whereNotNull('stock_shortfall')
+            ->whereNull('shortfall_counted_at')
             ->whereHas('sale', fn (Builder $q) => $q->where('branch_id', $branch->id)->where('created_at', '>=', now()->subDays(30)))
             ->with('sale:id,reference,created_at')
             ->latest('id')
@@ -107,11 +108,28 @@ class InventoryController extends Controller
                 'date' => $item->sale->created_at->toDateString(),
                 'service' => $item->description,
                 'products' => collect($item->stock_shortfall)
-                    ->map(fn (array $s) => "{$s['name']}: {$s['taken']} of {$s['needed']} taken")
-                    ->join('; '),
+                    ->map(fn (array $s) => ['id' => $s['product_id'], 'label' => "{$s['name']}: {$s['taken']} of {$s['needed']} taken"])
+                    ->all(),
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Clears a shortfall once the shelf has been counted (and corrected with a
+     * stocktake adjustment if it was off). Staff tied to a branch may only
+     * clear their own branch's.
+     */
+    public function markCounted(Request $request, SaleItem $item): RedirectResponse
+    {
+        $item->loadMissing('sale:id,reference,branch_id');
+        abort_if($item->stock_shortfall === null || $item->sale === null, 404);
+        abort_unless(BranchAccess::canSeeAll($request->user()) || BranchAccess::home($request->user()) === (int) $item->sale->branch_id, 403);
+
+        $item->update(['shortfall_counted_at' => now(), 'shortfall_counted_by' => $request->user()->id]);
+        AuditLog::record('inventory.shortfall.counted', "Counted the shelf after {$item->description} on {$item->sale->reference}", $item);
+
+        return back()->with('success', "Marked as counted: {$item->description} ({$item->sale->reference}).");
     }
 
     /**

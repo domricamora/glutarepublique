@@ -17,6 +17,7 @@ class SaleItem extends Model
             'line_total' => 'float',
             'cost' => 'float',
             'stock_shortfall' => 'array',
+            'shortfall_counted_at' => 'datetime',
         ];
     }
 

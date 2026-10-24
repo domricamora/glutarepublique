@@ -157,6 +157,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('inventory/adjust', [InventoryController::class, 'createAdjust'])->middleware('can:inventory.create')->name('inventory.adjust');
         Route::post('inventory/adjust', [InventoryController::class, 'adjust'])->middleware('can:inventory.create')->name('inventory.adjust.store');
         Route::get('inventory/products/{product}', [InventoryController::class, 'product'])->middleware('can:inventory.view')->name('inventory.product');
+        Route::patch('inventory/shortfalls/{item}', [InventoryController::class, 'markCounted'])->middleware('can:inventory.create')->name('inventory.shortfalls.counted');
         Route::post('inventory/suppliers', [InventoryController::class, 'storeSupplier'])->middleware('can:inventory.create')->name('inventory.suppliers.store');
 
         // The catalogue: what the counter sells and the shelves are counted against.

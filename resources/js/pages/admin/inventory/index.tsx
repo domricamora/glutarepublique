@@ -37,7 +37,7 @@ type Props = {
         reference: string;
         date: string;
         service: string;
-        products: string;
+        products: { id: number; label: string }[];
     }[];
     total_value: number;
     movements: Movement[];
@@ -219,13 +219,13 @@ export default function InventoryIndex({
                         <p className="mt-1 text-xs text-muted-foreground">
                             The client was served and the sale went through.
                             Count the products below and record the real number,
-                            so the shelf matches.
+                            so the shelf matches, then mark the line as counted.
                         </p>
                         <ul className="mt-3 divide-y divide-border text-sm">
                             {shortfalls.map((s) => (
                                 <li
                                     key={s.id}
-                                    className="flex flex-wrap justify-between gap-x-6 gap-y-1 py-2"
+                                    className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-2"
                                 >
                                     <span>
                                         {s.service}{' '}
@@ -233,8 +233,55 @@ export default function InventoryIndex({
                                             ({s.reference}, {s.date})
                                         </span>
                                     </span>
-                                    <span className="text-muted-foreground">
-                                        {s.products}
+                                    <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                        {s.products.map((p) => (
+                                            <span
+                                                key={p.id}
+                                                className="text-muted-foreground"
+                                            >
+                                                {p.label}
+                                                {can('inventory.create') && (
+                                                    <>
+                                                        {' '}
+                                                        <Link
+                                                            href={
+                                                                inventory.adjust(
+                                                                    {
+                                                                        query: {
+                                                                            branch: branch.id,
+                                                                            product:
+                                                                                p.id,
+                                                                        },
+                                                                    },
+                                                                ).url
+                                                            }
+                                                            className="text-foreground underline underline-offset-2"
+                                                        >
+                                                            Count
+                                                        </Link>
+                                                    </>
+                                                )}
+                                            </span>
+                                        ))}
+                                        {can('inventory.create') && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    router.patch(
+                                                        inventory.shortfalls.counted(
+                                                            s.id,
+                                                        ).url,
+                                                        {},
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    )
+                                                }
+                                                className="press h-8 border border-border bg-background px-3 text-xs hover:bg-mist dark:hover:bg-white/5"
+                                            >
+                                                Mark as counted
+                                            </button>
+                                        )}
                                     </span>
                                 </li>
                             ))}

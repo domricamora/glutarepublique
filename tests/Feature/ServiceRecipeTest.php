@@ -95,7 +95,14 @@ it('still rings the service up when the shelf is short, and flags it for a count
         ->and($shortfall[0])->toMatchArray(['product_id' => $serum->id, 'needed' => $have + 3, 'taken' => $have]);
 
     $this->get('/admin/inventory?branch='.recipeCebu()->id)->assertInertia(fn ($page) => $page
-        ->where('shortfalls.0.reference', $sale->reference));
+        ->where('shortfalls.0.reference', $sale->reference)
+        ->where('shortfalls.0.products.0.id', $serum->id));
+
+    // Once the shelf is counted, the line leaves the list.
+    $line = $sale->items()->sole();
+    $this->patch(route('admin.inventory.shortfalls.counted', $line))->assertRedirect();
+    expect($line->fresh()->shortfall_counted_at)->not->toBeNull();
+    $this->get('/admin/inventory?branch='.recipeCebu()->id)->assertInertia(fn ($page) => $page->has('shortfalls', 0));
 });
 
 it('keeps a service\'s used products out of a refund, unlike retail stock', function () {
