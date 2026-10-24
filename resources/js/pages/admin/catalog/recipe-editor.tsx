@@ -123,7 +123,16 @@ export function RecipeEditor({
                                 >
                                     <option value="">Choose a product</option>
                                     {products.map((p) => (
-                                        <option key={p.id} value={p.id}>
+                                        <option
+                                            key={p.id}
+                                            value={p.id}
+                                            // Once per recipe: set the units instead of adding it twice.
+                                            disabled={lines.some(
+                                                (l, j) =>
+                                                    j !== i &&
+                                                    l.product_id === p.id,
+                                            )}
+                                        >
                                             {p.name}
                                             {p.sku ? ` (${p.sku})` : ''}
                                         </option>

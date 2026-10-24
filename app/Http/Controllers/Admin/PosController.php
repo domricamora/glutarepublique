@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Approval;
 use App\Models\AuditLog;
 use App\Models\Branch;
-use App\Models\ClinicSetting;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Product;
@@ -15,12 +14,14 @@ use App\Models\Promotion;
 use App\Models\Sale;
 use App\Models\Treatment;
 use App\Payments\PaymentManager;
+use App\Support\BranchAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,8 +41,9 @@ class PosController extends Controller
             'q' => ['nullable', 'string', 'max:60'],
         ]);
 
-        $branchId = isset($filters['branch']) ? (int) $filters['branch'] : Branch::orderBy('id')->value('id');
-        $branch = Branch::findOrFail($branchId);
+        // The till rings up at the chosen branch; staff without branches.all only at their own.
+        $branch = BranchAccess::single($request, $filters['branch'] ?? null);
+        $branchId = $branch->id;
 
         return Inertia::render('admin/pos/index', [
             'branch_id' => $branchId,
@@ -93,6 +95,12 @@ class PosController extends Controller
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
+        // Staff without branches.all ring up at their own branch only.
+        $home = BranchAccess::canSeeAll($request->user()) ? null : BranchAccess::home($request->user());
+        if ($home !== null && (int) $data['branch_id'] !== $home) {
+            throw ValidationException::withMessages(['branch_id' => 'You can only ring up sales at your own branch.']);
+        }
+
         // A discount past the clinic's limit is the owner's call: the cart waits
         // in her inbox and is rung up, as this cashier, when she approves.
         $quote = $ring->quote($data);
@@ -131,14 +139,15 @@ class PosController extends Controller
         ]);
 
         $day = CarbonImmutable::parse($filters['date'] ?? now()->toDateString());
+        $branchId = BranchAccess::resolve($request, $filters['branch'] ?? null);
         $scope = fn (Builder $query) => $query
             ->whereBetween('created_at', [$day->startOfDay(), $day->endOfDay()])
-            ->when($filters['branch'] ?? null, fn (Builder $q, $branch) => $q->where('branch_id', $branch));
+            ->when($branchId, fn (Builder $q, $branch) => $q->where('branch_id', $branch));
 
         return Inertia::render('admin/pos/sales/index', [
             'date' => $day->toDateString(),
-            'branch' => isset($filters['branch']) ? (int) $filters['branch'] : null,
-            'branches' => Branch::orderBy('id')->get(['id', 'name']),
+            'branch' => $branchId,
+            'branches' => BranchAccess::options($request->user()),
             'sales' => $scope(Sale::query()->with(['user:id,name', 'branch:id,name']))
                 ->latest('id')
                 ->get()

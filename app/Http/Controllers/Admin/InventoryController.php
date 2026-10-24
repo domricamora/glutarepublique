@@ -12,6 +12,7 @@ use App\Models\ProductBatch;
 use App\Models\ProductStock;
 use App\Models\SaleItem;
 use App\Models\Supplier;
+use App\Support\BranchAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,9 +37,7 @@ class InventoryController extends Controller
             'alert' => ['nullable', Rule::in(['expired', 'expiring', 'low', 'out'])],
         ]);
 
-        $branch = isset($filters['branch'])
-            ? Branch::findOrFail((int) $filters['branch'])
-            : Branch::orderBy('id')->firstOrFail();
+        $branch = BranchAccess::single($request, $filters['branch'] ?? null);
 
         $stocks = ProductStock::where('branch_id', $branch->id)->get()->keyBy('product_id');
         $batches = ProductBatch::where('branch_id', $branch->id)

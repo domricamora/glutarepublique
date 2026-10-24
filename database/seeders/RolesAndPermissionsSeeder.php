@@ -23,6 +23,8 @@ class RolesAndPermissionsSeeder extends Seeder
         'accounting.view', 'accounting.create',
         'content.view', 'content.edit',
         'settings.view', 'settings.edit',
+        // See every branch and switch between them; without it, staff work at their own branch.
+        'branches.all',
         // Refunds, discounts over the limit, payroll approval and leave: the owner's alone.
         'approvals.decide',
     ];
@@ -38,6 +40,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'accounting.view', 'accounting.create',
         'content.view', 'content.edit',
         'settings.view', 'settings.edit',
+        'branches.all',
     ];
 
     public const ROLES = [
@@ -51,10 +54,10 @@ class RolesAndPermissionsSeeder extends Seeder
         'Therapist' => ['appointments.view'],
         'Receptionist' => ['leads.view', 'leads.create', 'leads.edit', 'appointments.view', 'appointments.create', 'appointments.edit', 'pos.view', 'pos.create', 'pos.refund', 'inventory.view', 'hr.view'],
         'Cashier' => ['pos.view', 'pos.create', 'pos.refund', 'inventory.view', 'hr.view'],
-        'Accountant' => ['accounting.view', 'accounting.create', 'payroll.view', 'hr.view', 'inventory.view', 'pos.view', 'pos.view'],
-        'HR Manager' => ['hr.view', 'hr.create', 'payroll.view', 'accounting.view'],
-        'Inventory Manager' => ['inventory.view', 'inventory.create', 'pos.view'],
-        'Marketing Manager' => ['leads.view', 'leads.edit', 'content.view', 'content.edit'],
+        'Accountant' => ['branches.all', 'accounting.view', 'accounting.create', 'payroll.view', 'hr.view', 'inventory.view', 'pos.view', 'pos.view'],
+        'HR Manager' => ['branches.all', 'hr.view', 'hr.create', 'payroll.view', 'accounting.view'],
+        'Inventory Manager' => ['branches.all', 'inventory.view', 'inventory.create', 'pos.view'],
+        'Marketing Manager' => ['branches.all', 'leads.view', 'leads.edit', 'content.view', 'content.edit'],
         'Patient' => [],
     ];
 

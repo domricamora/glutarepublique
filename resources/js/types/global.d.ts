@@ -15,6 +15,13 @@ declare module '@inertiajs/core' {
             // platform => full profile url, for the ones the clinic has set
             socials: Record<string, string>;
             hasMembership: boolean;
+            // The branch selector (App\Support\BranchAccess); null when signed out.
+            branchContext: {
+                canSwitch: boolean;
+                current: number | null;
+                home: number | null;
+                options: { id: number; name: string; city: string | null }[];
+            } | null;
             modules: Record<Module, boolean>;
             // Fingerprint of the compiled assets, shown in the sidebar so a
             // screen that does not match the server can be identified at a glance.

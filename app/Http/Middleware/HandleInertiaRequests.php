@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Approval;
 use App\Models\ClinicSetting;
 use App\Models\MembershipTier;
+use App\Support\BranchAccess;
 use Illuminate\Foundation\Vite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -59,6 +60,13 @@ class HandleInertiaRequests extends Middleware
             // saved any, so a fresh one still shows whatever it was configured
             // with rather than nothing at all.
             'socials' => fn () => ClinicSetting::socials(),
+            // The branch selector: who may switch, and what is showing (null = all branches).
+            'branchContext' => fn () => $request->user() ? [
+                'canSwitch' => BranchAccess::canSeeAll($request->user()),
+                'current' => BranchAccess::current($request),
+                'home' => BranchAccess::home($request->user()),
+                'options' => BranchAccess::options($request->user())->map->only(['id', 'name', 'city'])->values(),
+            ] : null,
             // Membership is only shown once the clinic offers a real plan.
             'hasMembership' => fn () => MembershipTier::where('is_active', true)->exists(),
             // A short fingerprint of the compiled assets, so "my screen does

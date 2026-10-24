@@ -8,12 +8,14 @@ use App\Actions\Payroll\CalculatePayslip;
 use App\Http\Controllers\Controller;
 use App\Models\Approval;
 use App\Models\AuditLog;
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\PayrollAdjustment;
 use App\Models\PayrollRun;
 use App\Models\PayrollSetting;
 use App\Models\Payslip;
+use App\Support\BranchAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -207,9 +209,13 @@ class PayrollController extends Controller
             ->with('success', $run->payslips()->count().' payslips calculated and sent to the owner for approval.');
     }
 
-    public function show(PayrollRun $run): Response
+    public function show(Request $request, PayrollRun $run): Response
     {
-        $payslips = $run->payslips()->with('employee:id,name,position')->orderBy('employee_id')->get();
+        // A run is clinic-wide; the branch selector narrows it to that branch's people.
+        $branchId = BranchAccess::resolve($request);
+        $payslips = $run->payslips()->with('employee:id,name,position,branch_id')
+            ->when($branchId, fn ($q, $b) => $q->whereHas('employee', fn ($e) => $e->where('branch_id', $b)))
+            ->orderBy('employee_id')->get();
 
         return Inertia::render('admin/payroll/run', [
             'run' => [
@@ -226,6 +232,12 @@ class PayrollController extends Controller
                 'approved_at' => $run->approved_at?->toIso8601String(),
                 'posted_at' => $run->posted_at?->toIso8601String(),
             ],
+            'branch_name' => $branchId ? Branch::whereKey($branchId)->value('name') : null,
+            'branch_totals' => $branchId ? [
+                'gross' => round((float) $payslips->sum('gross'), 2),
+                'deductions' => round((float) $payslips->sum(fn (Payslip $p) => (float) $p->gross - (float) $p->net), 2),
+                'net' => round((float) $payslips->sum('net'), 2),
+            ] : null,
             'payslips' => $payslips->map(fn (Payslip $p) => [
                 'id' => $p->id,
                 'employee' => $p->employee->name,

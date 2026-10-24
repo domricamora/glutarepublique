@@ -10,6 +10,7 @@ use App\Models\CrmActivity;
 use App\Models\Lead;
 use App\Models\Specialist;
 use App\Models\Treatment;
+use App\Support\BranchAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -61,11 +62,11 @@ class AppointmentController extends Controller
 
         return Inertia::render('admin/appointments/index', [
             'date' => $day->toDateString(),
-            'branch' => isset($filters['branch']) ? (int) $filters['branch'] : null,
-            'branches' => Branch::orderBy('id')->get(['id', 'name']),
+            'branch' => $branchId = BranchAccess::resolve($request, $filters['branch'] ?? null),
+            'branches' => BranchAccess::options($request->user()),
             'appointments' => self::rows(Appointment::query()
                 ->whereBetween('starts_at', [$day->startOfDay(), $day->endOfDay()])
-                ->when($filters['branch'] ?? null, fn (Builder $q, $branch) => $q->where('branch_id', $branch))),
+                ->when($branchId, fn (Builder $q, $branch) => $q->where('branch_id', $branch))),
             'statuses' => Appointment::STATUSES,
         ]);
     }

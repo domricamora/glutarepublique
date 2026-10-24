@@ -17,6 +17,7 @@ use App\Models\Organization;
 use App\Models\PayrollAdjustment;
 use App\Models\User;
 use App\Models\WorkSchedule;
+use App\Support\BranchAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -42,10 +43,11 @@ class HrController extends Controller
             'kind' => ['nullable', Rule::in(['all', 'doctors', 'admin'])],
         ]);
 
+        $branchId = BranchAccess::resolve($request, $filters['branch'] ?? null);
         $employees = Employee::with('branch:id,name')
             ->when($filters['q'] ?? null, fn (Builder $q, $term) => $q->where('name', 'like', "%{$term}%"))
             ->when($filters['department'] ?? null, fn (Builder $q, $d) => $q->where('department', $d))
-            ->when($filters['branch'] ?? null, fn (Builder $q, $b) => $q->where('branch_id', $b))
+            ->when($branchId, fn (Builder $q, $b) => $q->where('branch_id', $b))
             ->when($filters['status'] ?? null, fn (Builder $q, $s) => $q->where('status', $s))
             ->when(($filters['kind'] ?? 'all') === 'doctors', fn (Builder $q) => $q->where('practitioner', true))
             ->when(($filters['kind'] ?? 'all') === 'admin', fn (Builder $q) => $q->where('practitioner', false))
@@ -73,7 +75,7 @@ class HrController extends Controller
             'departments' => Employee::orderBy('department')->distinct()->pluck('department')->values(),
             'query' => $filters['q'] ?? '',
             'department' => $filters['department'] ?? '',
-            'branch' => isset($filters['branch']) ? (int) $filters['branch'] : null,
+            'branch' => $branchId,
             'status' => $filters['status'] ?? null,
             'kind' => $filters['kind'] ?? 'all',
             'types' => Employee::TYPES,

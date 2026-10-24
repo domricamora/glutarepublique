@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\WorkSchedule;
+use App\Support\BranchAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class ScheduleController extends Controller
     public function index(Request $request): Response
     {
         $start = $this->monday($request->query('week'));
-        $branch = $request->integer('branch') ?: null;
+        $branch = BranchAccess::resolve($request, $request->integer('branch') ?: null);
         $days = collect(range(0, 6))->map(fn (int $i) => $start->addDays($i));
 
         $staff = Employee::active()

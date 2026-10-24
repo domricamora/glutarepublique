@@ -118,7 +118,8 @@ it('cannot sell at a branch that holds nothing, whatever the other branch has', 
     $product = sunscreen();
     $before = onHand($product, cebu());
 
-    $this->actingAs($this->till)->post('/admin/pos', [
+    // The owner may sell at any branch (the till's staff only at their own, see BranchAccessTest).
+    $this->actingAs(User::where('email', 'owner@glutarepubliq.com')->firstOrFail())->post('/admin/pos', [
         'branch_id' => sanPedro()->id,
         'items' => [['kind' => 'product', 'id' => $product->id, 'quantity' => 1]],
         'method' => 'cash',

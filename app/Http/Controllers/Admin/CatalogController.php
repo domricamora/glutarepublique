@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Specialist;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
+use App\Support\BranchAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,8 +37,7 @@ class CatalogController extends Controller
             'tab' => ['nullable', Rule::in(['products', 'services'])],
         ]);
 
-        $branchId = $request->integer('branch') ?: Branch::orderBy('id')->value('id');
-        $branch = Branch::findOrFail($branchId);
+        $branch = BranchAccess::single($request, $request->integer('branch') ?: null);
 
         $products = Product::with('stocks')
             ->when($filters['q'] ?? null, fn (Builder $q, $term) => $q->where(fn (Builder $w) => $w

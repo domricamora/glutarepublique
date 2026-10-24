@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\ClinicSetting;
+use App\Support\BranchAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,6 +31,16 @@ class BranchController extends Controller
             // What an empty branch setting falls back to.
             'defaults' => ['discount_limit' => (float) ClinicSetting::get('approvals.discount_limit', 10)],
         ]);
+    }
+
+    /** The branch the office screens show, for someone who may see every branch (null = all). */
+    public function choose(Request $request): RedirectResponse
+    {
+        abort_unless(BranchAccess::canSeeAll($request->user()), 403);
+        $data = $request->validate(['branch_id' => ['nullable', 'integer', Rule::exists('branches', 'id')->where('organization_id', $request->user()->organization_id)]]);
+        $request->session()->put(BranchAccess::SESSION_KEY, $data['branch_id'] ?? null);
+
+        return back();
     }
 
     public function store(Request $request): RedirectResponse

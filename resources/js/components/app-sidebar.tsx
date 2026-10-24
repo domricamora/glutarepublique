@@ -28,6 +28,7 @@ import {
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import BranchSwitcher from '@/components/branch-switcher';
 import Wordmark from '@/components/site/wordmark';
 import {
     Sidebar,
@@ -265,6 +266,7 @@ export function AppSidebar() {
                                     alone when the rail is collapsed to icons.
                                 */}
                                 <Wordmark
+                                    variant="light"
                                     name={clinic.short_name}
                                     descriptor="Clinic desk"
                                     markClassName="size-8"
@@ -275,6 +277,9 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+                <div className="group-data-[collapsible=icon]:hidden">
+                    <BranchSwitcher />
+                </div>
             </SidebarHeader>
 
             <SidebarContent>

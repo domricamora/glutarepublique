@@ -24,6 +24,9 @@ type Props = {
         posted_at: string | null;
     };
     payslips: PayslipRow[];
+    // Set when the branch selector narrows the run to one branch.
+    branch_name: string | null;
+    branch_totals: { gross: number; deductions: number; net: number } | null;
     totals: {
         sss: number;
         philhealth: number;
@@ -34,7 +37,14 @@ type Props = {
     statuses: Labels;
 };
 
-export default function PayrollRun({ run, payslips, totals, statuses }: Props) {
+export default function PayrollRun({
+    run,
+    payslips,
+    totals,
+    statuses,
+    branch_name,
+    branch_totals,
+}: Props) {
     const can = useCan();
     const approve = useForm({});
     const pay = useForm({});
@@ -117,6 +127,20 @@ export default function PayrollRun({ run, payslips, totals, statuses }: Props) {
                         </div>
                     )}
                 </header>
+
+                {branch_totals && (
+                    <section className="grid gap-3 sm:grid-cols-3">
+                        {stat(
+                            `${branch_name} gross`,
+                            money(branch_totals.gross),
+                        )}
+                        {stat(
+                            `${branch_name} deductions`,
+                            money(branch_totals.deductions),
+                        )}
+                        {stat(`${branch_name} net`, money(branch_totals.net))}
+                    </section>
+                )}
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {stat('Gross', money(run.total_gross))}
